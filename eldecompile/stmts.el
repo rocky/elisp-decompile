@@ -1,0 +1,5 @@
+(defun foo(e)
+  (setq a 1)
+  (setq b 'foo)
+  (setq c "bar")
+  (setq d (+ e 2)))

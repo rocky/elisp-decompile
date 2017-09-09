@@ -1,0 +1,14 @@
+byte code for foo:
+  args: (e)
+0	constant  1
+1	varset	  a
+2	constant  foo
+3	varset	  b
+4	constant  "bar"
+5	varset	  c
+6	varref	  e
+7	constant  2
+8	plus
+9	dup
+10	varset	  d
+11	return
