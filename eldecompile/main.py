@@ -7,7 +7,9 @@ from eldecompile.semantics import SourceWalker
 
 # import sys
 # with open(sys.argv[1], 'r') as fp:
-with open('assign.dis', 'r') as fp:
+# with open('binops.dis', 'r') as fp:
+#with open('control.dis', 'r') as fp:
+with open('unary-ops.dis', 'r') as fp:
     header, fn_args, tokens = fn_scanner(fp)
     pass
 

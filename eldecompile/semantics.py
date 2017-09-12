@@ -18,11 +18,14 @@ TABLE_R0 = {
 TABLE_DIRECT = {
     'setq_expr':	( '%|(setq %Q %c)\n', -1, 0),
     'binary_expr':	( '(%c %c %c)', 2, 0, 1),
+    'unary_expr':	( '(%c %c)', 1, 0),
 
     'call_expr0':	( '%|(%Q)\n', 0),
     'call_expr1':	( '%|(%Q %c)\n', 0, 1),
     'call_expr2':	( '%|(%Q %c %c)\n', 0, 1, 2),
     'call_expr3':	( '%|(%Q %c %c %c)\n', 0, 1, 2, 3),
+
+    'if_expr':		( '%|(if %c %c)\n', 0, 2),
 
     'DIFF':	( '-' ,),
     'EQLSIGN':	( '=' ,),
@@ -39,14 +42,32 @@ TABLE_DIRECT = {
     'VARREF':	        ( '%{attr}', ),
 }
 
-BINOPS = """
+UNARYOPS = tuple("""
+add1
+car cdr cdr-safe
+integerp
+keywordp listp
+markerp mutexp
+multibyte-string-p
+nlistp null natnump numberp
+recordp
+sequencep stringp subr-arity subrp symbolp
+symbol-function symbol-plist symbol-name
+threadp
+user-ptrp
+vector-or-char-tablep vectorp
+type-of
+""".split())
+
+BINOPS = tuple("""
 aref eq fset max min
 remove-variable-watcher
-setcar setcdr
-""".split()
+setcar setcdr setplist
+""".split())
 
-for op in BINOPS:
+for op in BINOPS + UNARYOPS:
     TABLE_DIRECT[op.upper()] = ( op, )
+
 
 MAP_DIRECT = (TABLE_DIRECT, )
 

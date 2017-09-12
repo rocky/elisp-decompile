@@ -23,25 +23,30 @@ class ElispParser(GenericASTBuilder):
     def p_elisp_grammar(self, args):
         '''
         # The start or goal symbol
-        exprs ::= exprs expr
-        exprs ::= expr
+        exprs ::= exprs expr opt_discard
+        exprs ::= expr opt_discard
 
         expr  ::= setq_expr
         expr  ::= return_expr
         expr  ::= binary_expr
+        expr  ::= unary_expr
         expr  ::= name_expr
 
-        # FIXME: add custom rule
+        expr  ::= if_expr
+
         expr  ::= call_expr0
         expr  ::= call_expr1
         expr  ::= call_expr2
         expr  ::= call_expr3
+        # FIXME: add custom rule for things after 3
 
-        call_expr0 ::= name_expr CALL_0 DISCARD
+        if_expr ::= expr GOTO-IF-NIL-ELSE-POP expr
+
+
         call_expr0 ::= name_expr CALL_0
-        call_expr1 ::= expr name_expr CALL_1 DISCARD
-        call_expr2 ::= expr expr name_expr CALL_2 DISCARD
-        call_expr3 ::= expr expr expr name_expr CALL_3 DISCARD
+        call_expr1 ::= expr name_expr CALL_1
+        call_expr2 ::= expr expr name_expr CALL_2
+        call_expr3 ::= expr expr expr name_expr CALL_3
 
         name_expr ::= CONSTANT
         name_expr ::= VARREF
@@ -61,9 +66,19 @@ class ElispParser(GenericASTBuilder):
         bin_op ::= REM
         bin_op ::= TIMES
 
+        unary_expr ::= expr unary_op
+
+        unary_op ::= ADD1
+        unary_op ::= CAR
+        unary_op ::= CDR
+        unary_op ::= INTEGERP
+
         setq_expr ::= expr VARSET
         setq_expr ::= expr DUP VARSET
         return_expr ::= RETURN
+
+        opt_discard ::= DISCARD
+        opt_discard ::=
         '''
         return
     pass
