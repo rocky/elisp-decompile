@@ -1,4 +1,5 @@
 byte code for unary-ops:
+  doc:  Test some unary operators
   args: (e)
 0	varref	  e
 1	add1

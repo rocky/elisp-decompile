@@ -27,5 +27,5 @@ print(ast)
 formatter = SourceWalker(ast)
 indent = '  '
 result = formatter.traverse(ast, indent)
-print("defun %s%s\n%s%s)" %
-      (fn_def.name, fn_def.args, indent, result))
+print("defun %s%s%s\n%s%s)" %
+      (fn_def.name, fn_def.args, fn_def.docstring, indent, result))

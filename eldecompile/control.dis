@@ -1,5 +1,5 @@
 byte code for control:
-  args: (e)
+  args: (&optional e)
 0	varref	  e
 1	constant  4
 2	leq
@@ -18,12 +18,19 @@ byte code for control:
 19	discard
 20:2	constant  e
 21	call	  0
-22	goto-if-nil-else-pop 3
+22	goto-if-nil 3
 25	constant  1
 26	varset	  x
 27	constant  2
 28	varset	  y
 29	constant  3
-30	dup
-31	varset	  z
-32:3	return
+30	varset	  z
+31:3	varref	  c
+32	not
+33	goto-if-nil-else-pop 4
+36	constant  1
+37	varset	  x
+38	constant  2
+39	dup
+40	varset	  y
+41:4	return

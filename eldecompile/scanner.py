@@ -19,14 +19,22 @@ def fn_scanner(fp, show_tokens=True):
         name = 'unknown'
 
     line = lines[1]
-    m = re.match("^  args: (\([^)]\))", line)
+    if line.startswith('  doc:  '):
+        docstring = '\n"%s"\n' % line[len('  doc:  '):].rstrip("\n")
+        doc_adjust = 1
+    else:
+        docstring = ''
+        doc_adjust = 0
+
+    line = lines[1+doc_adjust]
+    m = re.match("^  args: (\([^)]*\))", line)
     if m:
         args = m.group(1)
     else:
         args = '(?)'
 
-    fn_def = FuncDef(name, args, None, None)
-    for i, line in enumerate(lines[2:]):
+    fn_def = FuncDef(name, args, None, docstring)
+    for i, line in enumerate(lines[2+doc_adjust:]):
         fields = line.split()
         offset = fields[0]
         colon_point = offset.find(':')
