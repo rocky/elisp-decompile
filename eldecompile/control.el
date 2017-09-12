@@ -12,3 +12,15 @@
   (unless c
     (setq x 1)
     (setq y 2)))
+
+(defun test-if-else(&optional e)
+  (if e
+      (setq a 1)
+    (setq a 2)))
+
+(defun test-if-else-progn(&optional e)
+  (if e
+      (progn
+	(setq a 1)
+	(setq b 2))
+    (setq a 2)))

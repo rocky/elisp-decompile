@@ -3,7 +3,7 @@
 from spark_parser import GenericASTBuilder, DEFAULT_DEBUG as PARSER_DEFAULT_DEBUG
 
 class ElispParser(GenericASTBuilder):
-    def __init__(self, AST, start='exprs', debug=PARSER_DEFAULT_DEBUG):
+    def __init__(self, AST, start='fn_exprs', debug=PARSER_DEFAULT_DEBUG):
         super(ElispParser, self).__init__(AST, start, debug)
         self.collect = frozenset(['exprs'])
 
@@ -23,17 +23,19 @@ class ElispParser(GenericASTBuilder):
     def p_elisp_grammar(self, args):
         '''
         # The start or goal symbol
+        fn_exprs ::= exprs RETURN
+
         exprs ::= exprs expr opt_discard
         exprs ::= expr opt_discard
         progn ::= expr exprs
 
         expr  ::= setq_expr
-        expr  ::= return_expr
         expr  ::= binary_expr
         expr  ::= unary_expr
         expr  ::= name_expr
 
         expr  ::= if_expr
+        expr  ::= if_else_expr
 
         expr  ::= call_expr0
         expr  ::= call_expr1
@@ -45,6 +47,9 @@ class ElispParser(GenericASTBuilder):
         if_expr ::= expr GOTO-IF-NIL-ELSE-POP progn opt_discard LABEL
         if_expr ::= expr GOTO-IF-NIL expr opt_discard LABEL
         if_expr ::= expr GOTO-IF-NIL progn opt_discard LABEL
+
+        if_else_expr ::= expr GOTO-IF-NIL expr opt_discard RETURN LABEL expr
+        if_else_expr ::= expr GOTO-IF-NIL progn opt_discard RETURN LABEL expr
 
 
         call_expr0 ::= name_expr CALL_0
@@ -79,7 +84,6 @@ class ElispParser(GenericASTBuilder):
 
         setq_expr ::= expr VARSET
         setq_expr ::= expr DUP VARSET
-        return_expr ::= RETURN
 
         opt_discard ::= DISCARD
         opt_discard ::=

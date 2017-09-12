@@ -26,6 +26,8 @@ TABLE_DIRECT = {
     'call_expr3':	( '(%Q %c %c %c)', 0, 1, 2, 3),
 
     'if_expr':		( '%(if %c\n%+%|%c%)', 0, 2),
+    'if_expr':		( '%(if %c\n%+%|%c%)', 0, 2),
+    'if_else_expr':	( '%(if %c\n%+%|%c%|%c%)', 0, 2, 6),
     'progn':		( '%(progn%+%c%c%)', 0, 1),
     'expr':		( '%C', (0, 10000)),
 
