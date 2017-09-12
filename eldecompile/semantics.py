@@ -16,17 +16,18 @@ TABLE_R0 = {
 }
 
 TABLE_DIRECT = {
-    'setq_expr':	( '%|(setq %Q %c)\n', -1, 0),
+    'setq_expr':	( '%(setq %Q %c)', -1, 0),
     'binary_expr':	( '(%c %c %c)', 2, 0, 1),
     'unary_expr':	( '(%c %c)', 1, 0),
 
-    'call_expr0':	( '%|(%Q)\n', 0),
-    'call_expr1':	( '%|(%Q %c)\n', 0, 1),
-    'call_expr2':	( '%|(%Q %c %c)\n', 0, 1, 2),
-    'call_expr3':	( '%|(%Q %c %c %c)\n', 0, 1, 2, 3),
+    'call_expr0':	( '(%Q)', 0),
+    'call_expr1':	( '(%Q %c)', 0, 1),
+    'call_expr2':	( '(%Q %c %c)', 0, 1, 2),
+    'call_expr3':	( '(%Q %c %c %c)', 0, 1, 2, 3),
 
-    'if_expr':		( '%|(if %c %c)\n', 0, 2),
-    'progn':		( '%|(progn\n%+%c%c%c)%-\n', 0, 1, 2),
+    'if_expr':		( '%(if %c\n%+%|%c%)', 0, 2),
+    'progn':		( '%(progn%+%c%c%)', 0, 1),
+    'expr':		( '%C', (0, 10000)),
 
     'DIFF':	( '-' ,),
     'EQLSIGN':	( '=' ,),
@@ -50,7 +51,9 @@ integerp
 keywordp listp
 markerp mutexp
 multibyte-string-p
-nlistp null natnump numberp
+nlistp
+not
+null natnump numberp
 recordp
 sequencep stringp subr-arity subrp symbolp
 symbol-function symbol-plist symbol-name
@@ -172,11 +175,7 @@ class SourceWalker(GenericASTTraversal, object):
             elif typ == '-':	self.indentLess()
             elif typ == '|':	self.write(self.indent)
             elif typ == 'c':
-                try:
-                    self.preorder(node[entry[arg]])
-                except:
-                    from trepan.api import debug; debug()
-                    y = 1
+                self.preorder(node[entry[arg]])
                 arg += 1
             elif typ == 'Q':
                 # Like 'c' but no quoting
@@ -188,9 +187,16 @@ class SourceWalker(GenericASTTraversal, object):
                 (index, self.prec) = entry[arg]
                 self.preorder(node[index])
                 arg += 1
-            elif typ == 'x':
-                # This code is only used in fragments
-                assert isinstance(entry[arg], tuple)
+            elif typ == 'C':
+                low, high = entry[arg]
+                remaining = len(node[low:high])
+                for subnode in node[low:high]:
+                    self.preorder(subnode)
+                    remaining -= 1
+                    if remaining > 0:
+                        self.write("\n" + self.indent)
+                        pass
+                    pass
                 arg += 1
             elif typ == 'P':
                 p = self.prec
@@ -212,6 +218,13 @@ class SourceWalker(GenericASTTraversal, object):
                 except:
                     print(node)
                     raise
+            elif typ == '(':
+                if not self.f.getvalue().endswith("\n" + self.indent):
+                    self.write("\n" + self.indent)
+                self.write('(')
+            elif typ == ')':
+                self.write(')')
+                self.indentLess()
             m = escape.search(fmt, i)
         self.write(fmt[i:])
 

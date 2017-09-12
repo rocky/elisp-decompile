@@ -9,3 +9,8 @@
 	(setq x 1)
 	(setq y 2)
 	(setq z 3))))
+
+(defun more-control(c)
+  (unless c
+    (setq x 1)
+    (setq y 2)))

@@ -25,7 +25,7 @@ class ElispParser(GenericASTBuilder):
         # The start or goal symbol
         exprs ::= exprs expr opt_discard
         exprs ::= expr opt_discard
-        progn ::= expr expr exprs
+        progn ::= expr exprs
 
         expr  ::= setq_expr
         expr  ::= return_expr
@@ -75,6 +75,7 @@ class ElispParser(GenericASTBuilder):
         unary_op ::= CAR
         unary_op ::= CDR
         unary_op ::= INTEGERP
+        unary_op ::= NOT
 
         setq_expr ::= expr VARSET
         setq_expr ::= expr DUP VARSET
