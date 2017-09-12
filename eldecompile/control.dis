@@ -1,0 +1,10 @@
+byte code for control:
+  args: (e)
+0	varref	  e
+1	constant  4
+2	leq
+3	goto-if-nil-else-pop 1
+6	varref	  e
+7	constant  10
+8	plus
+9:1	return

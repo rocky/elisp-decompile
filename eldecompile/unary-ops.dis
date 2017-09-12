@@ -1,0 +1,14 @@
+byte code for unary-ops:
+  args: (e)
+0	varref	  e
+1	add1
+2	discard
+3	varref	  e
+4	car
+5	discard
+6	varref	  e
+7	cdr
+8	discard
+9	varref	  e
+10	integerp
+11	return
