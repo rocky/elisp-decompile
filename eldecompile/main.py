@@ -10,9 +10,9 @@ import sys
 if len(sys.argv) == 2:
     path = sys.argv[1]
 else:
-    # path = 'binops.dis'
-    # path = 'control.dis'
-    path = 'unary-ops.dis'
+    # path = '../testdata/binops.dis'
+    # path = '../testdata/control.dis'
+    path = '../testdata/unary-ops.dis'
 
 # Scan...
 with open(path, 'r') as fp:

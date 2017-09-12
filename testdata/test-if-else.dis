@@ -1,0 +1,12 @@
+byte code for test-if-else:
+  args: (&optional e)
+0	varref	  e
+1	goto-if-nil 1
+4	constant  1
+5	dup
+6	varset	  a
+7	return
+8:1	constant  2
+9	dup
+10	varset	  a
+11	return

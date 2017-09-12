@@ -1,0 +1,14 @@
+byte code for test-if-else-progn:
+  args: (&optional e)
+0	varref	  e
+1	goto-if-nil 1
+4	constant  1
+5	varset	  a
+6	constant  2
+7	dup
+8	varset	  b
+9	return
+10:1	constant  2
+11	dup
+12	varset	  a
+13	return
