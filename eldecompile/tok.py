@@ -9,7 +9,6 @@ class Token:
         self.op = op
         self.attr = attr
         self.offset = offset
-        self.attr = attr
 
     def __eq__(self, o):
         """ '==', but it's okay if offset is different"""
