@@ -15,7 +15,7 @@ else:
     path = 'unary-ops.dis'
 
 with open(path, 'r') as fp:
-    header, fn_args, tokens = fn_scanner(fp)
+    fn_def, tokens = fn_scanner(fp)
     pass
 
 p = ElispParser(AST)
@@ -25,5 +25,7 @@ parser_debug = {'rules': False, 'transition': False, 'reduce' : True,
 ast = p.parse(tokens, debug=parser_debug)
 print(ast)
 formatter = SourceWalker(ast)
-result = formatter.traverse(ast)
-print(result)
+indent = '  '
+result = formatter.traverse(ast, indent)
+print("defun %s%s\n%s%s)" %
+      (fn_def.name, fn_def.args, indent, result))

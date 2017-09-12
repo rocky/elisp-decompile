@@ -2,12 +2,30 @@
 
 We take input from ELISP disassembly
 """
+import re
 from eldecompile.tok import Token
+from collections import namedtuple
+
+FuncDef = namedtuple('FuncDef', ['name', 'args', 'opt_args', 'docstring'])
+
 def fn_scanner(fp, show_tokens=True):
     tokens = []
     lines = fp.readlines()
-    header = lines[0]
-    fn_args = lines[1]
+    line = lines[0]
+    m = re.match("^byte code for (\S+):$", line)
+    if m:
+        name = m.group(1)
+    else:
+        name = 'unknown'
+
+    line = lines[1]
+    m = re.match("^  args: (\([^)]\))", line)
+    if m:
+        args = m.group(1)
+    else:
+        args = '(?)'
+
+    fn_def = FuncDef(name, args, None, None)
     for i, line in enumerate(lines[2:]):
         fields = line.split()
         offset = fields[0]
@@ -34,4 +52,4 @@ def fn_scanner(fp, show_tokens=True):
 
     if show_tokens:
         print(''.join([str(t) for t in tokens]))
-    return header, fn_args, tokens
+    return fn_def, tokens

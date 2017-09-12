@@ -29,6 +29,7 @@ TABLE_DIRECT = {
     'progn':		( '%(progn%+%c%c%)', 0, 1),
     'expr':		( '%C', (0, 10000)),
 
+    'ADD1':	( '1+' ,),
     'DIFF':	( '-' ,),
     'EQLSIGN':	( '=' ,),
     'GEQ':	( '>=' ,),
@@ -45,7 +46,6 @@ TABLE_DIRECT = {
 }
 
 UNARYOPS = tuple("""
-add1
 car cdr cdr-safe
 integerp
 keywordp listp
