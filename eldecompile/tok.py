@@ -1,4 +1,3 @@
-import re
 class Token:
     """
     Class representing a byte-code instruction.
