@@ -1,4 +1,4 @@
-byte code for foo:
+byte code for binops:
   args: (e)
 0	constant  foo
 1	varref	  a

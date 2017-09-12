@@ -25,6 +25,7 @@ class ElispParser(GenericASTBuilder):
         # The start or goal symbol
         exprs ::= exprs expr opt_discard
         exprs ::= expr opt_discard
+        progn ::= expr expr exprs
 
         expr  ::= setq_expr
         expr  ::= return_expr
@@ -40,17 +41,19 @@ class ElispParser(GenericASTBuilder):
         expr  ::= call_expr3
         # FIXME: add custom rule for things after 3
 
-        if_expr ::= expr GOTO-IF-NIL-ELSE-POP expr
+        if_expr ::= expr GOTO-IF-NIL-ELSE-POP expr opt_discard LABEL
+        if_expr ::= expr GOTO-IF-NIL-ELSE-POP progn opt_discard LABEL
+        if_expr ::= expr GOTO-IF-NIL expr opt_discard LABEL
+        if_expr ::= expr GOTO-IF-NIL progn opt_discard LABEL
 
 
         call_expr0 ::= name_expr CALL_0
-        call_expr1 ::= expr name_expr CALL_1
-        call_expr2 ::= expr expr name_expr CALL_2
-        call_expr3 ::= expr expr expr name_expr CALL_3
+        call_expr1 ::= name_expr expr CALL_1
+        call_expr2 ::= name_expr expr expr CALL_2
+        call_expr3 ::= name_expr expr expr expr CALL_3
 
         name_expr ::= CONSTANT
         name_expr ::= VARREF
-
 
         binary_expr ::= expr expr bin_op
 

@@ -26,6 +26,7 @@ TABLE_DIRECT = {
     'call_expr3':	( '%|(%Q %c %c %c)\n', 0, 1, 2, 3),
 
     'if_expr':		( '%|(if %c %c)\n', 0, 2),
+    'progn':		( '%|(progn\n%+%c%c%c)%-\n', 0, 1, 2),
 
     'DIFF':	( '-' ,),
     'EQLSIGN':	( '=' ,),

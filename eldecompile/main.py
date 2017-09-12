@@ -5,11 +5,16 @@ from eldecompile.scanner import fn_scanner
 from eldecompile.parser import ElispParser
 from eldecompile.semantics import SourceWalker
 
-# import sys
-# with open(sys.argv[1], 'r') as fp:
-# with open('binops.dis', 'r') as fp:
-#with open('control.dis', 'r') as fp:
-with open('unary-ops.dis', 'r') as fp:
+import sys
+
+if len(sys.argv) == 2:
+    path = sys.argv[1]
+else:
+    # path = 'binops.dis'
+    # path = 'control.dis'
+    path = 'unary-ops.dis'
+
+with open(path, 'r') as fp:
     header, fn_args, tokens = fn_scanner(fp)
     pass
 
