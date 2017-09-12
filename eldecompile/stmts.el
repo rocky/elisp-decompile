@@ -1,16 +1,20 @@
 (defun foo(e)
 
+  (foo a b c)
+  (bar a b)
   (require 'ert) ; temporary hack
+  (package-initialize)
 
-  ;; A protection against trojan horses
-  (setq inhibit-local-variables t)
+  ;; ;; A protection against trojan horses
+  ;; (setq inhibit-local-variables t)
 
-  ;; Find about errors in this file. debug-on-error is to set this to nil
-  ;; at the end of this file so that only error in this file are caught.
-  (setq debug-on-error 't)
+  ;; ;; Find about errors in this file. debug-on-error is to set this to nil
+  ;; ;; at the end of this file so that only error in this file are caught.
+  ;; (setq debug-on-error 't)
 
-  ;; (defvar font-loaded nil)
+  ;; ;; (defvar font-loaded nil)
   (setq a 1)
   (setq b 'foo)
   (setq c "bar")
-  (setq d (+ e 2)))
+  (setq d (+ e 2))
+  )

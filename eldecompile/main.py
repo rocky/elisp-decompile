@@ -25,12 +25,14 @@ TABLE_R0 = {
 }
 
 TABLE_DIRECT = {
-    'setq_expr':	( '%|(setq %c %c)\n', -1, 0),
+    'setq_expr':	( '%|(setq %Q %c)\n', -1, 0),
     'plus_expr':	( '(+ %c %c)', 1, 0),
 
-    'call_expr1':	( '%|(%c %c)\n', 0, 1),
+    'call_expr0':	( '%|(%Q)\n', 0),
+    'call_expr1':	( '%|(%Q %c)\n', 0, 1),
+    'call_expr2':	( '%|(%Q %c %c)\n', 0, 1, 2),
+    'call_expr3':	( '%|(%Q %c %c %c)\n', 0, 1, 2, 3),
 
-    'CONSTANT':	        ( '%{attr}', ),
     'VARSET':	        ( '%{attr}', ),
     'VARREF':	        ( '%{attr}', ),
 }
@@ -67,6 +69,10 @@ class SourceWalker(GenericASTTraversal, object):
         self.ERROR = None
         self.pending_newlines = 0
         self.hide_internal = True
+
+        # By default symbols will be quoted. Rules like setq and
+        # call change this and set True temporarily.
+        self.noquote = False
         return
 
     f = property(lambda s: s.params['f'],
@@ -75,13 +81,10 @@ class SourceWalker(GenericASTTraversal, object):
                  None)
 
     def n_CONSTANT(self, node):
-        if re.match(r'[0-9"]', node.attr[0]):
-            # Integer or string
-            self.f.write(node.attr.decode('utf-8'))
-        else:
-            # Assume we have a LISP symbol
+        if not (re.match(r'[0-9"]', node.attr[0]) or self.noquote):
+            # Not integer or string and not explicitly unquoted
             self.f.write(u"'")
-            self.f.write(node.attr.decode('utf-8'))
+        self.f.write(node.attr.decode('utf-8'))
 
     def indentMore(self, indent=TAB):
         self.indent += indent
@@ -136,34 +139,17 @@ class SourceWalker(GenericASTTraversal, object):
             elif typ == '-':	self.indentLess()
             elif typ == '|':	self.write(self.indent)
             elif typ == 'c':
-                if isinstance(entry[arg], int):
-                    self.preorder(node[entry[arg]])
+                self.preorder(node[entry[arg]])
+                arg += 1
+            elif typ == 'Q':
+                # Like 'c' but no quoting
+                self.noquote = True
+                self.preorder(node[entry[arg]])
+                self.noquote = False
                 arg += 1
             elif typ == 'p':
                 (index, self.prec) = entry[arg]
                 self.preorder(node[index])
-                arg += 1
-            elif typ == 'C':
-                low, high, sep = entry[arg]
-                remaining = len(node[low:high])
-                for subnode in node[low:high]:
-                    self.preorder(subnode)
-                    remaining -= 1
-                    if remaining > 0:
-                        self.write(sep)
-                arg += 1
-            elif typ == 'D':
-                low, high, sep = entry[arg]
-                remaining = len(node[low:high])
-                for subnode in node[low:high]:
-                    remaining -= 1
-                    if len(subnode) > 0:
-                        self.preorder(subnode)
-                        if remaining > 0:
-                            self.write(sep)
-                            pass
-                        pass
-                    pass
                 arg += 1
             elif typ == 'x':
                 # This code is only used in fragments
@@ -211,7 +197,7 @@ class SourceWalker(GenericASTTraversal, object):
 # import sys
 # with open(sys.argv[1], 'r') as fp:
 with open('assign.dis', 'r') as fp:
-    header, fn_args, tokens, constants = fn_scanner(fp)
+    header, fn_args, tokens = fn_scanner(fp)
     pass
 
 p = ElispParser(AST)

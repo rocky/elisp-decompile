@@ -32,8 +32,16 @@ class ElispParser(GenericASTBuilder):
         expr  ::= name_expr
 
         # FIXME: add custom rule
+        expr  ::= call_expr0
         expr  ::= call_expr1
-        call_expr1 ::= expr name_expr CALL DISCARD
+        expr  ::= call_expr2
+        expr  ::= call_expr3
+
+        call_expr0 ::= name_expr CALL_0 DISCARD
+        call_expr0 ::= name_expr CALL_0
+        call_expr1 ::= expr name_expr CALL_1 DISCARD
+        call_expr2 ::= expr expr name_expr CALL_2 DISCARD
+        call_expr3 ::= expr expr expr name_expr CALL_3 DISCARD
 
         name_expr ::= CONSTANT
         name_expr ::= VARREF
