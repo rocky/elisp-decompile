@@ -1,6 +1,6 @@
 A decompiler for Emacs Lisp bytecode... or at least a proof of concept.
 
-This code uses the [Python spark-parser](https://pypi.python.org/pypi/spark_parser/) for its Earley algorithm parser and the code.
+This code uses the [Python spark-parser](https://pypi.python.org/pypi/spark_parser/) for its Earley algorithm parser and the code organization.
 
 This is in a very early stage. Until docs are better organized, see
 [Writing Semantic-action
