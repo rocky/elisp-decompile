@@ -17,16 +17,36 @@ TABLE_R0 = {
 
 TABLE_DIRECT = {
     'setq_expr':	( '%|(setq %Q %c)\n', -1, 0),
-    'plus_expr':	( '(+ %c %c)', 1, 0),
+    'binary_expr':	( '(%c %c %c)', 2, 0, 1),
 
     'call_expr0':	( '%|(%Q)\n', 0),
     'call_expr1':	( '%|(%Q %c)\n', 0, 1),
     'call_expr2':	( '%|(%Q %c %c)\n', 0, 1, 2),
     'call_expr3':	( '%|(%Q %c %c %c)\n', 0, 1, 2, 3),
 
+    'DIFF':	( '-' ,),
+    'EQLSIGN':	( '=' ,),
+    'GEQ':	( '>=' ,),
+    'GTR':	( '>' ,),
+    'LEQ':	( '<=' ,),
+    'LSS':	( '<' ,),
+    'MULT':	( '*' ,),
+    'PLUS':	( '+' ,),
+    'QUO':	( '/' ,),
+    'REM':	( '%' ,),
+
     'VARSET':	        ( '%{attr}', ),
     'VARREF':	        ( '%{attr}', ),
 }
+
+BINOPS = """
+aref eq fset max min
+remove-variable-watcher
+setcar setcdr
+""".split()
+
+for op in BINOPS:
+    TABLE_DIRECT[op.upper()] = ( op, )
 
 MAP_DIRECT = (TABLE_DIRECT, )
 
@@ -130,7 +150,11 @@ class SourceWalker(GenericASTTraversal, object):
             elif typ == '-':	self.indentLess()
             elif typ == '|':	self.write(self.indent)
             elif typ == 'c':
-                self.preorder(node[entry[arg]])
+                try:
+                    self.preorder(node[entry[arg]])
+                except:
+                    from trepan.api import debug; debug()
+                    y = 1
                 arg += 1
             elif typ == 'Q':
                 # Like 'c' but no quoting

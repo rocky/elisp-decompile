@@ -26,7 +26,43 @@ byte code for foo:
 23	varset	  c
 24	varref	  e
 25	constant  2
-26	plus
-27	dup
-28	varset	  d
-29	return
+26	diff
+27	varset	  e1
+28	varref	  e
+29	constant  2
+30	geq
+31	varset	  f
+32	varref	  e
+33	constant  2
+34	gtr
+35	varset	  g
+37	varref	  e
+38	constant  2
+39	lss
+40	varset	  h
+42	varref	  e
+43	constant  2
+44	leq
+45	varset	  i
+47	varref	  e
+48	constant  2
+49	rem
+50	varset	  j
+52	varref	  e
+53	constant  2
+54	eqlsign
+55	varset	  k
+57	varref	  e
+58	constant  2
+59	plus
+60	varset	  l
+62	varref	  e
+63	constant  2
+64	quo
+65	varset	  m
+67	varref	  e
+68	constant  2
+69	mult
+70	dup
+71	varset	  n
+73	return

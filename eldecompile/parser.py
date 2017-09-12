@@ -28,7 +28,7 @@ class ElispParser(GenericASTBuilder):
 
         expr  ::= setq_expr
         expr  ::= return_expr
-        expr  ::= plus_expr
+        expr  ::= binary_expr
         expr  ::= name_expr
 
         # FIXME: add custom rule
@@ -47,7 +47,19 @@ class ElispParser(GenericASTBuilder):
         name_expr ::= VARREF
 
 
-        plus_expr ::= expr expr PLUS
+        binary_expr ::= expr expr bin_op
+
+        bin_op ::= DIFF
+        bin_op ::= EQLSIGN
+        bin_op ::= GEQ
+        bin_op ::= GTR
+        bin_op ::= LEQ
+        bin_op ::= LSS
+        bin_op ::= MULT
+        bin_op ::= PLUS
+        bin_op ::= QUO
+        bin_op ::= REM
+        bin_op ::= TIMES
 
         setq_expr ::= expr VARSET
         setq_expr ::= expr DUP VARSET
