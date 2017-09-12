@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 from collections import namedtuple
 import re
-from spark_parser import GenericASTBuilder, DEFAULT_DEBUG as PARSER_DEFAULT_DEBUG
 from spark_parser import GenericASTTraversal
 from spark_parser.ast import AST
 
-from eldecompile.token import Token
+from eldecompile.scanner import fn_scanner
+from eldecompile.parser import ElispParser
 
 Instruction = namedtuple("Instruction",
      "offset opname operand")
@@ -16,51 +16,6 @@ except:
     from StringIO import StringIO
 
 
-def fn_scanner(fp):
-    tokens = []
-    lines = fp.readlines()
-    header = lines[0]
-    fn_args = lines[1]
-    for line in lines[2:]:
-        fields = line.split()
-        if len(fields) == 3:
-            offset, opname, attr = fields
-            tokens.append(Token(opname.upper().strip(), attr.strip(), offset.strip()))
-        else:
-            assert len(fields) == 2
-            offset, opname = fields
-            tokens.append(Token(opname.upper().strip(), None, offset.strip()))
-            pass
-        pass
-    return header, fn_args, tokens
-
-class ElispParser(GenericASTBuilder):
-    def __init__(self, AST, start='exprs', debug=PARSER_DEFAULT_DEBUG):
-        super(ElispParser, self).__init__(AST, start, debug)
-        self.collect = frozenset(['exprs'])
-
-    def p_elisp_grammar(self, args):
-        '''
-        # The start or goal symbol
-        exprs ::= exprs expr
-        exprs ::= expr
-
-        expr  ::= setq_expr
-        expr  ::= return_expr
-        expr  ::= plus_expr
-
-        expr ::= CONSTANT
-        expr ::= VARREF
-
-        plus_expr ::= expr expr PLUS
-
-        setq_expr ::= expr VARSET
-        setq_expr ::= expr DUP VARSET
-        return_expr ::= RETURN
-        '''
-        return
-    pass
-
 TAB = ' ' *4   # is less spacy than "\t"
 INDENT_PER_LEVEL = ' ' # additional intent per pretty-print level
 TABLE_R = {
@@ -70,8 +25,11 @@ TABLE_R0 = {
 }
 
 TABLE_DIRECT = {
-    'setq_expr':	( '%|(setq %c %c)\n', 1, 0),
-    'plus_expr':	( '%(+ %c %c)\n', 1, 0),
+    'setq_expr':	( '%|(setq %c %c)\n', -1, 0),
+    'plus_expr':	( '(+ %c %c)', 1, 0),
+
+    'call_expr1':	( '%|(%c %c)\n', 0, 1),
+
     'CONSTANT':	        ( '%{attr}', ),
     'VARSET':	        ( '%{attr}', ),
     'VARREF':	        ( '%{attr}', ),
@@ -115,6 +73,15 @@ class SourceWalker(GenericASTTraversal, object):
                  lambda s, x: s.params.__setitem__('f', x),
                  lambda s: s.params.__delitem__('f'),
                  None)
+
+    def n_CONSTANT(self, node):
+        if re.match(r'[0-9"]', node.attr[0]):
+            # Integer or string
+            self.f.write(node.attr.decode('utf-8'))
+        else:
+            # Assume we have a LISP symbol
+            self.f.write(u"'")
+            self.f.write(node.attr.decode('utf-8'))
 
     def indentMore(self, indent=TAB):
         self.indent += indent
@@ -244,7 +211,7 @@ class SourceWalker(GenericASTTraversal, object):
 # import sys
 # with open(sys.argv[1], 'r') as fp:
 with open('assign.dis', 'r') as fp:
-    header, fn_args, tokens = fn_scanner(fp)
+    header, fn_args, tokens, constants = fn_scanner(fp)
     pass
 
 p = ElispParser(AST)

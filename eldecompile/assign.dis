@@ -1,14 +1,22 @@
 byte code for foo:
   args: (e)
-0	constant  1
-1	varset	  a
-2	constant  foo
-3	varset	  b
-4	constant  "bar"
-5	varset	  c
-6	varref	  e
-7	constant  2
-8	plus
-9	dup
-10	varset	  d
-11	return
+0	constant  require
+1	constant  ert
+2	call	  1
+3	discard
+4	constant  t
+5	dup
+6	varset	  inhibit-local-variables
+7	varset	  debug-on-error
+8	constant  1
+9	varset	  a
+10	constant  foo
+11	varset	  b
+12	constant  "bar"
+13	varset	  c
+14	varref	  e
+15	constant  2
+16	plus
+17	dup
+18	varset	  d
+20	return

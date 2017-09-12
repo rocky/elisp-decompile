@@ -3,15 +3,13 @@ class Token:
     """
     Class representing a byte-code instruction.
     """
-    def __init__(self, type_, attr=None, offset=-1,
-                 op=None, has_arg=None):
-        self.type = intern(type_)
+    def __init__(self, opname, attr=None, offset=-1,
+                 op=None):
+        self.type = intern(opname)
         self.op = op
-        self.has_arg = has_arg
         self.attr = attr
         self.offset = offset
-        if has_arg is False:
-            self.attr = None
+        self.attr = attr
 
     def __eq__(self, o):
         """ '==', but it's okay if offset is different"""
@@ -30,13 +28,10 @@ class Token:
 
     def format(self, line_prefix=''):
         prefix = ('\n%s ' % (line_prefix))
-        offset_opname = '%10s  %-17s' % (self.offset, self.type)
-        if not self.has_arg:
+        offset_opname = '%10s  %-10s' % (self.offset, self.type)
+        if not self.attr:
             return "%s%s" % (prefix, offset_opname)
-        argstr = "%6d " % self.attr if isinstance(self.attr, int) else (' '*7)
-        if re.search('_\d+$', self.type):
-            return "%s%s%s" % (prefix, offset_opname,  argstr)
-        return "%s%s%s" % (prefix, offset_opname,  argstr)
+        return "%s%s %s" % (prefix, offset_opname,  self.attr)
 
     def __hash__(self):
         return hash(self.type)
