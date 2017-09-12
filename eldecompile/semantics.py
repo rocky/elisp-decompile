@@ -27,7 +27,7 @@ TABLE_DIRECT = {
 
     'if_expr':		( '%(if %c\n%+%|%c%)', 0, 2),
     'if_expr':		( '%(if %c\n%+%|%c%)', 0, 2),
-    'if_else_expr':	( '%(if %c\n%+%|%c%|%c%)', 0, 2, 6),
+    'if_else_expr':	( '%(if %c\n%+%|%c%_%c%)%_', 0, 2, 6),
     'progn':		( '%(progn%+%c%c%)', 0, 1),
     'expr':		( '%C', (0, 10000)),
 
@@ -175,6 +175,7 @@ class SourceWalker(GenericASTTraversal, object):
             if   typ == '%':	self.write('%')
             elif typ == '+':	self.indentMore()
             elif typ == '-':	self.indentLess()
+            elif typ == '_':	self.indentLess('  ')  # For else part of if/else
             elif typ == '|':	self.write(self.indent)
             elif typ == 'c':
                 self.preorder(node[entry[arg]])
