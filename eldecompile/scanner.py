@@ -30,6 +30,8 @@ def fn_scanner(fp, show_tokens=True):
     m = re.match("^  args: (\([^)]*\))", line)
     if m:
         args = m.group(1)
+    elif re.match("^  args: nil", line):
+        args = '()'
     else:
         args = '(?)'
 

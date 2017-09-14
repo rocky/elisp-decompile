@@ -16,9 +16,12 @@ TABLE_R0 = {
 }
 
 TABLE_DIRECT = {
-    'setq_expr':	( '%(setq %Q %c)', -1, 0),
-    'binary_expr':	( '(%c %c %c)', 2, 0, 1),
-    'unary_expr':	( '(%c %c)', 1, 0),
+    'setq_expr':	   ( '%(setq %Q %c)', -1, 0),
+    'setq_expr_stacked':   ( '%(setq %Q %c)', -1, 0),
+    'binary_expr':	   ( '(%c %c %c)', 2, 0, 1),
+    'unary_expr':	   ( '(%c %c)', 1, 0),
+
+    'varbind':             ( '(%c %c)', -1, 0),
 
     'call_expr0':	( '(%Q)', 0),
     'call_expr1':	( '(%Q %c)', 0, 1),
@@ -28,8 +31,11 @@ TABLE_DIRECT = {
     'if_expr':		( '%(if %c\n%+%|%c%)', 0, 2),
     'if_expr':		( '%(if %c\n%+%|%c%)', 0, 2),
     'if_else_expr':	( '%(if %c\n%+%|%c%_%c%)%_', 0, 2, 6),
+
+    'let_expr':	        ( '%(let (%c)\n%+%c)', 0, 1),
     'progn':		( '%(progn%+%c%c%)', 0, 1),
     'expr':		( '%C', (0, 10000)),
+    'expr_stacked':	( '%C', (0, 10000)),
 
     'ADD1':	( '1+' ,),
     'DIFF':	( '-' ,),
@@ -44,6 +50,7 @@ TABLE_DIRECT = {
     'REM':	( '%' ,),
 
     'VARSET':	        ( '%{attr}', ),
+    'VARBIND':	        ( '%{attr}', ),
     'VARREF':	        ( '%{attr}', ),
 }
 
@@ -117,6 +124,10 @@ class SourceWalker(GenericASTTraversal, object):
                  lambda s, x: s.params.__setitem__('f', x),
                  lambda s: s.params.__delitem__('f'),
                  None)
+
+    # def n_let_expr(self, node):
+    #     from trepan.api import debug; debug()
+    #     self.default(node)
 
     def n_CONSTANT(self, node):
         if not (re.match(r'[0-9"]', node.attr[0]) or self.noquote):

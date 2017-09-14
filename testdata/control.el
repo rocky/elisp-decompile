@@ -24,3 +24,16 @@
 	(setq a 1)
 	(setq b 2))
     (setq a 2)))
+
+(defun test-let()
+  (let ((a 2))
+    (setq b (1+ a))))
+
+(defun test-let-cond(c)
+  (let ((a))
+    (setq x 1))
+  (let ((b 1))
+    (setq x 1))
+  (cond
+   ((c (setq d 1))
+    ('t 6))))

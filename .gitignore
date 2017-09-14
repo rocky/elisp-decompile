@@ -1,3 +1,4 @@
-/.python-version
-*~
 *.pyc
+*~
+/.python-version
+/eldecompile.egg-info

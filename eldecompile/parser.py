@@ -27,6 +27,8 @@ class ElispParser(GenericASTBuilder):
 
         exprs ::= exprs expr opt_discard
         exprs ::= expr opt_discard
+        exprs ::= expr_stacked opt_discard
+
         progn ::= expr exprs
 
         expr  ::= setq_expr
@@ -41,6 +43,11 @@ class ElispParser(GenericASTBuilder):
         expr  ::= call_expr1
         expr  ::= call_expr2
         expr  ::= call_expr3
+
+        expr_stacked ::= unary_op
+        expr_stacked ::= setq_expr_stacked
+
+        expr  ::= let_expr
         # FIXME: add custom rule for things after 3
 
         if_expr ::= expr GOTO-IF-NIL-ELSE-POP expr opt_discard LABEL
@@ -84,9 +91,19 @@ class ElispParser(GenericASTBuilder):
 
         setq_expr ::= expr VARSET
         setq_expr ::= expr DUP VARSET
+        setq_expr ::= expr DUP VARSET
+        setq_expr_stacked ::= expr_stacked DUP VARSET
+
+
+        let_expr ::= varbind exprs UNBIND
+
 
         opt_discard ::= DISCARD
         opt_discard ::=
+
+        # varbinds ::= varbinds varbind
+        varbind  ::= expr VARBIND
+        varbind  ::= expr DUP VARBIND
         '''
         return
     pass

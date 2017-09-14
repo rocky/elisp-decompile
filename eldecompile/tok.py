@@ -4,7 +4,7 @@ class Token:
     """
     def __init__(self, opname, attr=None, offset=-1,
                  op=None):
-        self.type = intern(opname)
+        self.type = opname
         self.op = op
         self.attr = attr
         self.offset = offset
