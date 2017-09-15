@@ -21,12 +21,19 @@ class Token:
     def __repr__(self):
         return str(self.type)
 
+    def __repr1__(self, indent, sib_num=''):
+        return self.format(line_prefix=indent, sib_num=sib_num)
+
     def __str__(self):
         return self.format(line_prefix='')
 
-    def format(self, line_prefix=''):
-        prefix = ('\n%s ' % (line_prefix))
-        offset_opname = '%10s  %-10s' % (self.offset, self.type)
+    def format(self, line_prefix='', sib_num=None):
+        if sib_num:
+            sib_num = "%d." % sib_num
+        else:
+            sib_num = ''
+        prefix = ('%s%s' % (line_prefix, sib_num))
+        offset_opname = '%4s %-10s' % (self.offset, self.type)
         if not self.attr:
             return "%s%s" % (prefix, offset_opname)
         return "%s%s %s" % (prefix, offset_opname,  self.attr)
