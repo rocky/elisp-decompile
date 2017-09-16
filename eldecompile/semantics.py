@@ -32,7 +32,7 @@ TABLE_DIRECT = {
     'if_expr':		( '%(if %c\n%+%|%c%)', 0, 2),
     'if_else_expr':	( '%(if %c\n%+%|%c%_%c%)%_', 0, 2, 6),
 
-    'let_expr':	        ( '%(let (%c)\n%+%c)', 0, 1),
+    'let_expr':	        ( '%(let (%c)\n%+%c%)', 0, 1),
     'progn':		( '%(progn%+%c%c%)', 0, 1),
     'expr':		( '%C', (0, 10000)),
     'expr_stacked':	( '%C', (0, 10000)),
@@ -91,6 +91,9 @@ escape = re.compile(r'''
                  ( [{] (?P<expr> [^}]* ) [}] ))
         ''', re.VERBOSE)
 
+def to_s(s):
+    return s if isinstance(s, str) else s.decode('utf-8')
+
 class SourceWalkerError(Exception):
     def __init__(self, errmsg):
         self.errmsg = errmsg
@@ -133,7 +136,7 @@ class SourceWalker(GenericASTTraversal, object):
         if not (re.match(r'[0-9"]', node.attr[0]) or self.noquote):
             # Not integer or string and not explicitly unquoted
             self.f.write(u"'")
-        self.f.write(node.attr.decode('utf-8'))
+        self.f.write(to_s(node.attr))
 
     def indentMore(self, indent=TAB):
         self.indent += indent
@@ -254,6 +257,6 @@ class SourceWalker(GenericASTTraversal, object):
             self.prune()
 
     def write(self, *data):
-        udata = [d.decode('utf-8') for d in data]
+        udata = [to_s(d) for d in data]
         self.f.write(*udata)
         return
