@@ -5,7 +5,7 @@ from spark_parser import GenericASTBuilder, DEFAULT_DEBUG as PARSER_DEFAULT_DEBU
 class ElispParser(GenericASTBuilder):
     def __init__(self, AST, start='fn_exprs', debug=PARSER_DEFAULT_DEBUG):
         super(ElispParser, self).__init__(AST, start, debug)
-        self.collect = frozenset(['exprs'])
+        self.collect = frozenset(['exprs', 'varbinds'])
 
     def nonterminal(self, nt, args):
         if nt in self.collect and len(args) > 1:
@@ -44,8 +44,12 @@ class ElispParser(GenericASTBuilder):
         expr  ::= call_expr2
         expr  ::= call_expr3
 
-        expr_stacked ::= unary_op
+        expr_stacked ::= unary_expr_stacked
         expr_stacked ::= setq_expr_stacked
+
+        unary_expr_stacked ::= unary_op
+        binary_expr_stacked ::= expr binary_op
+
 
         expr  ::= let_expr
         # FIXME: add custom rule for things after 3

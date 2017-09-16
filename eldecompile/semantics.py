@@ -1,10 +1,12 @@
-import re
+import re, sys
 from spark_parser import GenericASTTraversal
 
 try:
     from io import StringIO
 except:
     from StringIO import StringIO
+
+PYTHON3 = (sys.version_info >= (3, 0))
 
 
 TAB = ' ' *4   # is less spacy than "\t"
@@ -16,38 +18,38 @@ TABLE_R0 = {
 }
 
 TABLE_DIRECT = {
-    'setq_expr':	   ( '%(setq %Q %c)', -1, 0),
-    'setq_expr_stacked':   ( '%(setq %Q %c)', -1, 0),
-    'binary_expr':	   ( '(%c %c %c)', 2, 0, 1),
-    'unary_expr':	   ( '(%c %c)', 1, 0),
+    'setq_expr':	   ( '%(setq %Q %c)', -1, 0 ),
+    'setq_expr_stacked':   ( '%(setq %Q %c)', -1, 0 ),
+    'unary_expr':	   ( '(%c %c)', 1, 0 ),
+    'unary_expr_stacked':  ( '(%c %S)', 0 ),
+    'binary_expr':	   ( '(%c %c %c)', 2, 0, 1 ),
+    'binary_expr_stacked': ( '(%c %S %c)', 2, 1),
 
-    'varbind':             ( '(%c %c)', -1, 0),
+    'call_expr0':	( '(%Q)', 0 ),
+    'call_expr1':	( '%(%Q %c)', 0, 1 ),
+    'call_expr2':	( '%(%Q %c %c)', 0, 1, 2 ),
+    'call_expr3':	( '%(%Q %c %c %c)', 0, 1, 2, 3 ),
 
-    'call_expr0':	( '(%Q)', 0),
-    'call_expr1':	( '(%Q %c)', 0, 1),
-    'call_expr2':	( '(%Q %c %c)', 0, 1, 2),
-    'call_expr3':	( '(%Q %c %c %c)', 0, 1, 2, 3),
+    'if_expr':		( '%(if %c\n%+%|%c%)', 0, 2 ),
+    'if_expr':		( '%(if %c\n%+%|%c%)', 0, 2 ),
+    'if_else_expr':	( '%(if %c\n%+%|%c%_%c%)%_', 0, 2, 6 ),
 
-    'if_expr':		( '%(if %c\n%+%|%c%)', 0, 2),
-    'if_expr':		( '%(if %c\n%+%|%c%)', 0, 2),
-    'if_else_expr':	( '%(if %c\n%+%|%c%_%c%)%_', 0, 2, 6),
+    'let_expr':	        ( '%(let (%c)\n%+%c%)', 0, 1 ),
+    'progn':		( '%(progn%+%c%c%)', 0, 1 ),
+    'expr':		( '%C', (0, 10000) ),
+    'expr_stacked':	( '%C', (0, 10000) ),
 
-    'let_expr':	        ( '%(let (%c)\n%+%c%)', 0, 1),
-    'progn':		( '%(progn%+%c%c%)', 0, 1),
-    'expr':		( '%C', (0, 10000)),
-    'expr_stacked':	( '%C', (0, 10000)),
-
-    'ADD1':	( '1+' ,),
-    'DIFF':	( '-' ,),
-    'EQLSIGN':	( '=' ,),
-    'GEQ':	( '>=' ,),
-    'GTR':	( '>' ,),
-    'LEQ':	( '<=' ,),
-    'LSS':	( '<' ,),
-    'MULT':	( '*' ,),
-    'PLUS':	( '+' ,),
-    'QUO':	( '/' ,),
-    'REM':	( '%' ,),
+    'ADD1':	( '1+' , ),
+    'DIFF':	( '-' ,  ),
+    'EQLSIGN':	( '=' ,  ),
+    'GEQ':	( '>=' , ),
+    'GTR':	( '>' ,  ),
+    'LEQ':	( '<=' , ),
+    'LSS':	( '<' ,  ),
+    'MULT':	( '*' ,  ),
+    'PLUS':	( '+' ,  ),
+    'QUO':	( '/' ,  ),
+    'REM':	( '%' ,  ),
 
     'VARSET':	        ( '%{attr}', ),
     'VARBIND':	        ( '%{attr}', ),
@@ -92,7 +94,10 @@ escape = re.compile(r'''
         ''', re.VERBOSE)
 
 def to_s(s):
-    return s if isinstance(s, str) else s.decode('utf-8')
+    if PYTHON3:
+        return s
+    else:
+        return s.decode('utf-8')
 
 class SourceWalkerError(Exception):
     def __init__(self, errmsg):
@@ -118,6 +123,10 @@ class SourceWalker(GenericASTTraversal, object):
         self.pending_newlines = 0
         self.hide_internal = True
 
+        # A place to put the AST nodes for compuations pushed
+        # on the evaluation stack
+        self.eval_stack = []
+
         # By default symbols will be quoted. Rules like setq and
         # call change this and set True temporarily.
         self.noquote = False
@@ -128,9 +137,43 @@ class SourceWalker(GenericASTTraversal, object):
                  lambda s: s.params.__delitem__('f'),
                  None)
 
+    def pop1(self):
+        return self.eval_stack.pop()
+
+    def push1(self, node):
+        self.eval_stack.append(node)
+
+
+    def replace1(self, node):
+        """Replace the stack top with node.
+        Unary ops do this for example"""
+        self.eval_stack[-1] = node
+
+    # def binary_op(self, node):
+    #     """Pop 2 items from stack push the result.
+    #     binary ops do this for example"""
+    #     self.pop1()
+    #     self.replace1(node)
+
+
     # def n_let_expr(self, node):
     #     from trepan.api import debug; debug()
     #     self.default(node)
+
+    def n_discard(self, node):
+        self.pop1()
+
+
+    def n_varbind(self, node):
+        if len(node) == 2:
+            self.engine(( '(%c %c)', -1, 0 ), node),
+        elif len(node) == 3 and node[1] == 'DUP':
+            self.engine(( '(%c %c)', -1, 0 ), node),
+            self.push1(node[0])
+        else:
+            assert False, "Invalid varbind %s" % node
+        self.prune()
+
 
     def n_CONSTANT(self, node):
         if not (re.match(r'[0-9"]', node.attr[0]) or self.noquote):
@@ -158,6 +201,13 @@ class SourceWalker(GenericASTTraversal, object):
         self.pending_newlines = p
         return result
 
+    # def n_binary_expr(self, node):
+    #     self.binary_op(node)
+    #     self.engine(( '(%c %c %c)', 2, 0, 1), node)
+
+    def n_unary_expr(self, node):
+        self.replace1(node)
+        self.engine(( '(%c %c)', 1, 0), node)
 
     def engine(self, entry, startnode):
         """The format template interpetation engine.  See the comment at the
@@ -199,6 +249,11 @@ class SourceWalker(GenericASTTraversal, object):
                 self.noquote = True
                 self.preorder(node[entry[arg]])
                 self.noquote = False
+                arg += 1
+            elif typ == 'S':
+                # Get value from eval stack
+                subnode = self.pop1()
+                self.preorder(subnode)
                 arg += 1
             elif typ == 'p':
                 (index, self.prec) = entry[arg]

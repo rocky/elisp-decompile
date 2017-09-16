@@ -61,5 +61,5 @@ def fn_scanner(fp, show_tokens=True):
         pass
 
     if show_tokens:
-        print(''.join([str(t) for t in tokens]))
+        print('\n'.join([str(t) for t in tokens]))
     return fn_def, tokens
