@@ -43,6 +43,8 @@ def fn_scanner(fp, show_tokens=True):
         args = '(?)'
 
     fn_def = FuncDef(name, args, None, docstring, fn_type)
+    customize = {}
+
     for i, line in enumerate(lines[2+doc_adjust:]):
         fields = line.split()
         offset = fields[0]
@@ -51,12 +53,23 @@ def fn_scanner(fp, show_tokens=True):
             label = offset[colon_point:]
             offset = offset[:colon_point]
             tokens.append(Token('LABEL', label, offset))
-        if fields[1] == 'constant':
+        offset, opname = fields[:2]
+        if opname == 'constant':
             attr = line[line.index(' '):].strip()
             tokens.append(Token('CONSTANT', attr, offset.strip()))
+        elif opname[:-1] in ('list', 'concat'):
+            if opname[-1] == 'N':
+                count = int(fields[2])
+                opname = "%s%d" % (opname, count)
+            else:
+                count = int(opname[-1])
+            opname = opname.upper().strip()
+            tokens.append(Token(opname, count, offset.strip()))
+            customize[opname] = int(count)
         elif len(fields) == 3:
             offset, opname, attr = fields
-            if opname in ('call', 'list'):
+            # FIXME: fold call into list/concat
+            if opname == 'call':
                 opname  = "%s_%s" % (opname, attr)
             tokens.append(Token(opname.upper().strip(), attr.strip(), offset.strip()))
         elif len(fields) == 2:
@@ -69,4 +82,4 @@ def fn_scanner(fp, show_tokens=True):
 
     if show_tokens:
         print('\n'.join([str(t) for t in tokens]))
-    return fn_def, tokens
+    return fn_def, tokens, customize

@@ -16,11 +16,13 @@ else:
 
 # Scan...
 with open(path, 'r') as fp:
-    fn_def, tokens = fn_scanner(fp)
+    fn_def, tokens, customize = fn_scanner(fp)
     pass
 
 # Parse...
 p = ElispParser(AST)
+p.add_custom_rules(tokens, customize)
+
 parser_debug = {'rules': False, 'transition': False, 'reduce' : True,
                'errorstack': 'full', 'dups': False }
 
