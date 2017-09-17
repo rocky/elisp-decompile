@@ -1,0 +1,16 @@
+byte code for test-list-small:
+  args: (a b c d e f g)
+0	constant  format
+1	constant  "%s %s"
+2	constant  1
+3	constant  2
+4	constant  3
+5	constant  4
+6	list4
+7	varref	  a
+8	varref	  b
+9	varref	  c
+10	varref	  d
+11	concat4
+12	call	  3
+13	return
