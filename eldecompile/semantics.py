@@ -30,6 +30,9 @@ TABLE_DIRECT = {
     'call_expr2':	( '%(%Q %c %c)', 0, 1, 2 ),
     'call_expr3':	( '%(%Q %c %c %c)', 0, 1, 2, 3 ),
 
+    'list_expr2':	( '%(list %c %c)', 0, 1 ),
+    'list_expr3':	( '%(list %c %c %c)', 0, 1, 2 ),
+
     'if_expr':		( '%(if %c\n%+%|%c%)', 0, 2 ),
     'if_expr':		( '%(if %c\n%+%|%c%)', 0, 2 ),
     'if_else_expr':	( '%(if %c\n%+%|%c%_%c%)%_', 0, 2, 6 ),
@@ -176,7 +179,9 @@ class SourceWalker(GenericASTTraversal, object):
 
 
     def n_CONSTANT(self, node):
-        if not (re.match(r'[0-9"]', node.attr[0]) or self.noquote):
+        if (not re.match(r'^[0-9]+$', node.attr)
+            or node.attr.startswith('"')
+            or self.noquote):
             # Not integer or string and not explicitly unquoted
             self.f.write(u"'")
         self.f.write(to_s(node.attr))

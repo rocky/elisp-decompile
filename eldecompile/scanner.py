@@ -6,17 +6,24 @@ import re
 from eldecompile.tok import Token
 from collections import namedtuple
 
-FuncDef = namedtuple('FuncDef', ['name', 'args', 'opt_args', 'docstring'])
+FuncDef = namedtuple('FuncDef', ['name', 'args', 'opt_args',
+                                 'docstring', 'fn_type'])
 
 def fn_scanner(fp, show_tokens=True):
     tokens = []
     lines = fp.readlines()
     line = lines[0]
-    m = re.match("^byte code for (\S+):$", line)
+    fn_type = 'defun'
+    m = re.match("^byte code for macro (\S+):$", line)
     if m:
+        fn_type = 'defmacro'
         name = m.group(1)
     else:
-        name = 'unknown'
+        m = re.match("^byte code for (\S+):$", line)
+        if m:
+            name = m.group(1)
+        else:
+            name = 'unknown'
 
     line = lines[1]
     if line.startswith('  doc:  '):
@@ -35,7 +42,7 @@ def fn_scanner(fp, show_tokens=True):
     else:
         args = '(?)'
 
-    fn_def = FuncDef(name, args, None, docstring)
+    fn_def = FuncDef(name, args, None, docstring, fn_type)
     for i, line in enumerate(lines[2+doc_adjust:]):
         fields = line.split()
         offset = fields[0]
@@ -49,8 +56,8 @@ def fn_scanner(fp, show_tokens=True):
             tokens.append(Token('CONSTANT', attr, offset.strip()))
         elif len(fields) == 3:
             offset, opname, attr = fields
-            if opname == 'call':
-                opname  = "call_%s" % attr
+            if opname in ('call', 'list'):
+                opname  = "%s_%s" % (opname, attr)
             tokens.append(Token(opname.upper().strip(), attr.strip(), offset.strip()))
         elif len(fields) == 2:
             offset, opname = fields

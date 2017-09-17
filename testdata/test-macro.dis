@@ -1,0 +1,6 @@
+byte code for macro test-macro-list2:
+  args: (x)
+0	constant  1+
+1	varref	  x
+2	list2
+3	return

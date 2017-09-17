@@ -44,6 +44,9 @@ class ElispParser(GenericASTBuilder):
         expr  ::= call_expr2
         expr  ::= call_expr3
 
+        expr  ::= list_expr2
+        expr  ::= list_expr3
+
         expr_stacked ::= unary_expr_stacked
         expr_stacked ::= setq_expr_stacked
 
@@ -60,13 +63,16 @@ class ElispParser(GenericASTBuilder):
         if_expr ::= expr GOTO-IF-NIL progn opt_discard LABEL
 
         if_else_expr ::= expr GOTO-IF-NIL expr opt_discard RETURN LABEL expr
-        if_else_expr ::= expr GOTO-IF-NIL progn opt_discard RETURN LABEL expr
+p        if_else_expr ::= expr GOTO-IF-NIL progn opt_discard RETURN LABEL expr
 
 
         call_expr0 ::= name_expr CALL_0
         call_expr1 ::= name_expr expr CALL_1
         call_expr2 ::= name_expr expr expr CALL_2
         call_expr3 ::= name_expr expr expr expr CALL_3
+
+        list_expr2 ::= expr expr LIST2
+        list_expr3 ::= expr expr expr LIST3
 
         name_expr ::= CONSTANT
         name_expr ::= VARREF

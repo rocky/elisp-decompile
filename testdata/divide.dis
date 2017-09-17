@@ -1,0 +1,8 @@
+byte code for boom:
+  args: (a b c)
+0	varref	  a
+1	varref	  b
+2	varref	  c
+3	quo
+4	quo
+5	return
