@@ -132,11 +132,11 @@ class ElispParser(GenericASTBuilder):
 
     def add_custom_rules(self, tokens, customize):
         for opname, v in customize.items():
-            if opname.startswith('LIST'):
+            if re.match(r'^LIST|CONCAT', opname):
                 m = re.match(r'([^0-9]+)\d', opname)
                 opname_base = m.group(1)
                 nt = "%s_expr%d" % (opname_base.lower(), v)
-                rule = '%s ::= expr expr %s' % (nt, opname)
+                rule = '%s ::= %s %s' % (nt, ('expr ' * v), opname)
                 self.add_unique_rule(rule, opname_base)
                 rule = 'expr  ::= %s' % nt
                 self.add_unique_rule(rule, opname_base)

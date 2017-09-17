@@ -30,8 +30,14 @@ TABLE_DIRECT = {
     'call_expr2':	( '%(%Q %c %c)', 0, 1, 2 ),
     'call_expr3':	( '%(%Q %c %c %c)', 0, 1, 2, 3 ),
 
+    'list_expr1':	( '%(list %c)', 0 ),
     'list_expr2':	( '%(list %c %c)', 0, 1 ),
     'list_expr3':	( '%(list %c %c %c)', 0, 1, 2 ),
+    'list_expr4':	( '%(list %c %c %c)', 0, 1, 2, 3 ),
+
+    'concat_expr2':	( '%(concat %c %c)', 0, 1 ),
+    'concat_expr3':	( '%(concat %c %c %c)', 0, 1, 2 ),
+    'concat_expr4':	( '%(concat %c %c %c)', 0, 1, 2, 3 ),
 
     'if_expr':		( '%(if %c\n%+%|%c%)', 0, 2 ),
     'if_expr':		( '%(if %c\n%+%|%c%)', 0, 2 ),
