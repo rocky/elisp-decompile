@@ -25,19 +25,9 @@ TABLE_DIRECT = {
     'binary_expr':	   ( '(%c %c %c)', 2, 0, 1 ),
     'binary_expr_stacked': ( '(%c %S %c)', 2, 1),
 
-    'call_expr0':	( '(%Q)', 0 ),
-    'call_expr1':	( '%(%Q %c)', 0, 1 ),
-    'call_expr2':	( '%(%Q %c %c)', 0, 1, 2 ),
-    'call_expr3':	( '%(%Q %c %c %c)', 0, 1, 2, 3 ),
-
-    'list_expr1':	( '%(list %c)', 0 ),
-    'list_expr2':	( '%(list %c %c)', 0, 1 ),
-    'list_expr3':	( '%(list %c %c %c)', 0, 1, 2 ),
-    'list_expr4':	( '%(list %c %c %c)', 0, 1, 2, 3 ),
-
-    'concat_expr2':	( '%(concat %c %c)', 0, 1 ),
-    'concat_expr3':	( '%(concat %c %c %c)', 0, 1, 2 ),
-    'concat_expr4':	( '%(concat %c %c %c)', 0, 1, 2, 3 ),
+    'call_exprn':	( '%(%Q %l)', 0, (1, 1000) ),
+    'list_exprn':	( '(list %l)', (0, 1000) ),
+    'concat_exprn':	( '(concat %l)', (0, 1000) ),
 
     'if_expr':		( '%(if %c\n%+%|%c%)', 0, 2 ),
     'if_expr':		( '%(if %c\n%+%|%c%)', 0, 2 ),
@@ -175,9 +165,9 @@ class SourceWalker(GenericASTTraversal, object):
 
     def n_varbind(self, node):
         if len(node) == 2:
-            self.engine(( '(%c %c)', -1, 0 ), node),
+            self.template_engine(( '(%c %c)', -1, 0 ), node),
         elif len(node) == 3 and node[1] == 'DUP':
-            self.engine(( '(%c %c)', -1, 0 ), node),
+            self.template_engine(( '(%c %c)', -1, 0 ), node),
             self.push1(node[0])
         else:
             assert False, "Invalid varbind %s" % node
@@ -185,9 +175,9 @@ class SourceWalker(GenericASTTraversal, object):
 
 
     def n_CONSTANT(self, node):
-        if (not re.match(r'^[0-9]+$', node.attr)
-            or node.attr.startswith('"')
-            or self.noquote):
+        if (not (re.match(r'^[0-9]+$', node.attr)
+                 or node.attr.startswith('"')
+                 or self.noquote)):
             # Not integer or string and not explicitly unquoted
             self.f.write(u"'")
         self.f.write(to_s(node.attr))
@@ -214,16 +204,16 @@ class SourceWalker(GenericASTTraversal, object):
 
     # def n_binary_expr(self, node):
     #     self.binary_op(node)
-    #     self.engine(( '(%c %c %c)', 2, 0, 1), node)
+    #     self.template_engine(( '(%c %c %c)', 2, 0, 1), node)
 
     def n_unary_expr(self, node):
         self.replace1(node)
-        self.engine(( '(%c %c)', 1, 0), node)
+        self.template_engine(( '(%c %c)', 1, 0), node)
 
-    def engine(self, entry, startnode):
-        """The format template interpetation engine.  See the comment at the
-        beginning of this module for the how we interpret format specifications such as
-        %c, %C, and so on.
+    def template_engine(self, entry, startnode):
+        """The format template engine.  See the comment at the beginning of
+        this module for the how we interpret format specifications
+        such as %c, %C, %l and so on.
         """
 
         # self.println("-----")
@@ -269,6 +259,16 @@ class SourceWalker(GenericASTTraversal, object):
             elif typ == 'p':
                 (index, self.prec) = entry[arg]
                 self.preorder(node[index])
+            elif typ == 'l':
+                low, high = entry[arg]
+                remaining = len(node[low:high])
+                for subnode in node[low:high]:
+                    self.preorder(subnode)
+                    remaining -= 1
+                    if remaining > 1:
+                        self.write(" ")
+                        pass
+                    pass
                 arg += 1
             elif typ == 'C':
                 low, high = entry[arg]
@@ -319,7 +319,7 @@ class SourceWalker(GenericASTTraversal, object):
             key = key[i]
 
         if key.type in table:
-            self.engine(table[key.type], node)
+            self.template_engine(table[key.type], node)
             self.prune()
 
     def write(self, *data):

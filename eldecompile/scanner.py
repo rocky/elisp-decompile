@@ -57,21 +57,23 @@ def fn_scanner(fp, show_tokens=True):
         if opname == 'constant':
             attr = line[line.index(' '):].strip()
             tokens.append(Token('CONSTANT', attr, offset.strip()))
-        elif opname[:-1] in ('list', 'concat'):
-            if opname[-1] == 'N':
+        elif opname[:-1] in ('list', 'concat', 'cal'):
+            if opname.startswith('call'):
+                count = int(fields[2]) + 1
+                opname = "%s_%d" % (opname, count)
+            elif opname[-1] == 'N':
                 count = int(fields[2])
-                opname = "%s%d" % (opname, count)
+                opname = "%s_%d" % (opname, count)
             else:
                 count = int(opname[-1])
+                opname = "%s_%d" % (opname[:-1], count)
             opname = opname.upper().strip()
             tokens.append(Token(opname, count, offset.strip()))
             customize[opname] = int(count)
         elif len(fields) == 3:
             offset, opname, attr = fields
-            # FIXME: fold call into list/concat
-            if opname == 'call':
-                opname  = "%s_%s" % (opname, attr)
-            tokens.append(Token(opname.upper().strip(), attr.strip(), offset.strip()))
+            tokens.append(Token(opname.upper().strip(), attr.strip(),
+                                offset.strip()))
         elif len(fields) == 2:
             offset, opname = fields
             tokens.append(Token(opname.upper().strip(), None, offset.strip()))

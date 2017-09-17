@@ -44,13 +44,6 @@ class ElispParser(GenericASTBuilder):
         expr  ::= if_expr
         expr  ::= if_else_expr
 
-        expr  ::= call_expr0
-        expr  ::= call_expr1
-        expr  ::= call_expr2
-        expr  ::= call_expr3
-
-        expr  ::= list_expr3
-
         expr_stacked ::= unary_expr_stacked
         expr_stacked ::= setq_expr_stacked
 
@@ -132,11 +125,12 @@ class ElispParser(GenericASTBuilder):
 
     def add_custom_rules(self, tokens, customize):
         for opname, v in customize.items():
-            if re.match(r'^LIST|CONCAT', opname):
-                m = re.match(r'([^0-9]+)\d', opname)
-                opname_base = m.group(1)
-                nt = "%s_expr%d" % (opname_base.lower(), v)
-                rule = '%s ::= %s %s' % (nt, ('expr ' * v), opname)
+            if re.match(r'^LIST|CONCAT|CALL', opname):
+                opname_base = opname[:opname.index('_')]
+                if opname_base[-1] == 'N':
+                    opname_base = opname_base[:-1]
+                nt = "%s_exprn" % (opname_base.lower())
+                rule = '%s ::= %s%s' % (nt, ('expr ' * v), opname)
                 self.add_unique_rule(rule, opname_base)
                 rule = 'expr  ::= %s' % nt
                 self.add_unique_rule(rule, opname_base)
