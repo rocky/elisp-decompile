@@ -34,9 +34,10 @@ TABLE_DIRECT = {
     'if_expr':		( '%(if %c\n%+%|%c%)', 0, 2 ),
     'if_else_expr':	( '%(if %c\n%+%|%c%_%c%)%_', 0, 2, 6 ),
 
-    'let_expr':	        ( '%(let (%c)\n%+%c%)', 0, 1 ),
-    'let_expr_stacked':	( '%(let (%c)\n%+%c%)', 0, 1 ),
+    'let_expr':	        ( '%(let (%.%c)%-%c%)', 0, 1 ),
+    'let_expr_stacked':	( '%(let (%.%c)%-%c%)', 0, 1 ),
     'progn':		( '%(progn%+%c)', 0 ),
+    'body_stacked':	( '%+%c%-', 0 ),
     'expr':		( '%C', (0, 10000) ),
     'expr_stacked':	( '%C', (0, 10000) ),
 
@@ -216,7 +217,7 @@ class SourceWalker(GenericASTTraversal, object):
 
     def n_varlist_stacked_inner(self, node):
         if len(node) == 3:
-            self.template_engine( ('\n(%c %c)', -1, 0 ), node)
+            self.template_engine( ('%(%c %c)', -1, 0 ), node)
         elif len(node) == 1:
             self.template_engine( ('\n(%c)', 0 ), node)
         else:
@@ -259,15 +260,15 @@ class SourceWalker(GenericASTTraversal, object):
                 raise
 
             if   typ == '%':	self.write('%')
+            elif typ == '.':
+                count = len(self.f.getvalue().split("\n")[-1]) - len(self.indent)
+                self.indentMore(' ' * count)
             elif typ == '+':	self.indentMore()
             elif typ == '-':	self.indentLess()
             elif typ == '_':	self.indentLess('  ')  # For else part of if/else
             elif typ == '|':	self.write(self.indent)
             elif typ == 'c':
-                try:
-                    self.preorder(node[entry[arg]])
-                except:
-                    from trepan.api import debug; debug()
+                self.preorder(node[entry[arg]])
                 arg += 1
             elif typ == 'Q':
                 # Like 'c' but no quoting
