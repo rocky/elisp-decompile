@@ -34,8 +34,8 @@ TABLE_DIRECT = {
     'if_expr':		( '%(if %c\n%+%|%c%)', 0, 2 ),
     'if_else_expr':	( '%(if %c\n%+%|%c%_%c%)%_', 0, 2, 6 ),
 
-    'let_expr':	        ( '%(let (%.%c)%-%c%)', 0, 1 ),
     'let_expr_stacked':	( '%(let (%.%c)%-%c%)', 0, 1 ),
+    'let_expr_star':	( '%(let* (%c)%-%c%)', 0, 1 ),
     'progn':		( '%(progn%+%c)', 0 ),
     'body_stacked':	( '%+%c%-', 0 ),
     'expr':		( '%C', (0, 10000) ),
@@ -222,6 +222,14 @@ class SourceWalker(GenericASTTraversal, object):
             self.template_engine( ('\n(%c)', 0 ), node)
         else:
             assert len(node) == 0
+
+    def n_varbind(self, node):
+        if len(node) == 3:
+            self.template_engine( ('(%c %c)%-%c', 1, 0, 2), node)
+        else:
+            self.template_engine( ('%(%c %c)', 1, 0), node)
+        self.prune()
+
 
     # def n_binary_expr(self, node):
     #     self.binary_op(node)
