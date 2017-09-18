@@ -1,0 +1,17 @@
+byte code for unary-ops:
+  doc:  Test some nulary operators
+  args: (e)
+0	constant  add
+1	point
+2	point-min
+3	point-max
+4	following-char
+5	preceding-char
+6	current-column
+7	eolp
+8	bolp
+9	current-buffer
+10	call	  9
+12	discard
+13	widen
+14	return

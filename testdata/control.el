@@ -25,9 +25,18 @@
 	(setq b 2))
     (setq a 2)))
 
-(defun test-let()
+(defun test-let1()
   (let ((a 2))
     (setq b (1+ a))))
+
+(defun test-let()
+  (let ((a 2)
+	(b 3))
+    (setq b (+ a b))))
+
+(defun test-let1()
+  (let ((a 2))
+    (setq b (+1 a))))
 
 (defun test-let-cond(c)
   (let ((a))

@@ -1,10 +1,13 @@
 byte code for test-let:
   args: nil
 0	constant  2
-1	dup
-2	varbind	  a
-3	add1
-4	dup
-5	varset	  b
-6	unbind	  1
-7	return
+1	constant  3
+2	varbind	  b
+3	dup
+4	varbind	  a
+5	varref	  b
+6	plus
+7	dup
+8	varset	  b
+9	unbind	  2
+10	return

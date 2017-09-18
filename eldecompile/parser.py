@@ -9,7 +9,7 @@ nop_func = lambda self, args: None
 class ElispParser(GenericASTBuilder):
     def __init__(self, AST, start='fn_exprs', debug=PARSER_DEFAULT_DEBUG):
         super(ElispParser, self).__init__(AST, start, debug)
-        self.collect = frozenset(['exprs', 'varbinds'])
+        self.collect = frozenset(['exprs', 'varlist'])
         self.new_rules = set()
 
     def nonterminal(self, nt, args):
@@ -28,13 +28,13 @@ class ElispParser(GenericASTBuilder):
     def p_elisp_grammar(self, args):
         '''
         # The start or goal symbol
-        fn_exprs ::= exprs RETURN
+        fn_exprs ::= body RETURN
 
         exprs ::= exprs expr opt_discard
         exprs ::= expr opt_discard
         exprs ::= expr_stacked opt_discard
 
-        progn ::= expr exprs
+        progn ::= body
 
         expr  ::= setq_expr
         expr  ::= binary_expr
@@ -44,6 +44,8 @@ class ElispParser(GenericASTBuilder):
 
         expr  ::= if_expr
         expr  ::= if_else_expr
+
+        body  ::= exprs
 
         expr_stacked ::= unary_expr_stacked
         expr_stacked ::= setq_expr_stacked
@@ -111,12 +113,12 @@ class ElispParser(GenericASTBuilder):
         setq_expr ::= expr DUP VARSET
         setq_expr_stacked ::= expr_stacked DUP VARSET
 
-        let_expr ::= varbind exprs UNBIND
+        let_expr ::= varlist exprs UNBIND
 
-        opt_discard ::= DISCARD
-        opt_discard ::=
+        opt_discard ::= DISCARD?
 
-        # varbinds ::= varbinds varbind
+        varlist  ::= varbind+
+        varlist  ::= varbind+
         varbind  ::= expr VARBIND
         varbind  ::= expr DUP VARBIND
         '''

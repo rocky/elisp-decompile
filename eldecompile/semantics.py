@@ -160,7 +160,8 @@ class SourceWalker(GenericASTTraversal, object):
     def replace1(self, node):
         """Replace the stack top with node.
         Unary ops do this for example"""
-        self.eval_stack[-1] = node
+        if len(self.eval_stack):
+            self.eval_stack[-1] = node
 
     # def binary_op(self, node):
     #     """Pop 2 items from stack push the result.
@@ -223,6 +224,7 @@ class SourceWalker(GenericASTTraversal, object):
     def n_unary_expr(self, node):
         self.replace1(node)
         self.template_engine(( '(%c %c)', 1, 0), node)
+        self.prune()
 
     def template_engine(self, entry, startnode):
         """The format template engine.  See the comment at the beginning of

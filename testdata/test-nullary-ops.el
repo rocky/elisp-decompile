@@ -1,0 +1,13 @@
+(defun unary-ops(e)
+  "Test some nullary operators"
+  (add (point)
+       (point-min)
+       (point-max)
+       (following-char)
+       (preceding-char)
+       (current-column)
+       (eolp)
+       (bolp)
+       (current-buffer))
+  (widen)
+  )

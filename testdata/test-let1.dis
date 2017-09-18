@@ -1,0 +1,10 @@
+byte code for test-let1:
+  args: nil
+0	constant  2
+1	dup
+2	varbind	  a
+3	add1
+4	dup
+5	varset	  b
+6	unbind	  1
+7	return
