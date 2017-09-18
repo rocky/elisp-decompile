@@ -23,8 +23,8 @@ TABLE_DIRECT = {
     'nullary_expr':	       ( '(%c)', 0 ),
     'unary_expr':	   ( '(%c %c)', 1, 0 ),
     'unary_expr_stacked':  ( '(%c %S)', 0 ),
-    'binary_expr':	   ( '(%c %c %c)', 2, 0, 1 ),
-    'binary_expr_stacked': ( '(%c %S %c)', 2, 1),
+    'binary_expr':	   ( '(%c %c %c)', -1, 0, 1 ),
+    'binary_expr_stacked': ( '(%c %S %c)', -1, 0),
 
     'call_exprn':	( '%(%Q %l)', 0, (1, 1000) ),
     'list_exprn':	( '(list %l)', (0, 1000) ),
@@ -35,7 +35,8 @@ TABLE_DIRECT = {
     'if_else_expr':	( '%(if %c\n%+%|%c%_%c%)%_', 0, 2, 6 ),
 
     'let_expr':	        ( '%(let (%c)\n%+%c%)', 0, 1 ),
-    'progn':		( '%(progn%+%c%c%)', 0, 1 ),
+    'let_expr_stacked':	( '%(let (%c)\n%+%c%)', 0, 1 ),
+    'progn':		( '%(progn%+%c)', 0 ),
     'expr':		( '%C', (0, 10000) ),
     'expr_stacked':	( '%C', (0, 10000) ),
 
@@ -56,7 +57,7 @@ TABLE_DIRECT = {
     'VARREF':	        ( '%{attr}', ),
 }
 
-NULLARYOPS = tuple("""
+NULLARY_OPS = tuple("""
 point
 point-min
 point-max
@@ -69,7 +70,7 @@ current-buffer
 widen
 """.split())
 
-UNARYOPS = tuple("""
+UNARY_OPS = tuple("""
 car cdr cdr-safe
 integerp
 keywordp listp
@@ -87,13 +88,13 @@ vector-or-char-tablep vectorp
 type-of
 """.split())
 
-BINOPS = tuple("""
+BINARY_OPS = tuple("""
 aref eq fset max min
 remove-variable-watcher
 setcar setcdr setplist
 """.split())
 
-for op in BINOPS + UNARYOPS + NULLARYOPS:
+for op in BINARY_OPS + UNARY_OPS + NULLARY_OPS:
     TABLE_DIRECT[op.upper()] = ( op, )
 
 
@@ -177,17 +178,13 @@ class SourceWalker(GenericASTTraversal, object):
     def n_discard(self, node):
         self.pop1()
 
-
-    def n_varbind(self, node):
-        if len(node) == 2:
-            self.template_engine(( '(%c %c)', -1, 0 ), node),
-        elif len(node) == 3 and node[1] == 'DUP':
-            self.template_engine(( '(%c %c)', -1, 0 ), node),
-            self.push1(node[0])
-        else:
-            assert False, "Invalid varbind %s" % node
+    def n_varlist_stacked(self, node):
+        assert len(node) == 4
+        self.template_engine(( '(%c %c)', -1, 0 ), node)
+        self.push1(node[0])
+        assert node[1] == 'varlist_stacked_inner'
+        self.n_varlist_stacked_inner(node[1])
         self.prune()
-
 
     def n_CONSTANT(self, node):
         if (not (re.match(r'^[0-9]+$', node.attr)
@@ -217,13 +214,21 @@ class SourceWalker(GenericASTTraversal, object):
         self.pending_newlines = p
         return result
 
+    def n_varlist_stacked_inner(self, node):
+        if len(node) == 3:
+            self.template_engine( ('\n(%c %c)', -1, 0 ), node)
+        elif len(node) == 1:
+            self.template_engine( ('\n(%c)', 0 ), node)
+        else:
+            assert len(node) == 0
+
     # def n_binary_expr(self, node):
     #     self.binary_op(node)
     #     self.template_engine(( '(%c %c %c)', 2, 0, 1), node)
 
     def n_unary_expr(self, node):
         self.replace1(node)
-        self.template_engine(( '(%c %c)', 1, 0), node)
+        self.template_engine( ('(%c %c)', 1, 0), node )
         self.prune()
 
     def template_engine(self, entry, startnode):
@@ -259,7 +264,10 @@ class SourceWalker(GenericASTTraversal, object):
             elif typ == '_':	self.indentLess('  ')  # For else part of if/else
             elif typ == '|':	self.write(self.indent)
             elif typ == 'c':
-                self.preorder(node[entry[arg]])
+                try:
+                    self.preorder(node[entry[arg]])
+                except:
+                    from trepan.api import debug; debug()
                 arg += 1
             elif typ == 'Q':
                 # Like 'c' but no quoting
@@ -271,7 +279,6 @@ class SourceWalker(GenericASTTraversal, object):
                 # Get value from eval stack
                 subnode = self.pop1()
                 self.preorder(subnode)
-                arg += 1
             elif typ == 'p':
                 (index, self.prec) = entry[arg]
                 self.preorder(node[index])

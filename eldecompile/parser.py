@@ -7,7 +7,7 @@ from spark_parser import GenericASTBuilder, DEFAULT_DEBUG as PARSER_DEFAULT_DEBU
 nop_func = lambda self, args: None
 
 class ElispParser(GenericASTBuilder):
-    def __init__(self, AST, start='fn_exprs', debug=PARSER_DEFAULT_DEBUG):
+    def __init__(self, AST, start='fn_body', debug=PARSER_DEFAULT_DEBUG):
         super(ElispParser, self).__init__(AST, start, debug)
         self.collect = frozenset(['exprs', 'varlist'])
         self.new_rules = set()
@@ -28,11 +28,10 @@ class ElispParser(GenericASTBuilder):
     def p_elisp_grammar(self, args):
         '''
         # The start or goal symbol
-        fn_exprs ::= body RETURN
+        fn_body ::= body RETURN
 
         exprs ::= exprs expr opt_discard
         exprs ::= expr opt_discard
-        exprs ::= expr_stacked opt_discard
 
         progn ::= body
 
@@ -47,7 +46,11 @@ class ElispParser(GenericASTBuilder):
 
         body  ::= exprs
 
+        body_stacked  ::= expr_stacked exprs
+        body_stacked  ::= expr_stacked
+
         expr_stacked ::= unary_expr_stacked
+        expr_stacked ::= binary_expr_stacked
         expr_stacked ::= setq_expr_stacked
 
         unary_expr_stacked ::= unary_op
@@ -55,6 +58,7 @@ class ElispParser(GenericASTBuilder):
 
 
         expr  ::= let_expr
+        expr  ::= let_expr_stacked
 
         if_expr ::= expr GOTO-IF-NIL-ELSE-POP expr opt_discard LABEL
         if_expr ::= expr GOTO-IF-NIL-ELSE-POP progn opt_discard LABEL
@@ -73,19 +77,19 @@ class ElispParser(GenericASTBuilder):
         name_expr ::= CONSTANT
         name_expr ::= VARREF
 
-        binary_expr ::= expr expr bin_op
+        binary_expr ::= expr expr binary_op
 
-        bin_op ::= DIFF
-        bin_op ::= EQLSIGN
-        bin_op ::= GEQ
-        bin_op ::= GTR
-        bin_op ::= LEQ
-        bin_op ::= LSS
-        bin_op ::= MULT
-        bin_op ::= PLUS
-        bin_op ::= QUO
-        bin_op ::= REM
-        bin_op ::= TIMES
+        binary_op ::= DIFF
+        binary_op ::= EQLSIGN
+        binary_op ::= GEQ
+        binary_op ::= GTR
+        binary_op ::= LEQ
+        binary_op ::= LSS
+        binary_op ::= MULT
+        binary_op ::= PLUS
+        binary_op ::= QUO
+        binary_op ::= REM
+        binary_op ::= TIMES
 
         unary_expr ::= expr unary_op
 
@@ -113,7 +117,12 @@ class ElispParser(GenericASTBuilder):
         setq_expr ::= expr DUP VARSET
         setq_expr_stacked ::= expr_stacked DUP VARSET
 
-        let_expr ::= varlist exprs UNBIND
+        # let_expr ::= varlist exprs UNBIND
+        let_expr_stacked ::= varlist_stacked body_stacked UNBIND
+
+        varlist_stacked ::= expr varlist_stacked_inner DUP VARBIND
+        varlist_stacked_inner ::= expr varlist_stacked_inner VARBIND
+        varlist_stacked_inner ::=
 
         opt_discard ::= DISCARD?
 
