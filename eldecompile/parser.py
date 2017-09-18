@@ -39,6 +39,7 @@ class ElispParser(GenericASTBuilder):
         expr  ::= setq_expr
         expr  ::= binary_expr
         expr  ::= unary_expr
+        expr  ::= nullary_expr
         expr  ::= name_expr
 
         expr  ::= if_expr
@@ -52,7 +53,6 @@ class ElispParser(GenericASTBuilder):
 
 
         expr  ::= let_expr
-        # FIXME: add custom rule for things after 3
 
         if_expr ::= expr GOTO-IF-NIL-ELSE-POP expr opt_discard LABEL
         if_expr ::= expr GOTO-IF-NIL-ELSE-POP progn opt_discard LABEL
@@ -93,14 +93,25 @@ class ElispParser(GenericASTBuilder):
         unary_op ::= INTEGERP
         unary_op ::= NOT
 
+        nullary_expr ::= nullary_op
+
+        nullary_op ::= POINT
+        nullary_op ::= POINT-MIN
+        nullary_op ::= POINT-MAX
+        nullary_op ::= FOLLOWING-CHAR
+        nullary_op ::= PRECEDING-CHAR
+        nullary_op ::= CURRENT-COLUMN
+        nullary_op ::= EOLP
+        nullary_op ::= BOLP
+        nullary_op ::= CURRENT-BUFFER
+        nullary_op ::= WIDEN
+
         setq_expr ::= expr VARSET
         setq_expr ::= expr DUP VARSET
         setq_expr ::= expr DUP VARSET
         setq_expr_stacked ::= expr_stacked DUP VARSET
 
-
         let_expr ::= varbind exprs UNBIND
-
 
         opt_discard ::= DISCARD
         opt_discard ::=

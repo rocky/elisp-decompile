@@ -20,6 +20,7 @@ TABLE_R0 = {
 TABLE_DIRECT = {
     'setq_expr':	   ( '%(setq %Q %c)', -1, 0 ),
     'setq_expr_stacked':   ( '%(setq %Q %c)', -1, 0 ),
+    'nullary_expr':	       ( '(%c)', 0 ),
     'unary_expr':	   ( '(%c %c)', 1, 0 ),
     'unary_expr_stacked':  ( '(%c %S)', 0 ),
     'binary_expr':	   ( '(%c %c %c)', 2, 0, 1 ),
@@ -55,6 +56,19 @@ TABLE_DIRECT = {
     'VARREF':	        ( '%{attr}', ),
 }
 
+NULLARYOPS = tuple("""
+point
+point-min
+point-max
+following-char
+preceding-char
+current-column
+eolp
+bolp
+current-buffer
+widen
+""".split())
+
 UNARYOPS = tuple("""
 car cdr cdr-safe
 integerp
@@ -79,7 +93,7 @@ remove-variable-watcher
 setcar setcdr setplist
 """.split())
 
-for op in BINOPS + UNARYOPS:
+for op in BINOPS + UNARYOPS + NULLARYOPS:
     TABLE_DIRECT[op.upper()] = ( op, )
 
 
