@@ -190,6 +190,7 @@ class SourceWalker(GenericASTTraversal, object):
     def n_CONSTANT(self, node):
         if (not (re.match(r'^[0-9]+$', node.attr)
                  or node.attr.startswith('"')
+                 or node.attr in ('t', 'nil')
                  or self.noquote)):
             # Not integer or string and not explicitly unquoted
             self.f.write(u"'")
