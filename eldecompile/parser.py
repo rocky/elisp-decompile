@@ -57,7 +57,7 @@ class ElispParser(GenericASTBuilder):
         binary_expr_stacked ::= expr binary_op
 
 
-        expr  ::= let_expr
+        expr  ::= let_expr_star
         expr  ::= let_expr_stacked
 
         if_expr ::= expr GOTO-IF-NIL-ELSE-POP expr opt_discard LABEL
@@ -117,19 +117,23 @@ class ElispParser(GenericASTBuilder):
         setq_expr ::= expr DUP VARSET
         setq_expr_stacked ::= expr_stacked DUP VARSET
 
-        # let_expr ::= varlist exprs UNBIND
         let_expr_stacked ::= varlist_stacked body_stacked UNBIND
 
         varlist_stacked ::= expr varlist_stacked_inner DUP VARBIND
         varlist_stacked_inner ::= expr varlist_stacked_inner VARBIND
         varlist_stacked_inner ::=
 
+        let_expr_star ::= varlist body UNBIND
+
+        varlist  ::= varbind varlist
+        varlist  ::= varbind
+        varbind  ::= expr VARBIND
+
+        varlist_stacked_inner ::= expr varlist_stacked_inner VARBIND
+        varlist_stacked_inner ::=
+
         opt_discard ::= DISCARD?
 
-        varlist  ::= varbind+
-        varlist  ::= varbind+
-        varbind  ::= expr VARBIND
-        varbind  ::= expr DUP VARBIND
         '''
         return
 
