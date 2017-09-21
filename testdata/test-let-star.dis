@@ -1,0 +1,13 @@
+byte code for test-let-star:
+  args: nil
+0	constant  2
+1	varbind	  a
+2	constant  3
+3	varbind	  b
+4	varref	  a
+5	varref	  b
+6	plus
+7	dup
+8	varset	  b
+9	unbind	  2
+10	return

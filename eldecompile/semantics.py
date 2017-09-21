@@ -311,7 +311,7 @@ class SourceWalker(GenericASTTraversal, object):
 
     def n_varbind(self, node):
         if len(node) == 3:
-            self.template_engine( ('(%c %c)%-%c', 1, 0, 2), node)
+            self.template_engine( ('(%c %c)%c', 1, 0, 2), node)
         else:
             self.template_engine( ('%(%c %c)', 1, 0), node)
         self.prune()
