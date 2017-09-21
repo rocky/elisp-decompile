@@ -34,6 +34,7 @@ formatter = SourceWalker(ast)
 indent = '  '
 result = formatter.traverse(ast, indent)
 result = result.rstrip()
-print("(%s %s%s%s%s%s)" %
-      (fn_def.fn_type, fn_def.name, fn_def.args, fn_def.docstring, indent,
-       result))
+header = "(%s %s%s%s" % (fn_def.fn_type, fn_def.name, fn_def.args, fn_def.docstring)
+if not header.endswith("\n") and not result.startswith("\n"):
+    header += "\n"
+print("%s%s%s)" % (header, indent, result))

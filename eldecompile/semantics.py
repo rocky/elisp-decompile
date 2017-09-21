@@ -41,6 +41,9 @@
 #     %c  evaluate the node recursively. Its argument is a single
 #         integer representing a node index.
 #
+#     %C  evaluate indicated children in order each on a new line.
+#         Its argument is a tuple of start and end node indices.
+#
 #     %Q  like %c but assumes the first argument has already been quoted.
 #         Used in things like (setq x ...) where x might be a variable ref
 #         which shouldn't be quoted. Calls are simlar too.
@@ -100,20 +103,17 @@ TABLE_DIRECT = {
     'binary_expr':	   ( '(%c %c %c)', -1, 0, 1 ),
     'binary_expr_stacked': ( '(%c %S %c)', -1, 0),
 
-    'call_exprn':	( '%(%Q %l)', 0, (1, 1000) ),
-    'list_exprn':	( '(list %l)', (0, 1000) ),
-    'concat_exprn':	( '(concat %l)', (0, 1000) ),
+    'list_exprn':	   ( '(list %l)', (0, 1000) ),
+    'concat_exprn':	   ( '(concat %l)', (0, 1000) ),
 
-    'if_expr':		( '%(if %c\n%+%|%c%)', 0, 2 ),
+
     'if_expr':		( '%(if %c\n%+%|%c%)', 0, 2 ),
     'if_else_expr':	( '%(if %c\n%+%|%c%_%c%)%_', 0, 2, 6 ),
 
     'let_expr_stacked':	( '%(let %.(%.%c)%-%-%c%)', 0, 1 ),
     'let_expr_star':	( '%(let* %.(%.%c)%-%-%c%)', 0, 1 ),
-    'progn':		( '%(progn%+%c)', 0 ),
+    'progn':		( '%(progn\n%+%|%c%)', 0 ),
     'body_stacked':	( '%c', 0 ),
-    'expr':		( '%C', (0, 10000) ),
-    'expr_stacked':	( '%C', (0, 10000) ),
 
     'ADD1':	( '1+' , ),
     'DIFF':	( '-' ,  ),
@@ -252,6 +252,38 @@ class SourceWalker(GenericASTTraversal, object):
     #     from trepan.api import debug; debug()
     #     self.default(node)
 
+    def indent_more(self, indent=TAB):
+        self.indent += indent
+        if self.debug:
+            print("XXX indent more len %d" % len(self.indent))
+        self.indent_stack.append(self.indent)
+
+    def indent_less(self, indent=None):
+        if indent is None:
+            self.indent = self.indent_stack.pop()
+        else:
+            self.indent_stack[-1] = self.indent
+            self.indent = self.indent[:-len(indent)]
+        if self.debug:
+            print("XXX indent less len %d" % len(self.indent))
+
+    def traverse(self, node, indent=None, isLambda=False):
+        if indent is None:
+            indent = self.indent
+        else:
+            self.indent_stack.append(indent)
+        p = self.pending_newlines
+        self.pending_newlines = 0
+        self.params = {
+            'f': StringIO(),
+            'indent': indent,
+            }
+        self.preorder(node)
+        self.f.write(u'\n'*self.pending_newlines)
+        result = self.f.getvalue()
+        self.pending_newlines = p
+        return result
+
     def n_discard(self, node):
         self.pop1()
 
@@ -272,35 +304,6 @@ class SourceWalker(GenericASTTraversal, object):
             self.f.write(u"'")
         self.f.write(to_s(node.attr))
 
-    def indent_more(self, indent=TAB):
-        self.indent += indent
-        if self.debug:
-            print("XXX indent more len %d" % len(self.indent))
-        self.indent_stack.append(self.indent)
-
-    def indent_less(self, indent=None):
-        if indent is None:
-            self.indent = self.indent_stack.pop()
-        else:
-            self.indent_stack[-1] = self.indent
-            self.indent = self.indent[:-len(indent)]
-        if self.debug:
-            print("XXX indent less len %d" % len(self.indent))
-
-    def traverse(self, node, indent=None, isLambda=False):
-        if indent is None: indent = self.indent
-        p = self.pending_newlines
-        self.pending_newlines = 0
-        self.params = {
-            'f': StringIO(),
-            'indent': indent,
-            }
-        self.preorder(node)
-        self.f.write(u'\n'*self.pending_newlines)
-        result = self.f.getvalue()
-        self.pending_newlines = p
-        return result
-
     def n_varlist_stacked_inner(self, node):
         if len(node) == 3:
             self.template_engine( ('%(%c %c)', -1, 0 ), node)
@@ -316,6 +319,12 @@ class SourceWalker(GenericASTTraversal, object):
             self.template_engine( ('%(%c %c)', 1, 0), node)
         self.prune()
 
+    def n_call_exprn(self, node):
+        if node[-1] == 'CALL_1':
+            self.template_engine( ('(%Q)', 0), node )
+        else:
+            self.template_engine( ('(%Q %l)', 0, (1, 1000)), node )
+        self.prune()
 
     # def n_binary_expr(self, node):
     #     self.binary_op(node)
@@ -326,6 +335,14 @@ class SourceWalker(GenericASTTraversal, object):
         self.template_engine( ('(%c %c)', 1, 0), node )
         self.prune()
 
+    def n_expr(self, node):
+        if (len(node) == 1 or
+            (len(node) == 2 and node[1] == 'opt_discard')):
+            self.template_engine( ('%c', 0), node )
+        else:
+            self.template_engine( ('%C', (0, 1000)), node )
+        self.prune()
+
     def template_engine(self, entry, startnode):
         """The format template engine.  See the comment at the beginning of
         this module for the how we interpret format specifications
@@ -334,7 +351,6 @@ class SourceWalker(GenericASTTraversal, object):
 
         # self.println("-----")
         # print("XXX", startnode)
-
         fmt = entry[0]
         arg = 1
         i = 0
@@ -363,6 +379,9 @@ class SourceWalker(GenericASTTraversal, object):
             elif typ == '-':	self.indent_less()
             elif typ == '_':	self.indent_less('  ')  # For else part of if/else
             elif typ == '|':	self.write(self.indent)
+            elif typ == ')':
+                self.write(')')
+                self.indent_less()
             elif typ == 'c':
                 self.preorder(node[entry[arg]])
                 arg += 1
@@ -413,9 +432,6 @@ class SourceWalker(GenericASTTraversal, object):
                 if not self.f.getvalue().endswith("\n" + self.indent):
                     self.write("\n" + self.indent)
                 self.write('(')
-            elif typ == ')':
-                self.write(')')
-                self.indent_less()
             m = escape.search(fmt, i)
         self.write(fmt[i:])
 
