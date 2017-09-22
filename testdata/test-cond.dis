@@ -1,0 +1,18 @@
+byte code for test-cond:
+  args: (mode)
+0	varref	  mode
+1	constant  eshell
+2	eq
+3	goto-if-nil 1
+6	constant  5
+7	goto	  3
+10:1	varref	  mode
+11	constant  comint
+12	eq
+13	goto-if-nil 2
+16	constant  5
+17	goto	  3
+20:2	constant  10
+21:3	dup
+22	varset	  b
+23	return

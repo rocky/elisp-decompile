@@ -106,9 +106,12 @@ TABLE_DIRECT = {
     'list_exprn':	   ( '(list %l)', (0, 1000) ),
     'concat_exprn':	   ( '(concat %l)', (0, 1000) ),
 
+    'cond_expr':	( '%(cond %.%c%)', 0, 2 ),
 
     'if_expr':		( '%(if %c\n%+%|%c%)', 0, 2 ),
-    'if_else_expr':	( '%(if %c\n%+%|%c%_%c%)%_', 0, 2, 6 ),
+    'if_else_expr':	( '%(if %c\n%+%|%c%_%c%)%_', 0, 2, 5 ),
+    'exprs':            ( '%C', (0, 1000) ),
+
 
     'let_expr_stacked':	( '%(let %.(%.%c)%-%-%c%)', 0, 1 ),
     'let_expr_star':	( '%(let* %.(%.%c)%-%-%c%)', 0, 1 ),
@@ -164,7 +167,7 @@ type-of
 """.split())
 
 BINARY_OPS = tuple("""
-aref eq fset max min
+aref eq equal fset max min
 remove-variable-watcher
 setcar setcdr setplist
 """.split())
@@ -312,6 +315,13 @@ class SourceWalker(GenericASTTraversal, object):
         else:
             assert len(node) == 0
 
+    def n_clause(self, node):
+        if len(node) == 5:
+            self.template_engine( ('\n%|(%c %c)', 0, 2), node)
+        else:
+            self.template_engine( ('(t %c)', 0), node)
+        self.prune()
+
     def n_varbind(self, node):
         if len(node) == 3:
             self.template_engine( ('(%c %c)%c', 1, 0, 2), node)
@@ -335,13 +345,14 @@ class SourceWalker(GenericASTTraversal, object):
         self.template_engine( ('(%c %c)', 1, 0), node )
         self.prune()
 
-    def n_expr(self, node):
+    def n_expr_stmt(self, node):
         if (len(node) == 1 or
             (len(node) == 2 and node[1] == 'opt_discard')):
             self.template_engine( ('%c', 0), node )
         else:
             self.template_engine( ('%C', (0, 1000)), node )
         self.prune()
+
 
     def template_engine(self, entry, startnode):
         """The format template engine.  See the comment at the beginning of

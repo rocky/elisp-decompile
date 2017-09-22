@@ -30,8 +30,17 @@ class ElispParser(GenericASTBuilder):
         # The start or goal symbol
         fn_body ::= body RETURN
 
-        exprs ::= exprs expr opt_discard
-        exprs ::= expr opt_discard
+        # expr_stmt is an expr where the value it produces
+        # might not be needed. List-like things like
+        # progn or let fall into this category.
+        expr_stmt  ::= expr opt_discard
+
+
+        # By its very nature of being sequenced
+        # exprs must use a list-like or stmt_expr
+
+        exprs ::= expr_stmt+
+
 
         progn ::= body
 
@@ -43,6 +52,7 @@ class ElispParser(GenericASTBuilder):
 
         expr  ::= if_expr
         expr  ::= if_else_expr
+        expr  ::= cond_expr
 
         body  ::= exprs
 
@@ -56,22 +66,21 @@ class ElispParser(GenericASTBuilder):
         unary_expr_stacked ::= unary_op
         binary_expr_stacked ::= expr binary_op
 
-
         expr  ::= let_expr_star
         expr  ::= let_expr_stacked
 
-        if_expr ::= expr GOTO-IF-NIL-ELSE-POP expr opt_discard LABEL
-        if_expr ::= expr GOTO-IF-NIL-ELSE-POP progn opt_discard LABEL
-        if_expr ::= expr GOTO-IF-NIL expr opt_discard LABEL
-        if_expr ::= expr GOTO-IF-NIL progn opt_discard LABEL
+        if_expr ::= expr GOTO-IF-NIL-ELSE-POP expr LABEL
+        if_expr ::= expr GOTO-IF-NIL-ELSE-POP progn LABEL
+        if_expr ::= expr GOTO-IF-NIL expr LABEL
+        if_expr ::= expr GOTO-IF-NIL progn LABEL
 
-        if_else_expr ::= expr GOTO-IF-NIL expr opt_discard RETURN LABEL expr
-        if_else_expr ::= expr GOTO-IF-NIL progn opt_discard RETURN LABEL expr
+        if_else_expr ::= expr GOTO-IF-NIL expr RETURN LABEL expr
+        if_else_expr ::= expr_consued GOTO-IF-NIL progn RETURN LABEL expr
 
 
         call_expr0 ::= name_expr CALL_0
         call_expr1 ::= name_expr expr CALL_1
-        call_expr2 ::= name_expr expr expr CALL_2
+        call_expr2 ::= name_expr expr exp_consumed CALL_2
         call_expr3 ::= name_expr expr expr expr CALL_3
 
         name_expr ::= CONSTANT
@@ -81,6 +90,8 @@ class ElispParser(GenericASTBuilder):
 
         binary_op ::= DIFF
         binary_op ::= EQLSIGN
+        binary_op ::= EQ
+        binary_op ::= EQUAL
         binary_op ::= GEQ
         binary_op ::= GTR
         binary_op ::= LEQ
@@ -116,6 +127,16 @@ class ElispParser(GenericASTBuilder):
         setq_expr ::= expr DUP VARSET
         setq_expr ::= expr DUP VARSET
         setq_expr_stacked ::= expr_stacked DUP VARSET
+
+        goto_or_return ::= GOTO
+        goto_or_return ::= RETURN
+
+        cond_expr ::= clauses
+        clauses   ::= clause+
+        clauses   ::= expr opt_body LABEL
+
+        clause    ::= expr GOTO-IF-NIL body goto_or_return LABEL
+        clause    ::= expr goto_or_return LABEL
 
         let_expr_stacked ::= varlist_stacked body_stacked UNBIND
 
