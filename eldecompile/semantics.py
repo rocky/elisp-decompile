@@ -106,7 +106,7 @@ TABLE_DIRECT = {
     'list_exprn':	   ( '(list %l)', (0, 1000) ),
     'concat_exprn':	   ( '(concat %l)', (0, 1000) ),
 
-    'cond_expr':	( '%(cond %.%c%)', 0, 2 ),
+    'cond_expr':	( '%(cond %.%c%)%-', 0, 2 ),
 
     'if_expr':		( '%(if %c\n%+%|%c%)', 0, 2 ),
     'if_else_expr':	( '%(if %c\n%+%|%c%_%c%)%_', 0, 2, 5 ),

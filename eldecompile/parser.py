@@ -74,8 +74,8 @@ class ElispParser(GenericASTBuilder):
         if_expr ::= expr GOTO-IF-NIL expr LABEL
         if_expr ::= expr GOTO-IF-NIL progn LABEL
 
-        if_else_expr ::= expr GOTO-IF-NIL expr RETURN LABEL expr
-        if_else_expr ::= expr_consued GOTO-IF-NIL progn RETURN LABEL expr
+        if_else_expr ::= expr GOTO-IF-NIL expr RETURN LABEL
+        if_else_expr ::= expr_consued GOTO-IF-NIL progn RETURN LABEL
 
 
         call_expr0 ::= name_expr CALL_0
