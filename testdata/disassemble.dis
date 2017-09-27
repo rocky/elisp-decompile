@@ -1,0 +1,92 @@
+byte code for disassemble:
+  doc-start 272:  Print disassembled code for OBJECT in (optional) BUFFER.
+OBJECT can be a symbol defined as a function, or a function itself
+(a lambda expression or a compiled-function object).
+If OBJECT is not already compiled, we compile it, but do not
+redefine OBJECT if it is a symbol.
+  args: (object &optional buffer indent interactive-p)
+ interactive: (let* ((fn (function-called-at-point)) (prompt (if fn (format "Disassemble function (default %s): " fn) "Disassemble function: ")) (def (and fn (symbol-name fn)))) (list (intern (completing-read prompt obarray (quote fboundp) t nil nil def)) nil 0 t))
+0	varref	  object
+1	consp
+2	goto-if-nil 1
+5	constant  functionp
+6	varref	  object
+7	call	  1
+8	goto-if-not-nil 1
+11	constant  lambda
+12	constant  nil
+13	varref	  object
+14	list3
+15	varset	  object
+16:1	varref	  indent
+17	goto-if-not-nil 2
+20	constant  0
+21	varset	  indent
+22:2	save-excursion
+23	varref	  interactive-p
+24	goto-if-not-nil 3
+27	varref	  buffer
+28	goto-if-not-nil 4
+31:3	varref	  default-directory
+32	varbind	  old-dir
+33	save-current-buffer
+34	constant  get-buffer-create
+35	constant  "*Disassemble*"
+36	call	  1
+37	set-buffer
+38	discard
+39	current-buffer
+40	constant  kill-all-local-variables
+41	call	  0
+42	discard
+43	varref	  old-dir
+44	varset	  default-directory
+45	constant  nil
+46	dup
+47	varset	  buffer-read-only
+49	varset	  buffer-file-name
+51	constant  t
+52	dup
+53	varset	  buffer-undo-list
+55	constant  t
+56	varbind	  inhibit-modification-hooks
+58	varbind	  inhibit-read-only
+60	constant  erase-buffer
+61	call	  0
+62	discard
+63	constant  run-hooks
+64	constant  temp-buffer-setup-hook
+65	call	  1
+66	discard
+67	unbind	  3
+68	dup
+69	varbind	  buf
+71	varbind	  standard-output
+73	constant  "*Disassemble*"
+74	set-buffer
+75	discard
+76	constant  disassemble-internal
+77	varref	  object
+78	varref	  indent
+79	varref	  interactive-p
+80	not
+81	call	  3
+82	discard
+83	constant  internal-temp-output-buffer-show
+84	varref	  buf
+86	call	  1
+87	discard
+88	unbind	  3
+89	goto	  5
+92:4	varref	  buffer
+93	set-buffer
+94	discard
+95	constant  disassemble-internal
+96	varref	  object
+97	varref	  indent
+98	constant  nil
+99	call	  3
+100	discard
+101:5	unbind	  1
+102	constant  nil
+103	return
