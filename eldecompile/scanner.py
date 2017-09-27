@@ -29,6 +29,20 @@ def fn_scanner(fp, show_tokens=True):
     if line.startswith('  doc:  '):
         docstring = '\n"%s"\n' % line[len('  doc:  '):].rstrip("\n")
         doc_adjust = 1
+    if line.startswith('  doc-start  '):
+        m = re.match('^  doc-start (\d+):  (.*)$')
+        if m:
+            tot_len = int(m.group(1))
+            docstring = '\n' + m.group(2)
+            l = len(m.group(2))
+            doc_adjust = 1
+            while l < tot_len:
+                line = lines[1 + doc_adjust]
+                l += len(line)
+                docstring += line
+                doc_adjust += 1
+                pass
+            pass
     else:
         docstring = ''
         doc_adjust = 0
