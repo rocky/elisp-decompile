@@ -7,13 +7,14 @@ from eldecompile.tok import Token
 from collections import namedtuple
 
 FuncDef = namedtuple('FuncDef', ['name', 'args', 'opt_args',
-                                 'docstring', 'fn_type'])
+                                 'docstring', 'interactive', 'fn_type'])
 
 def fn_scanner(fp, show_tokens=True):
     tokens = []
     lines = fp.readlines()
     line = lines[0]
     fn_type = 'defun'
+    interactive = None
     m = re.match("^byte code for macro (\S+):$", line)
     if m:
         fn_type = 'defmacro'
@@ -27,27 +28,28 @@ def fn_scanner(fp, show_tokens=True):
 
     line = lines[1]
     if line.startswith('  doc:  '):
-        docstring = '\n"%s"\n' % line[len('  doc:  '):].rstrip("\n")
-        doc_adjust = 1
-    if line.startswith('  doc-start  '):
-        m = re.match('^  doc-start (\d+):  (.*)$')
+        docstring = '\n  "%s"\n' % line[len('  doc:  '):].rstrip("\n")
+        start_adjust = 1
+    elif line.startswith('  doc-start '):
+        m = re.match('^  doc-start (\d+):  (.*)$', line)
         if m:
             tot_len = int(m.group(1))
-            docstring = '\n' + m.group(2)
+            docstring = '\n  "' + m.group(2) + '\n'
             l = len(m.group(2))
-            doc_adjust = 1
+            start_adjust = 1
             while l < tot_len:
-                line = lines[1 + doc_adjust]
+                line = lines[1 + start_adjust]
                 l += len(line)
                 docstring += line
-                doc_adjust += 1
+                start_adjust += 1
                 pass
+            docstring += '"'
             pass
     else:
         docstring = ''
-        doc_adjust = 0
+        start_adjust = 0
 
-    line = lines[1+doc_adjust]
+    line = lines[1+start_adjust]
     m = re.match("^  args: (\([^)]*\))", line)
     if m:
         args = m.group(1)
@@ -55,11 +57,19 @@ def fn_scanner(fp, show_tokens=True):
         args = '()'
     else:
         args = '(?)'
+    start_adjust += 1
 
-    fn_def = FuncDef(name, args, None, docstring, fn_type)
+    line = lines[1+start_adjust]
+    if line.startswith(' interactive: '):
+        interactive = line[len(' interactive:: '):]
+        start_adjust += 1
+        line = lines[1+start_adjust]
+
+    fn_def = FuncDef(name, args, None, docstring,
+                     interactive, fn_type)
     customize = {}
 
-    for i, line in enumerate(lines[2+doc_adjust:]):
+    for i, line in enumerate(lines[1+start_adjust:]):
         fields = line.split()
         offset = fields[0]
         colon_point = offset.find(':')

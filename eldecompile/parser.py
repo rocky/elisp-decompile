@@ -106,9 +106,31 @@ class ElispParser(GenericASTBuilder):
 
         unary_op ::= ADD1
         unary_op ::= CAR
+        unary_op ::= CDR-SAFE
         unary_op ::= CDR
+        unary_op ::= CONSP
         unary_op ::= INTEGERP
+        unary_op ::= KEYWORDP
+        unary_op ::= LISTP
+        unary_op ::= NATNUMP
+        unary_op ::= NLISTP
         unary_op ::= NOT
+        unary_op ::= NUMBERP
+        unary_op ::= NULL
+        unary_op ::= RECORDP
+        unary_op ::= SEQUENCEP
+        unary_op ::= STRINGP
+        unary_op ::= SUBR-ARITY
+        unary_op ::= SUBRP
+        unary_op ::= SYMBOL-FUNCTION
+        unary_op ::= SYMBOL-NAME
+        unary_op ::= SYMBOL-PLIST
+        unary_op ::= SYMBOLP
+        unary_op ::= THREADP
+        unary_op ::= TYPE-OF
+        unary_op ::= USER-PTRP
+        unary_op ::= VECTOR_OR_CHAR-TABLEP
+        unary_op ::= VECTORP
 
         nullary_expr ::= nullary_op
 

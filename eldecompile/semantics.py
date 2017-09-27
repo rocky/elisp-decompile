@@ -156,21 +156,22 @@ widen
 """.split())
 
 UNARY_OPS = tuple("""
-car cdr cdr-safe
+car cdr cdr-safe consp
 integerp
 keywordp listp
 markerp mutexp
 multibyte-string-p
+natnump
 nlistp
 not
-null natnump numberp
+null numberp
 recordp
-sequencep stringp subr-arity subrp symbolp
-symbol-function symbol-plist symbol-name
+sequencep stringp subr-arity subrp
+symbol-function symbol-plist symbol-name symbolp
 threadp
+type-of
 user-ptrp
 vector-or-char-tablep vectorp
-type-of
 """.split())
 
 BINARY_OPS = tuple("""

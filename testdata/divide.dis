@@ -1,4 +1,6 @@
-byte code for boom:
+byte code for divide-boom:
+  doc-start 109:  A canonical example where decompilation is desireable.
+Is it the first divide or second that causes an error?
   args: (a b c)
 0	varref	  a
 1	varref	  b
