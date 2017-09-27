@@ -64,6 +64,13 @@
 #     %- decrease current indentation level. Takes no arguments.
 #        indent level is obtained from the stack
 #
+#     %_ decrease current indentation level of an if statement for an else
+#        block. It is expected that there will be another %_ after the else.
+#        Takes no arguments.
+#
+#     %) decrease current indentation level and writes ')'. Takes no arguments.
+#        indent level is obtained from the stack
+#
 #     %{...} evaluate ... in context of N
 #
 #     %% literal '%'. Takes no arguments.
@@ -106,15 +113,15 @@ TABLE_DIRECT = {
     'list_exprn':	   ( '(list %l)', (0, 1000) ),
     'concat_exprn':	   ( '(concat %l)', (0, 1000) ),
 
-    'cond_expr':	( '%(cond %.%c%)%-', 0, 2 ),
+    'cond_expr':	( '%(cond %.%c%)', 0, 2 ),
 
     'if_expr':		( '%(if %c\n%+%|%c%)', 0, 2 ),
-    'if_else_expr':	( '%(if %c\n%+%|%c%_%c%)%_', 0, 2, 5 ),
+    'if_else_expr':	( '%(if %c\n%+%|%c%_%c)%_', 0, 2, 5 ),
     'exprs':            ( '%C', (0, 1000) ),
 
 
-    'let_expr_stacked':	( '%(let %.(%.%c)%-%-%c%)', 0, 1 ),
-    'let_expr_star':	( '%(let* %.(%.%c)%-%-%c%)', 0, 1 ),
+    'let_expr_stacked':	( '%(let %.(%.%c)%-%-%c)', 0, 1 ),
+    'let_expr_star':	( '%(let* %.(%.%c)%-%-%c)', 0, 1 ),
     'progn':		( '%(progn\n%+%|%c%)', 0 ),
     'body_stacked':	( '%c', 0 ),
 
@@ -251,10 +258,6 @@ class SourceWalker(GenericASTTraversal, object):
     #     self.replace1(node)
 
 
-    # def n_let_expr(self, node):
-    #     from trepan.api import debug; debug()
-    #     self.default(node)
-
     def indent_more(self, indent=TAB):
         self.indent += indent
         if self.debug:
@@ -263,7 +266,8 @@ class SourceWalker(GenericASTTraversal, object):
 
     def indent_less(self, indent=None):
         if indent is None:
-            self.indent = self.indent_stack.pop()
+            self.indent_stack.pop()
+            self.indent = self.indent_stack[-1]
         else:
             self.indent_stack[-1] = self.indent
             self.indent = self.indent[:-len(indent)]
@@ -361,7 +365,7 @@ class SourceWalker(GenericASTTraversal, object):
         """
 
         # self.println("-----")
-        # print("XXX", startnode)
+        print("XXX", startnode.type)
         fmt = entry[0]
         arg = 1
         i = 0

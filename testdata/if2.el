@@ -1,0 +1,5 @@
+(defun if2(&optional e f)
+  (if (<= e 4)
+      (setq e 10))
+  (if (> f 5)
+      (setq f 3)))
