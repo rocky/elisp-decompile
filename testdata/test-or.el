@@ -1,2 +1,2 @@
-(defun or-test(a b)
+(defun test-or(a b)
    (or (= 0 (- b a)) (= a 1)))

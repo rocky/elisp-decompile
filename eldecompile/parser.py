@@ -44,6 +44,7 @@ class ElispParser(GenericASTBuilder):
 
         progn ::= body
 
+        expr  ::= save_excursion
         expr  ::= setq_expr
         expr  ::= binary_expr
         expr  ::= unary_expr
@@ -55,6 +56,7 @@ class ElispParser(GenericASTBuilder):
         expr  ::= cond_expr
         expr  ::= or_expr
 
+
         body  ::= exprs
 
         body_stacked  ::= expr_stacked exprs
@@ -63,6 +65,8 @@ class ElispParser(GenericASTBuilder):
         expr_stacked ::= unary_expr_stacked
         expr_stacked ::= binary_expr_stacked
         expr_stacked ::= setq_expr_stacked
+
+        save_excursion ::= SAVE-EXCURSION body
 
         unary_expr_stacked ::= unary_op
         binary_expr_stacked ::= expr binary_op
@@ -211,5 +215,9 @@ class ElispParser(GenericASTBuilder):
                 rule = 'expr  ::= %s' % nt
                 self.add_unique_rule(rule, opname_base)
             pass
+        # self.check_reduce['progn'] = 'AST'
         return
+
+    def reduce_is_invalid(self, rule, ast, tokens, first, last):
+        return False
     pass

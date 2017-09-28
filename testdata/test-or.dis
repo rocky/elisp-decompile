@@ -1,4 +1,4 @@
-byte code for or-test:
+byte code for test-or:
   args: (a b)
 0	varref	  b
 1	varref	  a

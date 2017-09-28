@@ -112,6 +112,7 @@ TABLE_DIRECT = {
 
     'list_exprn':	   ( '(list %l)', (0, 1000) ),
     'concat_exprn':	   ( '(concat %l)', (0, 1000) ),
+    'save_excursion':  ( '(save_excursion\n%+%c%)', 0 ),
 
     'cond_expr':	( '%(cond %.%c%)', 0, 2 ),
 
@@ -122,8 +123,7 @@ TABLE_DIRECT = {
     'exprs':            ( '%C', (0, 1000) ),
 
 
-    'let_expr_stacked':	( '%(let %.(%.%c)%-%-%c)', 0, 1 ),
-    'let_expr_star':	( '%(let* %.(%.%c)%-%-%c)', 0, 1 ),
+    'let_expr_stacked':	( '%(let %.(%.%c)%-%c%)', 0, 1 ),
     'progn':		( '%(progn\n%+%|%c%)', 0 ),
     'body_stacked':	( '%c', 0 ),
 
@@ -343,6 +343,20 @@ class SourceWalker(GenericASTTraversal, object):
             self.template_engine( ('(%Q)', 0), node )
         else:
             self.template_engine( ('(%Q %l)', 0, (1, 1000)), node )
+        self.prune()
+
+    def n_let_expr_star(self, node):
+        if node[0] == 'varlist' and len(node[0]) == 1:
+            # If we have just one binding, use let rather than let*.
+            # Also don't put the varbind on a new line as we would
+            # do if there were more than one.
+            self.template_engine( ('%(let %.(%.', ), node )
+            varbind = node[0][0]
+            assert varbind == 'varbind'
+            self.template_engine( ('(%c %c)', 1, 0), varbind)
+            self.template_engine( ('%-%c%)', 1 ), node )
+        else:
+            self.template_engine( ('%(let* %.(%.%c)%-%c%)', 0, 1 ), node )
         self.prune()
 
     # def n_binary_expr(self, node):
