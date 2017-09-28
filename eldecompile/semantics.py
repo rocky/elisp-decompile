@@ -124,7 +124,7 @@ TABLE_DIRECT = {
 
 
     'let_expr_stacked':	( '%(let %.(%.%c)%-%c%)', 0, 1 ),
-    'progn':		( '%(progn\n%+%|%c%)', 0 ),
+    # 'progn':		( '%(progn\n%+%|%c%)', 0 ),
     'body_stacked':	( '%c', 0 ),
 
     'ADD1':	( '1+' , ),
@@ -374,6 +374,16 @@ class SourceWalker(GenericASTTraversal, object):
             self.template_engine( ('%c', 0), node )
         else:
             self.template_engine( ('%C', (0, 1000)), node )
+        self.prune()
+
+
+    def n_progn(self, node):
+        assert node[0] == 'body'
+        exprs = node[0][0]
+        if len(exprs) == 1:
+            self.template_engine( ('%c', 0), exprs )
+        else:
+            self.template_engine( ( '%(progn\n%+%|%c%)', 0 ), node)
         self.prune()
 
 
