@@ -1,5 +1,6 @@
 byte code for if2:
-  args: (&optional e f)
+  args: (e &optional f)
+ interactive: "nnumber: "
 0	varref	  e
 1	constant  4
 2	leq
@@ -7,10 +8,9 @@ byte code for if2:
 6	constant  10
 7	varset	  e
 8:1	varref	  f
-9	constant  5
-10	gtr
-11	goto-if-nil-else-pop 2
-14	constant  3
-15	dup
-16	varset	  f
-17:2	return
+9	not
+10	goto-if-nil-else-pop 2
+13	constant  3
+14	dup
+15	varset	  f
+16:2	return

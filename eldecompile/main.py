@@ -36,7 +36,8 @@ result = formatter.traverse(ast, indent)
 result = result.rstrip()
 header = "(%s %s%s%s" % (fn_def.fn_type, fn_def.name, fn_def.args,
                              fn_def.docstring)
-if not header.endswith("\n") and not result.startswith("\n"):
+if (not header.endswith("\n")
+        and not result.startswith("\n") or fn_def.interactive):
     header += "\n"
 if fn_def.interactive is not None:
     print("%s%s(interactive %s)\n%s%s)" %

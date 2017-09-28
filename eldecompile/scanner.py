@@ -61,7 +61,7 @@ def fn_scanner(fp, show_tokens=True):
 
     line = lines[1+start_adjust]
     if line.startswith(' interactive: '):
-        interactive = line[len(' interactive:: '):]
+        interactive = line[len(' interactive: '):].rstrip("\n")
         start_adjust += 1
         line = lines[1+start_adjust]
 

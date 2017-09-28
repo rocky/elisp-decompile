@@ -1,5 +1,6 @@
-(defun if2(&optional e f)
+(defun if2(e &optional f)
+  (interactive "nnumber: ")
   (if (<= e 4)
       (setq e 10))
-  (if (> f 5)
+  (if (null f)
       (setq f 3)))

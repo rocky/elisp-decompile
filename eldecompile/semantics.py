@@ -117,6 +117,8 @@ TABLE_DIRECT = {
 
     'if_expr':		( '%(if %c\n%+%|%c%)', 0, 2 ),
     'if_else_expr':	( '%(if %c\n%+%|%c%_%c)%_', 0, 2, 5 ),
+    'or_expr':		( '(or %c %c)', 0, 2 ),
+
     'exprs':            ( '%C', (0, 1000) ),
 
 
@@ -323,6 +325,8 @@ class SourceWalker(GenericASTTraversal, object):
     def n_clause(self, node):
         if len(node) == 5:
             self.template_engine( ('\n%|(%c %c)', 0, 2), node)
+        elif len(node) == 6:
+            self.template_engine( ('\n%|(%c %c)', 0, 3), node)
         else:
             self.template_engine( ('(t %c)', 0), node)
         self.prune()

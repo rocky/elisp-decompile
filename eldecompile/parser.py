@@ -53,6 +53,7 @@ class ElispParser(GenericASTBuilder):
         expr  ::= if_expr
         expr  ::= if_else_expr
         expr  ::= cond_expr
+        expr  ::= or_expr
 
         body  ::= exprs
 
@@ -75,12 +76,17 @@ class ElispParser(GenericASTBuilder):
         if_expr ::= expr GOTO-IF-NIL progn LABEL
 
         if_else_expr ::= expr GOTO-IF-NIL expr RETURN LABEL
-        if_else_expr ::= expr_consued GOTO-IF-NIL progn RETURN LABEL
+        if_else_expr ::= expr_stacked GOTO-IF-NIL progn RETURN LABEL
+
+        or_expr ::= expr GOTO-IF-NOT-NIL-ELSE-POP expr LABEL
+        or_expr ::= expr GOTO-IF-NOT-NIL expr opt-label
+
+        opt-label ::= LABEL?
 
 
         call_expr0 ::= name_expr CALL_0
         call_expr1 ::= name_expr expr CALL_1
-        call_expr2 ::= name_expr expr exp_consumed CALL_2
+        call_expr2 ::= name_expr expr exp_stacked CALL_2
         call_expr3 ::= name_expr expr expr expr CALL_3
 
         name_expr ::= CONSTANT
@@ -158,6 +164,7 @@ class ElispParser(GenericASTBuilder):
         clauses   ::= expr opt_body LABEL
 
         clause    ::= expr GOTO-IF-NIL body goto_or_return LABEL
+        clause    ::= expr GOTO-IF-NIL LABEL expr goto_or_return LABEL
         clause    ::= expr goto_or_return LABEL
 
         let_expr_stacked ::= varlist_stacked body_stacked UNBIND
