@@ -1,0 +1,7 @@
+byte code for test-save-excusion:
+  args: nil
+0	save-excursion
+1	constant  "hello world"
+2	insert
+3	unbind	  1
+4	return

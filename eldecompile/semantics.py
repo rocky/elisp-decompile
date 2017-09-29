@@ -112,13 +112,14 @@ TABLE_DIRECT = {
 
     'list_exprn':	   ( '(list %l)', (0, 1000) ),
     'concat_exprn':	   ( '(concat %l)', (0, 1000) ),
-    'save_excursion':  ( '(save_excursion\n%+%c%)', 0 ),
+    'save_excursion':  ( '(save_excursion\n%+%|%c%)', 1 ),
 
     'cond_expr':	( '%(cond %.%c%)', 0, 2 ),
 
     'if_expr':		( '%(if %c\n%+%|%c%)', 0, 2 ),
     'if_else_expr':	( '%(if %c\n%+%|%c%_%c)%_', 0, 2, 5 ),
     'or_expr':		( '(or %c %c)', 0, 2 ),
+    'and_expr':		( '(and %c %c)', 0, 2 ),
 
     'exprs':            ( '%C', (0, 1000) ),
 
@@ -159,7 +160,7 @@ widen
 
 UNARY_OPS = tuple("""
 car cdr cdr-safe consp
-integerp
+insert integerp
 keywordp listp
 markerp mutexp
 multibyte-string-p
