@@ -112,9 +112,10 @@ TABLE_DIRECT = {
 
     'list_exprn':	   ( '(list %l)', (0, 1000) ),
     'concat_exprn':	   ( '(concat %l)', (0, 1000) ),
-    'save_excursion':  ( '(save_excursion\n%+%c%)', 0 ),
+    'save_excursion':      ( '(save_excursion\n%+%c%)', 0 ),
 
-    'cond_expr':	( '%(cond %.%c%)', 0, 2 ),
+    'cond_expr':	   ( '%(cond %.%c%c%)', 0, 1, 2 ),
+    'labeled_clause':	   ( '%c', 1 ),
 
     'if_expr':		( '%(if %c\n%+%|%c%)', 0, 2 ),
     'if_else_expr':	( '%(if %c\n%+%|%c%_%c)%_', 0, 2, 5 ),
@@ -215,7 +216,7 @@ class SourceWalker(GenericASTTraversal, object):
                  lambda s: s.params.__delitem__('indent'),
                  None)
 
-    def __init__(self, ast, debug=True):
+    def __init__(self, ast, debug=False):
         GenericASTTraversal.__init__(self, ast=None)
         params = {
             'indent': '',
@@ -323,12 +324,12 @@ class SourceWalker(GenericASTTraversal, object):
             assert len(node) == 0
 
     def n_clause(self, node):
-        if len(node) == 5:
-            self.template_engine( ('\n%|(%c %c)', 0, 2), node)
-        elif len(node) == 6:
-            self.template_engine( ('\n%|(%c %c)', 0, 3), node)
+        assert len(node) == 3
+        opt_body = node[1]
+        if len(opt_body) == 0:
+            self.template_engine( ('\n%|(t %c)', 0), node)
         else:
-            self.template_engine( ('(t %c)', 0), node)
+            self.template_engine( ('\n%|(%c %c)', 0, 1), node)
         self.prune()
 
     def n_varbind(self, node):
@@ -394,7 +395,8 @@ class SourceWalker(GenericASTTraversal, object):
         """
 
         # self.println("-----")
-        print("XXX", startnode.type)
+        if self.debug:
+            print("XXX", startnode.type)
         fmt = entry[0]
         arg = 1
         i = 0

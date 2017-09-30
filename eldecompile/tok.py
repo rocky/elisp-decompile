@@ -33,7 +33,7 @@ class Token:
         else:
             sib_num = ''
         prefix = ('%s%s' % (line_prefix, sib_num))
-        offset_opname = '%4s %-10s' % (self.offset, self.type)
+        offset_opname = '%5s %-10s' % (self.offset, self.type)
         if not self.attr:
             return "%s%s" % (prefix, offset_opname)
         return "%s%s %s" % (prefix, offset_opname,  self.attr)

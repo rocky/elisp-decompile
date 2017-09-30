@@ -9,7 +9,7 @@ nop_func = lambda self, args: None
 class ElispParser(GenericASTBuilder):
     def __init__(self, AST, start='fn_body', debug=PARSER_DEFAULT_DEBUG):
         super(ElispParser, self).__init__(AST, start, debug)
-        self.collect = frozenset(['exprs', 'varlist'])
+        self.collect = frozenset(['exprs', 'varlist' 'labeled_clauses'])
         self.new_rules = set()
 
     def nonterminal(self, nt, args):
@@ -74,13 +74,13 @@ class ElispParser(GenericASTBuilder):
         expr  ::= let_expr_star
         expr  ::= let_expr_stacked
 
-        if_expr ::= expr GOTO-IF-NIL-ELSE-POP expr LABEL
-        if_expr ::= expr GOTO-IF-NIL-ELSE-POP progn LABEL
-        if_expr ::= expr GOTO-IF-NIL expr LABEL
-        if_expr ::= expr GOTO-IF-NIL progn LABEL
+        # if_expr ::= expr GOTO-IF-NIL-ELSE-POP expr LABEL
+        # if_expr ::= expr GOTO-IF-NIL-ELSE-POP progn LABEL
+        # if_expr ::= expr GOTO-IF-NIL expr LABEL
+        # if_expr ::= expr GOTO-IF-NIL progn LABEL
 
-        if_else_expr ::= expr GOTO-IF-NIL expr RETURN LABEL
-        if_else_expr ::= expr_stacked GOTO-IF-NIL progn RETURN LABEL
+        # if_else_expr ::= expr GOTO-IF-NIL expr RETURN LABEL
+        # if_else_expr ::= expr_stacked GOTO-IF-NIL progn RETURN LABEL
 
         or_expr ::= expr GOTO-IF-NOT-NIL-ELSE-POP expr LABEL
         or_expr ::= expr GOTO-IF-NOT-NIL expr opt-label
@@ -160,16 +160,21 @@ class ElispParser(GenericASTBuilder):
         setq_expr ::= expr DUP VARSET
         setq_expr_stacked ::= expr_stacked DUP VARSET
 
-        goto_or_return ::= GOTO
-        goto_or_return ::= RETURN
+        end_clause ::= GOTO opt_end
+        end_clause ::= RETURN
+        end_clause ::= END
 
-        cond_expr ::= clauses
-        clauses   ::= clause+
-        clauses   ::= expr opt_body LABEL
+        opt_end    ::= END?
 
-        clause    ::= expr GOTO-IF-NIL body goto_or_return LABEL
-        clause    ::= expr GOTO-IF-NIL LABEL expr goto_or_return LABEL
-        clause    ::= expr goto_or_return LABEL
+        cond_expr       ::= clause labeled_clauses END
+        labeled_clauses ::= labeled_clause*
+
+        labeled_clause ::= LABEL clause
+
+        condition ::= expr GOTO-IF-NIL
+        condition ::= expr
+        clause    ::= condition opt_body end_clause
+        opt_body  ::= body?
 
         let_expr_stacked ::= varlist_stacked body_stacked UNBIND
 
@@ -219,5 +224,6 @@ class ElispParser(GenericASTBuilder):
         return
 
     def reduce_is_invalid(self, rule, ast, tokens, first, last):
+        # lhs = rule[0]
         return False
     pass
