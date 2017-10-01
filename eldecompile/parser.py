@@ -28,7 +28,7 @@ class ElispParser(GenericASTBuilder):
     def p_elisp_grammar(self, args):
         '''
         # The start or goal symbol
-        fn_body ::= body RETURN
+        fn_body ::= body opt_return
 
         # expr_stmt is an expr where the value it produces
         # might not be needed. List-like things like
@@ -44,7 +44,7 @@ class ElispParser(GenericASTBuilder):
 
         progn ::= body
 
-        expr  ::= save_excursion
+#        expr  ::= save_excursion
         expr  ::= setq_expr
         expr  ::= binary_expr
         expr  ::= unary_expr
@@ -82,10 +82,10 @@ class ElispParser(GenericASTBuilder):
         # if_else_expr ::= expr GOTO-IF-NIL expr RETURN LABEL
         # if_else_expr ::= expr_stacked GOTO-IF-NIL progn RETURN LABEL
 
-        or_expr ::= expr GOTO-IF-NOT-NIL-ELSE-POP expr LABEL
-        or_expr ::= expr GOTO-IF-NOT-NIL expr opt-label
+#        or_expr ::= expr GOTO-IF-NOT-NIL-ELSE-POP expr LABEL
+#        or_expr ::= expr GOTO-IF-NOT-NIL expr opt-label
 
-        opt-label ::= LABEL?
+        opt_label ::= LABEL?
 
 
         call_expr0 ::= name_expr CALL_0
@@ -160,21 +160,22 @@ class ElispParser(GenericASTBuilder):
         setq_expr ::= expr DUP VARSET
         setq_expr_stacked ::= expr_stacked DUP VARSET
 
-        end_clause ::= GOTO opt_end
-        end_clause ::= RETURN
-        end_clause ::= END
+        end_clause ::= GOTO opt_come_from
+        end_clause ::= RETURN opt_come_from
+        end_clause ::= COME_FROM
 
-        opt_end    ::= END?
-
-        cond_expr       ::= clause labeled_clauses END
+        cond_expr       ::= clause labeled_clauses
         labeled_clauses ::= labeled_clause*
 
         labeled_clause ::= LABEL clause
 
         condition ::= expr GOTO-IF-NIL
+        condition ::= expr GOTO-IF-NIL-ELSE-POP
         condition ::= expr
-        clause    ::= condition opt_body end_clause
+        clause    ::= condition opt_body opt_label end_clause
+
         opt_body  ::= body?
+        opt_come_from ::= COME_FROM?
 
         let_expr_stacked ::= varlist_stacked body_stacked UNBIND
 
@@ -188,10 +189,8 @@ class ElispParser(GenericASTBuilder):
         varlist  ::= varbind
         varbind  ::= expr VARBIND
 
-        varlist_stacked_inner ::= expr varlist_stacked_inner VARBIND
-        varlist_stacked_inner ::=
-
         opt_discard ::= DISCARD?
+        opt_return  ::= RETURN?
 
         '''
         return

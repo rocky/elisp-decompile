@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from graph import (BB_ENTRY, BB_JUMP_UNCONDITIONAL, BB_NOFOLLOW)
+from eldecompile.tok import Token
 
 class BasicBlock(object):
   """Represents a basic block (or rather extended basic block) from the
@@ -75,6 +76,9 @@ class BBMgr(object):
 
   def __init__(self):
     self.bb_list = []
+    self.offset2label = {}
+    self.jumps2offset = {}
+    self.jump_targets = {}
     # Pick up appropriate version
 
   def add_bb(self, start_offset, end_offset, follow_offset, flags,
@@ -91,6 +95,8 @@ class BBMgr(object):
 
 def get_offset(inst):
     offset = inst.offset
+    if isinstance(offset, int):
+        return offset
     if offset.find(':') > -1:
         offset = offset[:offset.find(':')]
     return int(offset)
@@ -99,29 +105,52 @@ def basic_blocks(instructions):
     """Create a list of basic blocks found in a code object
     """
 
-    BB = BBMgr()
+    bblocks = BBMgr()
+    bblocks.label2offset = {}
+    bblocks.jumps2offset = {}
 
-    label2offset = {}
 
     # Populate label2offset map
     for i, inst in enumerate(instructions):
         op = inst.type
         offset = get_offset(inst)
         if op == 'LABEL':
-            label2offset[inst.attr[1:]] = offset
+            bblocks.label2offset[inst.attr[1:]] = offset
             pass
         pass
 
     # Get jump targets
     jump_targets = set()
-    for i, inst in enumerate(instructions):
+    bblocks.jumps2offset = {}
+    for inst in instructions:
         op = inst.type
-        offset = inst.offset
+        offset = get_offset(inst)
 
         if op in JUMP_INSTRUCTIONS:
-            jump_offset = label2offset[inst.attr]
+            jump_offset = bblocks.label2offset[inst.attr]
             jump_targets.add(jump_offset)
+            if jump_offset not in bblocks.jumps2offset:
+                bblocks.jumps2offset[jump_offset] = [offset]
+            else:
+                bblocks.jumps2offset[jump_offset].append(offset)
             pass
+
+    last_offset = -1
+    new_instructions = []
+    for inst in instructions:
+        offset = get_offset(inst)
+        if offset != last_offset:
+            sources = bblocks.jumps2offset.get(offset, [])
+            for source in sources:
+                new_instructions.append(Token('COME_FROM', source, offset))
+                pass
+            last_offset = offset
+        new_instructions.append(inst)
+
+    instructions = new_instructions
+    print('-' * 40)
+    for i in new_instructions:
+        print(i)
 
     start_offset = 0
     end_offset = -1
@@ -149,7 +178,7 @@ def basic_blocks(instructions):
             # This instruction definitely starts a new basic block
             # Close off any prior basic block
             if start_offset < end_offset:
-                flags, jump_offsets = BB.add_bb(start_offset,
+                flags, jump_offsets = bblocks.add_bb(start_offset,
                                                 prev_offset, end_offset,
                                                 flags, jump_offsets)
                 start_offset = end_offset
@@ -164,29 +193,29 @@ def basic_blocks(instructions):
 
             # Figure out where we jump to amd add it to this
             # basic block's jump offsets.
-            jump_offset = label2offset[inst.attr]
+            jump_offset = bblocks.label2offset[inst.attr]
 
             jump_offsets.add(jump_offset)
             if op in JUMP_UNCONDITONAL:
                 flags.add(BB_JUMP_UNCONDITIONAL)
                 pass
-            flags, jump_offsets = BB.add_bb(start_offset,
-                                            end_offset, follow_offset,
-                                            flags, jump_offsets)
+            flags, jump_offsets = bblocks.add_bb(start_offset,
+                                                 end_offset, follow_offset,
+                                                 flags, jump_offsets)
             start_offset = follow_offset
         elif op in NOFOLLOW_INSTRUCTIONS:
             flags.add(BB_NOFOLLOW)
-            flags, jump_offsets = BB.add_bb(start_offset,
-                                            end_offset, follow_offset,
-                                            flags, jump_offsets)
+            flags, jump_offsets = bblocks.add_bb(start_offset,
+                                                 end_offset, follow_offset,
+                                                 flags, jump_offsets)
             start_offset = follow_offset
             pass
         pass
 
-    if len(BB.bb_list):
-      BB.bb_list[-1].follow_offset = None
+    if len(bblocks.bb_list):
+      bblocks.bb_list[-1].follow_offset = None
     if start_offset <= end_offset:
-        BB.bb_list.append(BasicBlock(start_offset, end_offset, None,
-                                  flags=flags, jump_offsets=jump_offsets))
+        bblocks.bb_list.append(BasicBlock(start_offset, end_offset, None,
+                                          flags=flags, jump_offsets=jump_offsets))
 
-    return BB.bb_list
+    return bblocks, instructions

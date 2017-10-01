@@ -1,0 +1,15 @@
+byte code for test-cond3:
+  args: (a b c)
+0	varref	  a
+1	goto-if-nil 1
+4	constant  2
+5	return
+6:1	varref	  b
+7	goto-if-nil 2
+10	constant  4
+11	return
+12:2	varref	  c
+13	not
+14	goto-if-nil-else-pop 3
+17	varref	  a
+18:3	return

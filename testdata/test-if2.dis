@@ -1,4 +1,4 @@
-byte code for if2:
+byte code for test-if2:
   args: (e &optional f)
  interactive: "nnumber: "
 0	varref	  e

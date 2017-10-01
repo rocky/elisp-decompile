@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 from spark_parser.ast import AST
 
-from eldecompile.tok import Token
 from eldecompile.scanner import fn_scanner
 from eldecompile.parser import ElispParser
 from eldecompile.semantics import SourceWalker
@@ -12,34 +11,12 @@ from eldecompile.dominators import DominatorTree, build_df
 
 import os, sys
 
-def add_instruction_ends(dom_tree, tokens):
-    def traverse(dt):
-        return l
-
-    l = []
-    # Handle node
-    for node in dom_tree.nodes:
-        if node.bb.jump_offsets and node.reach_offset > node.bb.end_offset:
-            l.append(str(node.reach_offset))
-        pass
-
-    new_tokens = []
-    for t in tokens:
-        while t.offset in l:
-            new_tokens.append(Token('END', attr=None, offset=t.offset))
-            l.remove(t.offset)
-        new_tokens.append(t)
-    for t in new_tokens:
-        print(t)
-    return new_tokens
-
-
 def flow_control(name, tokens):
 #  Flow control analysis of instruction
-    bb_list = basic_blocks(tokens)
-    for bb in bb_list:
+    bblocks, tokens = basic_blocks(tokens)
+    for bb in bblocks.bb_list:
         print("\t", bb)
-    cfg = ControlFlowGraph(bb_list)
+    cfg = ControlFlowGraph(bblocks.bb_list)
     dot_path = '/tmp/flow-%s.dot' % name
     png_path = '/tmp/flow-%s.png' % name
     open(dot_path, 'w').write(cfg.graph.to_dot())
@@ -53,9 +30,8 @@ def flow_control(name, tokens):
         open(dot_path, 'w').write(dom_tree.to_dot())
         print("%s written" % dot_path)
         os.system("dot -Tpng %s > %s" % (dot_path, png_path))
-        new_tokens = add_instruction_ends(dom_tree, tokens)
         print('=' * 30)
-        return new_tokens
+        return tokens
     except:
         import traceback
         traceback.print_exc()
