@@ -112,11 +112,7 @@ TABLE_DIRECT = {
 
     'list_exprn':	   ( '(list %l)', (0, 1000) ),
     'concat_exprn':	   ( '(concat %l)', (0, 1000) ),
-<<<<<<< HEAD
-    'save_excursion':      ( '(save_excursion\n%+%c%)', 0 ),
-=======
     'save_excursion':  ( '(save_excursion\n%+%|%c%)', 1 ),
->>>>>>> 7c4635395d9e9bf6a108ef05da98c7fba76ab8aa
 
     'cond_expr':	   ( '%(cond %.%c%c%)', 0, 1, 2 ),
     'labeled_clause':	   ( '%c', 1 ),
