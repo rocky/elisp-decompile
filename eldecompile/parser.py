@@ -55,7 +55,7 @@ class ElispParser(GenericASTBuilder):
         expr  ::= if_else_expr
         expr  ::= cond_expr
         expr  ::= or_expr
-
+        expr  ::= and_expr
 
         body  ::= exprs
 
@@ -66,7 +66,7 @@ class ElispParser(GenericASTBuilder):
         expr_stacked ::= binary_expr_stacked
         expr_stacked ::= setq_expr_stacked
 
-        save_excursion ::= SAVE-EXCURSION body
+        save_excursion ::= SAVE-EXCURSION body UNBIND
 
         unary_expr_stacked ::= unary_op
         binary_expr_stacked ::= expr binary_op
@@ -82,8 +82,11 @@ class ElispParser(GenericASTBuilder):
         # if_else_expr ::= expr GOTO-IF-NIL expr RETURN LABEL
         # if_else_expr ::= expr_stacked GOTO-IF-NIL progn RETURN LABEL
 
-#        or_expr ::= expr GOTO-IF-NOT-NIL-ELSE-POP expr LABEL
-#        or_expr ::= expr GOTO-IF-NOT-NIL expr opt-label
+        # or_expr ::= expr GOTO-IF-NOT-NIL-ELSE-POP expr LABEL
+        # or_expr ::= expr GOTO-IF-NOT-NIL expr opt-label
+
+        # and_expr ::= expr GOTO-IF-NIL-ELSE-POP expr LABEL
+        # and_expr ::= expr GOTO-IF-NIL expr opt_label
 
         opt_label ::= LABEL?
 
@@ -119,6 +122,7 @@ class ElispParser(GenericASTBuilder):
         unary_op ::= CDR-SAFE
         unary_op ::= CDR
         unary_op ::= CONSP
+        unary_op ::= INSERT
         unary_op ::= INTEGERP
         unary_op ::= KEYWORDP
         unary_op ::= LISTP

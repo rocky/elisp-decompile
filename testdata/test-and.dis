@@ -1,0 +1,12 @@
+byte code for test-and:
+  args: (a b)
+0	varref	  b
+1	varref	  a
+2	diff
+3	constant  0
+4	eqlsign
+5	goto-if-nil-else-pop 1
+8	varref	  a
+9	constant  1
+10	eqlsign
+11:1	return
