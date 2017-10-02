@@ -75,14 +75,14 @@ class ElispParser(GenericASTBuilder):
 
         # if_expr ::= expr GOTO-IF-NIL-ELSE-POP expr LABEL
         # if_expr ::= expr GOTO-IF-NIL-ELSE-POP progn LABEL
-        # if_expr ::= expr GOTO-IF-NIL expr LABEL
+        if_expr ::= expr GOTO-IF-NIL expr COME_FROM LABEL
         # if_expr ::= expr GOTO-IF-NIL progn LABEL
 
         # if_else_expr ::= expr GOTO-IF-NIL expr RETURN LABEL
         # if_else_expr ::= expr_stacked GOTO-IF-NIL progn RETURN LABEL
 
         or_expr ::= expr GOTO-IF-NOT-NIL-ELSE-POP expr opt_come_from opt_label
-        # or_expr ::= expr GOTO-IF-NOT-NIL expr opt_come_from opt_label
+        or_expr ::= expr GOTO-IF-NOT-NIL expr opt_come_from opt_label
 
         and_expr ::= expr GOTO-IF-NIL-ELSE-POP expr COME_FROM LABEL
         # and_expr ::= expr GOTO-IF-NIL expr opt_label
@@ -164,7 +164,6 @@ class ElispParser(GenericASTBuilder):
         end_clause ::= GOTO COME_FROM
         end_clause ::= RETURN COME_FROM
         end_clause ::= RETURN
-        end_clause ::= COME_FROM
 
         cond_expr  ::= clause labeled_clauses opt_label
 
@@ -179,8 +178,12 @@ class ElispParser(GenericASTBuilder):
 
         labeled_clause  ::= LABEL clause
 
-        condition       ::= expr GOTO-IF-NIL
-        condition       ::= expr GOTO-IF-NIL-ELSE-POP
+        # The "opt_come_from opt_label" below reflects the fact that
+        # expr might be a short-circuit expression like "and" or "or"
+        # which acts like and early false on the GOTO-IF-NIL
+
+        condition       ::= expr GOTO-IF-NIL opt_come_from opt_label
+        condition       ::= expr GOTO-IF-NIL-ELSE-POP opt_come_from opt_label
 
         clause          ::= condition body end_clause
 
