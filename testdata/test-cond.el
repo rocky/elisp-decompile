@@ -3,6 +3,11 @@
 		  ((eq mode 'comint) 5)
 		  (t 10))))
 
+(defun test-cond4(mode)
+  (cond ((eq mode 'eshell) 1)
+	((eq mode 'comint) 2)))
+
+
 (defun test-cond2(mode)
   (cond ((eq mode 'eshell) 1)
 	((eq mode 'comint) 2)

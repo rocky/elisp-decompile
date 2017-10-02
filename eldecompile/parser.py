@@ -26,8 +26,7 @@ class ElispParser(GenericASTBuilder):
         return rv
 
     def p_elisp_grammar(self, args):
-        '''
-        # The start or goal symbol
+        '''# The start or goal symbol
         fn_body ::= body opt_return
 
         # expr_stmt is an expr where the value it produces
@@ -44,7 +43,7 @@ class ElispParser(GenericASTBuilder):
 
         progn ::= body
 
-#        expr  ::= save_excursion
+        expr  ::= save_excursion
         expr  ::= setq_expr
         expr  ::= binary_expr
         expr  ::= unary_expr
@@ -87,9 +86,6 @@ class ElispParser(GenericASTBuilder):
 
         # and_expr ::= expr GOTO-IF-NIL-ELSE-POP expr LABEL
         # and_expr ::= expr GOTO-IF-NIL expr opt_label
-
-        opt_label ::= LABEL?
-
 
         call_expr0 ::= name_expr CALL_0
         call_expr1 ::= name_expr expr CALL_1
@@ -164,22 +160,37 @@ class ElispParser(GenericASTBuilder):
         setq_expr ::= expr DUP VARSET
         setq_expr_stacked ::= expr_stacked DUP VARSET
 
-        end_clause ::= GOTO opt_come_from
-        end_clause ::= RETURN opt_come_from
+        # FIXME: this is probably to permissive
+        end_clause ::= GOTO COME_FROM
+        end_clause ::= RETURN COME_FROM
+        end_clause ::= RETURN
         end_clause ::= COME_FROM
 
-        cond_expr       ::= clause labeled_clauses
-        labeled_clauses ::= labeled_clause*
+        cond_expr  ::= clause labeled_clauses opt_label
 
-        labeled_clause ::= LABEL clause
+        # We use labeled_clause+ rather than labeled_clause* because
+        # labeled_clause* wreaks havoc in reductions and gives
+        # produces things like (cond (t 5)) when what we want is just
+        # 5. labeled_clause+ won't match (cond (foo bar baz)) where
+        # there is a single cond clause but we'll handle that as an
+        # "if" rule, e.g. (if foo (progn bar baz))
 
-        condition ::= expr GOTO-IF-NIL
-        condition ::= expr GOTO-IF-NIL-ELSE-POP
-        condition ::= expr
-        clause    ::= condition opt_body opt_label end_clause
+        labeled_clauses ::= labeled_clause+
 
-        opt_body  ::= body?
+        labeled_clause  ::= LABEL clause
+
+        condition       ::= expr GOTO-IF-NIL
+        condition       ::= expr GOTO-IF-NIL-ELSE-POP
+
+        clause          ::= condition body end_clause
+
+        # cond (t *body*) compiles to no condition
+        # If this is the first clause, then possibly
+        # no label
+        clause          ::= opt_label body end_clause
+
         opt_come_from ::= COME_FROM?
+        opt_label     ::= LABEL?
 
         let_expr_stacked ::= varlist_stacked body_stacked UNBIND
 
@@ -205,7 +216,6 @@ class ElispParser(GenericASTBuilder):
            to add the semantic action rule. Often, count is not used.
         """
         if rule not in self.new_rules:
-            print("XXX ", rule) # debug
             self.new_rules.add(rule)
             self.addRule(rule, nop_func)
             pass
@@ -224,9 +234,20 @@ class ElispParser(GenericASTBuilder):
                 self.add_unique_rule(rule, opname_base)
             pass
         # self.check_reduce['progn'] = 'AST'
+        self.check_reduce['clause'] = 'AST'
         return
 
     def reduce_is_invalid(self, rule, ast, tokens, first, last):
-        # lhs = rule[0]
+        lhs = rule[0]
+        if ast and lhs == 'clause' and len(ast) == 3:
+            # Check that either:
+            #   if we have a condition there is a COME_FROM or
+            #   if we don't have a condition there is no COME_FROM
+            return (
+                (ast[0] == 'condition' and
+                 len(ast[2]) == 1 and ast[2][0] != 'COME_FROM') or
+                (ast[0] != 'condition' and
+                 ast[2][-1] == 'COME_FROM')
+                )
         return False
     pass

@@ -1,0 +1,14 @@
+byte code for test-cond4:
+  args: (mode)
+0	varref	  mode
+1	constant  eshell
+2	eq	  
+3	goto-if-nil 1
+6	constant  1
+7	return	  
+8:1	varref	  mode
+9	constant  comint
+10	eq	  
+11	goto-if-nil-else-pop 2
+14	constant  2
+15:2	return	  

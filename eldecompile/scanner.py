@@ -9,7 +9,7 @@ from collections import namedtuple
 FuncDef = namedtuple('FuncDef', ['name', 'args', 'opt_args',
                                  'docstring', 'interactive', 'fn_type'])
 
-def fn_scanner(fp, show_tokens=True):
+def fn_scanner(fp, show_tokens=False):
     tokens = []
     lines = fp.readlines()
     line = lines[0]

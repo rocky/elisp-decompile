@@ -325,10 +325,10 @@ class SourceWalker(GenericASTTraversal, object):
             assert len(node) == 0
 
     def n_clause(self, node):
-        assert len(node) == 4
-        opt_body = node[1]
-        if len(opt_body) == 0:
-            self.template_engine( ('\n%|(t %c)', 0), node)
+        l = len(node)
+        assert l == 3
+        if node[0] == 'opt_label':
+            self.template_engine( ('\n%|(t %c)', 1), node)
         else:
             self.template_engine( ('\n%|(%c %c)', 0, 1), node)
         self.prune()
