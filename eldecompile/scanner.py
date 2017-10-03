@@ -43,6 +43,7 @@ def fn_scanner(fp, show_tokens=False):
                 docstring += line
                 start_adjust += 1
                 pass
+            docstring = docstring.rstrip("\n")
             docstring += '"'
             pass
     else:

@@ -105,22 +105,22 @@ TABLE_DIRECT = {
     'setq_expr':	   ( '%(setq %Q %c)', -1, 0 ),
     'setq_expr_stacked':   ( '%(setq %Q %c)', -1, 0 ),
     'nullary_expr':	       ( '(%c)', 0 ),
-    'unary_expr':	   ( '(%c %c)', 1, 0 ),
-    'unary_expr_stacked':  ( '(%c %S)', 0 ),
-    'binary_expr':	   ( '(%c %c %c)', -1, 0, 1 ),
-    'binary_expr_stacked': ( '(%c %S %c)', -1, 0),
+    'unary_expr':	   ( '(%c %+%c%)', 1, 0 ),
+    'unary_expr_stacked':  ( '(%c %+%S%)', 0 ),
+    'binary_expr':	   ( '(%c %+%c %c%)', -1, 0, 1 ),
+    'binary_expr_stacked': ( '(%c %+%S %c%)', -1, 0),
 
     'list_exprn':	   ( '(list %l)', (0, 1000) ),
     'concat_exprn':	   ( '(concat %l)', (0, 1000) ),
-    'save_excursion':  ( '(save_excursion\n%+%|%c%)', 1 ),
+    'save_excursion':      ( '(save_excursion\n%+%|%c%)', 1 ),
 
     'cond_expr':	   ( '%(cond %.%c%c%)', 0, 1, 2 ),
     'labeled_clause':	   ( '%c', 1 ),
 
     'if_expr':		( '%(if %c\n%+%|%c%)', 0, 2 ),
     'if_else_expr':	( '%(if %c\n%+%|%c%_%c)%_', 0, 2, 5 ),
-    'or_expr':		( '(or %c %c)', 0, 2 ),
-    'and_expr':		( '(and %c %c)', 0, 2 ),
+    'or_expr':		( '(or %+%c %c%)', 0, 2 ),
+    'and_expr':		( '(and %+%c %c%)', 0, 2 ),
 
     'exprs':            ( '%C', (0, 1000) ),
 
