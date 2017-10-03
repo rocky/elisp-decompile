@@ -43,18 +43,30 @@ class ElispParser(GenericASTBuilder):
 
         progn ::= body
 
-        expr  ::= save_excursion
         expr  ::= setq_expr
+
+        # Function related
         expr  ::= binary_expr
         expr  ::= unary_expr
         expr  ::= nullary_expr
         expr  ::= name_expr
 
+        # Control-flow related
         expr  ::= if_expr
         expr  ::= if_else_expr
         expr  ::= cond_expr
         expr  ::= or_expr
         expr  ::= and_expr
+        expr  ::= not_expr
+
+        # Block releated
+        expr  ::= let_expr_star
+        expr  ::= let_expr_stacked
+
+        # Buffer related
+        expr  ::= save_excursion
+        expr  ::= save_current_buffer
+        expr  ::= set_buffer
 
         body  ::= exprs
 
@@ -65,13 +77,13 @@ class ElispParser(GenericASTBuilder):
         expr_stacked ::= binary_expr_stacked
         expr_stacked ::= setq_expr_stacked
 
-        save_excursion ::= SAVE-EXCURSION body UNBIND
+        save_excursion      ::= SAVE-EXCURSION body UNBIND
+        save_current_buffer ::= SAVE-CURRENT-BUFFER body UNBIND
+        set_buffer          ::= expr SET-BUFFER
 
         unary_expr_stacked ::= unary_op
         binary_expr_stacked ::= expr binary_op
 
-        expr  ::= let_expr_star
-        expr  ::= let_expr_stacked
 
         # if_expr ::= expr GOTO-IF-NIL-ELSE-POP expr LABEL
         # if_expr ::= expr GOTO-IF-NIL-ELSE-POP progn LABEL
@@ -81,10 +93,14 @@ class ElispParser(GenericASTBuilder):
         # if_else_expr ::= expr GOTO-IF-NIL expr RETURN LABEL
         # if_else_expr ::= expr_stacked GOTO-IF-NIL progn RETURN LABEL
 
-        or_expr ::= expr GOTO-IF-NOT-NIL-ELSE-POP expr opt_come_from opt_label
-        or_expr ::= expr GOTO-IF-NOT-NIL expr opt_come_from opt_label
+        or_expr    ::= expr GOTO-IF-NOT-NIL-ELSE-POP expr opt_come_from opt_label
+        or_expr    ::= expr GOTO-IF-NOT-NIL expr opt_come_from opt_label
 
-        and_expr ::= expr GOTO-IF-NIL-ELSE-POP expr COME_FROM LABEL
+        # "not_expr" is (not expr) or (null expr). We use
+        # not_ instead of null_ to to avoid confusion with nil
+        not_expr   ::= expr GOTO-IF-NOT-NIL
+
+        and_expr   ::= expr GOTO-IF-NIL-ELSE-POP expr COME_FROM LABEL
         # and_expr ::= expr GOTO-IF-NIL expr opt_label
 
         call_expr0 ::= name_expr CALL_0

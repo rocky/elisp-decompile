@@ -2,7 +2,6 @@
 # See https://github.com/rocky/python-uncompyle6/wiki/Table-driven-semantic-actions.
 # for a more complete explanation, nicely marked up and with examples.
 #
-#
 # Semantic action rules for nonterminal symbols can be specified here by
 # creating a method prefaced with "n_" for that nonterminal. For
 # example, "n_exec_stmt" handles the semantic actions for the
@@ -10,21 +9,30 @@
 # of the nonterminal is suffixed with "_exit" it will be called after
 # all of its children are called.
 #
-# However if this were done for all of the rules, this file would be even longer
-# than it is already.
+# After a while writing methods this way, you'll find many routines which do similar
+# sorts of things, and soon you'll find you want a short notation to
+# describe rules and not have to create methods at all.
 #
-# Another more compact way to specify a semantic rule for a nonterminal is via
-# rule given in one of the tables MAP_R0, MAP_R, or MAP_DIRECT.
+# So another other way to specify a semantic rule for a nonterminal is via
+# one of the tables MAP_R0, MAP_R, or MAP_DIRECT where the key is the
+# nonterminal name.
 #
-# These uses a printf-like syntax to direct substitution from attributes
-# of the nonterminal and its children..
+# These dictionaries use a printf-like syntax to direct substitution
+# from attributes of the nonterminal and its children..
 #
 # The rest of the below describes how table-driven semantic actions work
 # and gives a list of the format specifiers. The default() and
 # template_engine() methods implement most of the below.
 #
-#   Step 1 determines a table (T) and a path to a
-#   table key (K) from the node type (N) (other nodes are shown as O):
+# We allow for a couple of ways to interact with a node in a tree.  So
+# step 1 after not seeing a custom method for a nonterminal is to
+# determine from what point of view tree-wise the rule is applied.
+
+# In the diagram below, N is a nonterminal name, and K also a nonterminal
+# name but the one used as a key in the table.
+# we show where those are with respect to each other in the
+# AST tree for N.
+#
 #
 #          N&K               N                  N
 #         / | ... \        / | ... \          / | ... \
@@ -33,9 +41,14 @@
 #                                                      K
 #      TABLE_DIRECT      TABLE_R             TABLE_R0
 #
-#   The default is a "TABLE_DIRECT" mapping.  The key K is then extracted from the
-#   subtree and used to find a table entry T[K], if any.  The result is a
-#   format string and arguments (a la printf()) for the formatting engine.
+#   The default table is TABLE_DIRECT. By far, most rules used work this way.
+#   TABLE_R0 is rarely used.
+
+#   The key K is then extracted from the subtree and used to find one
+#   of the tables, T listed above.  The result after applying T[K] is
+#   a format string and arguments (a la printf()) for the formatting
+#   engine.
+#
 #   Escapes in the format string are:
 #
 #     %c  evaluate the node recursively. Its argument is a single
@@ -104,7 +117,7 @@ TABLE_R0 = {
 TABLE_DIRECT = {
     'setq_expr':	   ( '%(setq %Q %c)', -1, 0 ),
     'setq_expr_stacked':   ( '%(setq %Q %c)', -1, 0 ),
-    'nullary_expr':	       ( '(%c)', 0 ),
+    'nullary_expr':	   ( '(%c)', 0 ),
     'unary_expr':	   ( '(%c %+%c%)', 1, 0 ),
     'unary_expr_stacked':  ( '(%c %+%S%)', 0 ),
     'binary_expr':	   ( '(%c %+%c %c%)', -1, 0, 1 ),
@@ -112,7 +125,9 @@ TABLE_DIRECT = {
 
     'list_exprn':	   ( '(list %l)', (0, 1000) ),
     'concat_exprn':	   ( '(concat %l)', (0, 1000) ),
-    'save_excursion':      ( '(save_excursion\n%+%|%c%)', 1 ),
+    'save_excursion':      ( '(save-excursion\n%+%|%c%)', 1 ),
+    'save_current_buffer': ( '(save-current-buffer\n%+%|%c%)', 1 ),
+    'set_buffer':          ( '(set-buffer %c)', 0 ),
 
     'cond_expr':	   ( '%(cond %.%c%c%)', 0, 1, 2 ),
     'labeled_clause':	   ( '%c', 1 ),
@@ -121,6 +136,7 @@ TABLE_DIRECT = {
     'if_else_expr':	( '%(if %c\n%+%|%c%_%c)%_', 0, 2, 5 ),
     'or_expr':		( '(or %+%c %c%)', 0, 2 ),
     'and_expr':		( '(and %+%c %c%)', 0, 2 ),
+    'not_expr':		( '(null %+%c%)', 0 ),
 
     'exprs':            ( '%C', (0, 1000) ),
 

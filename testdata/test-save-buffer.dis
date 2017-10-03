@@ -1,0 +1,7 @@
+byte code for test-save-buffer:
+  args: nil
+0	save-current-buffer 
+1	constant  "foo"
+2	insert	  
+3	unbind	  1
+4	return	  
