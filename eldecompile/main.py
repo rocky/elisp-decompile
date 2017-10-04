@@ -50,7 +50,7 @@ def deparse(path):
     tokens = flow_control(name, tokens)
 
     # Parse...
-    p = ElispParser(AST)
+    p = ElispParser(AST, tokens)
     p.add_custom_rules(tokens, customize)
 
     parser_debug = {'rules': False, 'transition': False, 'reduce' : True,

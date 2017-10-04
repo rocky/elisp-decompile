@@ -7,7 +7,8 @@ from spark_parser import GenericASTBuilder, DEFAULT_DEBUG as PARSER_DEFAULT_DEBU
 nop_func = lambda self, args: None
 
 class ElispParser(GenericASTBuilder):
-    def __init__(self, AST, start='fn_body', debug=PARSER_DEFAULT_DEBUG):
+    def __init__(self, AST, tokens, start='fn_body', debug=PARSER_DEFAULT_DEBUG):
+        self.tokens = tokens
         super(ElispParser, self).__init__(AST, start, debug)
         self.collect = frozenset(['exprs', 'varlist' 'labeled_clauses'])
         self.new_rules = set()
@@ -181,7 +182,11 @@ class ElispParser(GenericASTBuilder):
         end_clause ::= RETURN COME_FROM
         end_clause ::= RETURN
 
-        cond_expr  ::= clause labeled_clauses opt_label
+        cond_expr  ::= clause labeled_clauses come_froms LABEL
+        cond_expr  ::= clause labeled_clauses
+
+        opt_come_froms ::= come_froms?
+        come_froms ::= COME_FROM+
 
         # We use labeled_clause+ rather than labeled_clause* because
         # labeled_clause* wreaks havoc in reductions and gives
@@ -190,7 +195,9 @@ class ElispParser(GenericASTBuilder):
         # there is a single cond clause but we'll handle that as an
         # "if" rule, e.g. (if foo (progn bar baz))
 
-        labeled_clauses ::= labeled_clause+
+        labeled_clauses ::= labeled_clause labeled_clauses
+        labeled_clauses ::= labeled_clause
+        labeled_clauses ::= labeled_final_clause
 
         labeled_clause  ::= LABEL clause
 
@@ -202,6 +209,13 @@ class ElispParser(GenericASTBuilder):
         condition       ::= expr GOTO-IF-NIL-ELSE-POP opt_come_from opt_label
 
         clause          ::= condition body end_clause
+
+        # The final clause of a cond doesn't need a GOTO or a return.
+        # But it must have a label, and must have several COME_FROMs for
+        # each of the clauses in the cond.
+        labeled_final_clause    ::= LABEL condition body come_froms
+
+        # clause          ::= body end_clause
 
         # cond (t *body*) compiles to no condition
         # If this is the first clause, then possibly
@@ -254,6 +268,7 @@ class ElispParser(GenericASTBuilder):
             pass
         # self.check_reduce['progn'] = 'AST'
         self.check_reduce['clause'] = 'AST'
+        self.check_reduce['cond_expr'] = 'AST'
         return
 
     def reduce_is_invalid(self, rule, ast, tokens, first, last):
@@ -268,5 +283,22 @@ class ElispParser(GenericASTBuilder):
                 (ast[0] != 'condition' and
                  ast[2][-1] == 'COME_FROM')
                 )
+        if rule == ('cond_expr', ('clause', 'labeled_clauses')):
+            # Since there are no come froms, each of the clauses
+            # must end in a return.
+            for n in ast:
+                if n == 'labeled_clauses':
+                    n = n[0]
+                if n == 'labeled_clause':
+                    clause = n[1]
+                else:
+                    assert n == 'clause'
+                    clause = n
+                end_clause = clause[-1]
+                assert end_clause == 'end_clause'
+                if end_clause[0] != 'RETURN':
+                    return True
+                pass
+            return True
         return False
     pass

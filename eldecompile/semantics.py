@@ -115,8 +115,8 @@ TABLE_R0 = {
 }
 
 TABLE_DIRECT = {
-    'setq_expr':	   ( '%(setq %Q %c)', -1, 0 ),
-    'setq_expr_stacked':   ( '%(setq %Q %c)', -1, 0 ),
+    'setq_expr':	   ( '%(setq %Q %+%c%)', -1, 0 ),
+    'setq_expr_stacked':   ( '%(setq %Q %+%c%)', -1, 0 ),
     'nullary_expr':	   ( '(%c)', 0 ),
     'unary_expr':	   ( '(%c %+%c%)', 1, 0 ),
     'unary_expr_stacked':  ( '(%c %+%S%)', 0 ),
@@ -129,8 +129,9 @@ TABLE_DIRECT = {
     'save_current_buffer': ( '(save-current-buffer\n%+%|%c%)', 1 ),
     'set_buffer':          ( '(set-buffer %c)', 0 ),
 
-    'cond_expr':	   ( '%(cond %.%c%c%)', 0, 1, 2 ),
+    'cond_expr':	   ( '%(cond %.%c%c%)', 0, 1 ),
     'labeled_clause':	   ( '%c', 1 ),
+    'labeled_final_clause': ('\n%|(%c %c)', 1, 2),
 
     'if_expr':		( '%(if %c\n%+%|%c%)', 0, 2 ),
     'if_else_expr':	( '%(if %c\n%+%|%c%_%c)%_', 0, 2, 5 ),
@@ -342,8 +343,11 @@ class SourceWalker(GenericASTTraversal, object):
 
     def n_clause(self, node):
         l = len(node)
-        assert l == 3
-        if node[0] == 'opt_label':
+
+        assert l == 2 or l == 3
+        if l == 2:
+            self.template_engine( ('\n%|(t %c)', 0), node)
+        elif node[0] == 'opt_label':
             self.template_engine( ('\n%|(t %c)', 1), node)
         else:
             self.template_engine( ('\n%|(%c %c)', 0, 1), node)
@@ -414,6 +418,7 @@ class SourceWalker(GenericASTTraversal, object):
         # self.println("-----")
         if self.debug:
             print("XXX", startnode.type)
+
         fmt = entry[0]
         arg = 1
         i = 0

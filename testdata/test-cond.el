@@ -1,7 +1,7 @@
 (defun test-cond(mode)
-  (setq b (cond ((eq mode 'eshell) (not mode) 5)
-		  ((eq mode 'comint) 5)
-		  (t 10))))
+  (setq b (cond ((eq mode 'eshell) 5)
+		  ((eq mode 'comint) 6)
+		  ((eq mode 'foo) 10))))
 
 (defun test-cond4(mode)
   (cond ((eq mode 'eshell) 1)

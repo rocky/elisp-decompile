@@ -141,7 +141,7 @@ def basic_blocks(instructions):
         offset = get_offset(inst)
         if offset != last_offset:
             sources = bblocks.jumps2offset.get(offset, [])
-            for source in sources:
+            for source in sorted(sources, reverse=True):
                 new_instructions.append(Token('COME_FROM', source, offset))
                 pass
             last_offset = offset

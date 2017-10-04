@@ -10,9 +10,13 @@ byte code for test-cond:
 11	constant  comint
 12	eq
 13	goto-if-nil 2
-16	constant  5
+16	constant  6
 17	goto	  3
-20:2	constant  10
-21:3	dup
-22	varset	  b
-23	return
+20:2	varref	  mode
+21	constant  foo
+22	eq
+23	goto-if-nil-else-pop 3
+26	constant  10
+27:3	dup
+28	varset	  b
+29	return
