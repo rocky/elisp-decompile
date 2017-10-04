@@ -55,6 +55,7 @@ class ElispParser(GenericASTBuilder):
         # Control-flow related
         expr  ::= if_expr
         expr  ::= if_else_expr
+        expr  ::= when_expr
         expr  ::= cond_expr
         expr  ::= or_expr
         expr  ::= and_expr
@@ -89,7 +90,8 @@ class ElispParser(GenericASTBuilder):
         # if_expr ::= expr GOTO-IF-NIL-ELSE-POP expr LABEL
         # if_expr ::= expr GOTO-IF-NIL-ELSE-POP progn LABEL
         if_expr ::= expr GOTO-IF-NIL expr COME_FROM LABEL
-        # if_expr ::= expr GOTO-IF-NIL progn LABEL
+
+        when_expr ::= expr GOTO-IF-NIL body COME_FROM LABEL
 
         # if_else_expr ::= expr GOTO-IF-NIL expr RETURN LABEL
         # if_else_expr ::= expr_stacked GOTO-IF-NIL progn RETURN LABEL
@@ -273,16 +275,15 @@ class ElispParser(GenericASTBuilder):
 
     def reduce_is_invalid(self, rule, ast, tokens, first, last):
         lhs = rule[0]
-        if ast and lhs == 'clause' and len(ast) == 3:
+        if lhs == 'clause' and len(ast) == 3 and ast[0] != 'opt_label':
             # Check that either:
-            #   if we have a condition there is a COME_FROM or
-            #   if we don't have a condition there is no COME_FROM
+            #   if we have a condition there is a COME_FROM in the end_clause or
+            #   if we don't have a condition there is no COME_FROM in the end_clause
+            end_clause = ast[2]
             return (
                 (ast[0] == 'condition' and
-                 len(ast[2]) == 1 and ast[2][0] != 'COME_FROM') or
-                (ast[0] != 'condition' and
-                 ast[2][-1] == 'COME_FROM')
-                )
+                     len(end_clause) == 1 and end_clause[0] not in ('COME_FROM', 'RETURN'))
+                or (ast[0] != 'condition' and end_clause[-1] == 'COME_FROM'))
         if rule == ('cond_expr', ('clause', 'labeled_clauses')):
             # Since there are no come froms, each of the clauses
             # must end in a return.
@@ -291,14 +292,13 @@ class ElispParser(GenericASTBuilder):
                     n = n[0]
                 if n == 'labeled_clause':
                     clause = n[1]
-                else:
-                    assert n == 'clause'
+                elif n == 'clause':
                     clause = n
+                else:
+                    return False
                 end_clause = clause[-1]
-                assert end_clause == 'end_clause'
                 if end_clause[0] != 'RETURN':
                     return True
                 pass
-            return True
         return False
     pass

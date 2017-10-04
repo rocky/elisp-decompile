@@ -135,6 +135,7 @@ TABLE_DIRECT = {
 
     'if_expr':		( '%(if %c\n%+%|%c%)', 0, 2 ),
     'if_else_expr':	( '%(if %c\n%+%|%c%_%c)%_', 0, 2, 5 ),
+    'when_expr':	( '%(when %c\n%+%|%c%)', 0, 2 ),
     'or_expr':		( '(or %+%c %c%)', 0, 2 ),
     'and_expr':		( '(and %+%c %c%)', 0, 2 ),
     'not_expr':		( '(null %+%c%)', 0 ),
@@ -346,11 +347,11 @@ class SourceWalker(GenericASTTraversal, object):
 
         assert l == 2 or l == 3
         if l == 2:
-            self.template_engine( ('\n%|(t %c)', 0), node)
+            self.template_engine( ('\n%|(t %.%c%)', 0), node)
         elif node[0] == 'opt_label':
-            self.template_engine( ('\n%|(t %c)', 1), node)
+            self.template_engine( ('\n%|(t %.%c%)', 1), node)
         else:
-            self.template_engine( ('\n%|(%c %c)', 0, 1), node)
+            self.template_engine( ('\n%|(%c %.%c%)', 0, 1), node)
         self.prune()
 
     def n_varbind(self, node):

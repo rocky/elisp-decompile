@@ -1,0 +1,10 @@
+(defun test-dotemacs()
+  (when (font-info "DejaVu Sans Mono-11")
+    (set-frame-font "DejaVu Sans Mono-11")
+    (defconst variable-font "DejaVu Sans 10"
+      "Font to use as the proportional-space font")
+    )
+  (set-fontset-font (frame-parameter nil 'font)
+		    'han '("cwTeXHeiBold" . "unicode-bmp"))
+  (setq font-loaded 't)
+  )

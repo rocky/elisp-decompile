@@ -1,0 +1,10 @@
+byte code for test-if:
+  args: nil
+0	varref	  e
+1	constant  4
+2	leq
+3	goto-if-nil-else-pop 1
+6	constant  10
+7	dup
+8	varset	  e
+9:1	return
