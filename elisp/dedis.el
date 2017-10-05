@@ -9,7 +9,7 @@
 ;; Keywords: internal
 
 ;; This file is not part of GNU Emacs.
-;; These are just extensions
+;; Here we just have extensions for disass.el
 
 ;; GNU Emacs is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -39,21 +39,24 @@
 
 (require 'macroexp)
 (require 'disass)
+(require 'files)
 
 ;;;###autoload
-(defun disassemble-file (path)
+(defun disassemble-file (filename)
   "Disassemble a Emacs bytecode"
   ;; Thanks to wasamasa on stackoverflow.
-  (disassemble-full (read (find-file-noselect path))))
+  (interactive
+   (list (car (find-file-read-args "Find file: "
+                        (confirm-nonexistent-file-or-buffer)))))
 
+  (let ((buffer (find-file-noselect filename nil t nil)))
+    (if (string-match "\\.elc$" filename)
+	(progn
+	  (disassemble-full (read buffer))
+	  (kill-buffer buffer))
+      ;; else
+      (error "file name should end in .elc"))))
 
-;; (defun disassemble-file (path)
-;;  "Disassemble a Emacs bytecode"
-;;  ;; Thanks to wasamasa on stackoverflow.
-;; (let (bytecode-obj (read (find-file-noselect path)))
-;;     ;; FIXME: The below is not quite right, but it's a start
-;;     ;; Should
-;;     (disassemble bytecode-obj)))
 
 ;;;###autoload
 (defun disassemble-full (object &optional buffer indent interactive-p)
