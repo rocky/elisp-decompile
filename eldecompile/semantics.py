@@ -139,6 +139,7 @@ TABLE_DIRECT = {
     'or_expr':		( '(or %+%c %c%)', 0, 2 ),
     'and_expr':		( '(and %+%c %c%)', 0, 2 ),
     'not_expr':		( '(null %+%c%)', 0 ),
+    'dolist_expr':      ( '%(dolist%+%(%c %c)\n%_%|%c)%_', 1, 0, 10),
 
     'exprs':            ( '%C', (0, 1000) ),
 
