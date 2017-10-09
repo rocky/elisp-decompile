@@ -1,0 +1,38 @@
+byte code:
+  args: nil
+0	constant  define-key
+1	varref	  esc-map
+2	constant  ""
+3	constant  help-for-help
+4	call	  3
+5	discard
+6	constant  global-set-key
+7	constant  ""
+8	constant  backward-delete-char-untabify
+9	call	  2
+10	discard
+11	constant  global-set-key
+12	constant  "m"
+13	constant  vm-mail
+14	call	  2
+15	discard
+16	constant  local-set-key
+17	constant  [134217761]
+18	constant  isearch-forward
+19	call	  2
+20	discard
+21	constant  local-set-key
+22	constant  [134217854]
+23	constant  isearch-forward
+24	call	  2
+25	discard
+26	constant  global-set-key
+27	constant  [134217728]
+28	constant  isearch-forward
+29	call	  2
+30	discard
+31	constant  local-set-key
+32	constant  [134217759]
+33	constant  isearch-backward
+34	call	  2
+35	return

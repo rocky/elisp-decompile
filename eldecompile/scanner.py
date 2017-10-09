@@ -23,6 +23,9 @@ def fn_scanner(fp, show_tokens=False):
         m = re.match("^byte code for (\S+):$", line)
         if m:
             name = m.group(1)
+        elif re.match("^byte code:$", line):
+            fn_type = 'file'
+            name = None
         else:
             name = 'unknown'
 

@@ -1,0 +1,7 @@
+(define-key esc-map "\C-h" 'help-for-help)
+(global-set-key "\C-h" 'backward-delete-char-untabify)
+(global-set-key "\C-xm" 'vm-mail)
+(local-set-key (kbd "M-!") 'isearch-forward)
+(local-set-key (kbd "M-~") 'isearch-forward)
+(global-set-key (kbd "C-M-@") 'isearch-forward)
+(local-set-key (kbd "C-M-_") 'isearch-backward)

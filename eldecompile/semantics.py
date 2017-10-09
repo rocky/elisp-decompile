@@ -162,6 +162,7 @@ TABLE_DIRECT = {
     'QUO':	( '/' ,  ),
     'REM':	( '%' ,  ),
 
+    'TSTRING':	        ( '%{attr}', ),
     'VARSET':	        ( '%{attr}', ),
     'VARBIND':	        ( '%{attr}', ),
     'VARREF':	        ( '%{attr}', ),

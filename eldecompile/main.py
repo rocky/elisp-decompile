@@ -63,17 +63,25 @@ def deparse(path):
     # .. and Generate Elisp
     TransformTree(ast)
     formatter = SourceWalker(ast)
-    indent = '  '
+    is_file = fn_def.fn_type == 'file'
+    if is_file:
+        indent = header = ''
+    else:
+        indent = '  '
+        header = "(%s %s%s%s" % (fn_def.fn_type, fn_def.name, fn_def.args,
+                                 fn_def.docstring)
     result = formatter.traverse(ast, indent)
     result = result.rstrip()
-    header = "(%s %s%s%s" % (fn_def.fn_type, fn_def.name, fn_def.args,
-                                 fn_def.docstring)
+
     if (not header.endswith("\n")
             and not result.startswith("\n") or fn_def.interactive):
         header += "\n"
+
     if fn_def.interactive is not None:
         print("%s%s(interactive %s)\n%s%s)" %
               (header, indent, fn_def.interactive, indent, result))
+    elif is_file:
+        print("%s%s" % (header, result))
     else:
         print("%s%s%s)" % (header, indent, result))
 
