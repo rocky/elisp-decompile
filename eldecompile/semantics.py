@@ -117,6 +117,7 @@ TABLE_R0 = {
 TABLE_DIRECT = {
     'setq_expr':	   ( '%(setq %Q %+%c%)', -1, 0 ),
     'setq_expr_stacked':   ( '%(setq %Q %+%c%)', -1, 0 ),
+    'set_expr':            ( '%(set %c %+%c%)', 0, 1 ),
     'nullary_expr':	   ( '(%c)', 0 ),
     'unary_expr':	   ( '(%c %+%c%)', 1, 0 ),
     'unary_expr_stacked':  ( '(%c %+%S%)', 0 ),

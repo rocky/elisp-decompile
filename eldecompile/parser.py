@@ -45,6 +45,7 @@ class ElispParser(GenericASTBuilder):
         progn ::= body
 
         expr  ::= setq_expr
+        expr  ::= set_expr
 
         # Function related
         expr  ::= binary_expr
@@ -109,8 +110,9 @@ class ElispParser(GenericASTBuilder):
                         COME_FROM LABEL CONSTANT VARSET expr
                         UNBIND
 
-        dolist_init   ::= varbind
-        dolist_list   ::= expr
+        dolist_init         ::= varbind
+        dolist_init_stacked ::= varbind
+        dolist_list         ::= expr
 
 
         # if_else_expr ::= expr GOTO-IF-NIL expr RETURN LABEL
@@ -196,8 +198,10 @@ class ElispParser(GenericASTBuilder):
 
         setq_expr ::= expr VARSET
         setq_expr ::= expr DUP VARSET
-        setq_expr ::= expr DUP VARSET
         setq_expr_stacked ::= expr_stacked DUP VARSET
+
+        set_expr  ::= expr expr SET
+
 
         # FIXME: this is probably to permissive
         end_clause ::= GOTO COME_FROM
