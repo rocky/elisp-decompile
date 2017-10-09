@@ -75,11 +75,11 @@ it might just be easier to understand LAP and disassemble than write this code.
 
 Most people don't know LAP. From working with it so far and from
 seeing what the decompiler has to do, I am pretty convinced that those
-who say they understand it still would have to do a lot of tedious
-work to decipher things.
+who say they understand it still would have to do a lot of
+time-consuming tedious work to decipher things.
 
-And all of this takes a lot of time and is tedious. This is what
-computers were invented for. They do this stuff very fast compared to a human.
+This is what computers were invented for. They do this stuff very fast
+compared to a human.
 
 Here are some simple examples:
 
@@ -117,7 +117,7 @@ The elision is not mine, but what you get back from macroexpand.
 
 It is non-trivial to reconstruct this. And then you have things like
 `dolist` which are just long and boring template kinds of
-things. Because it's long it is very easy to loose site of what it is.
+things. Because it's long it is very easy to lose site of what it is.
 
 ## Stacked values
 
