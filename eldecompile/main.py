@@ -4,6 +4,7 @@ from spark_parser.ast import AST
 from eldecompile.scanner import fn_scanner
 from eldecompile.parser import ElispParser
 from eldecompile.semantics import SourceWalker
+from eldecompile.transform import TransformTree
 from eldecompile.bb import basic_blocks
 from eldecompile.cfg import ControlFlowGraph
 from eldecompile.dominators import DominatorTree, build_df
@@ -60,6 +61,7 @@ def deparse(path):
     print(ast)
 
     # .. and Generate Elisp
+    TransformTree(ast)
     formatter = SourceWalker(ast)
     indent = '  '
     result = formatter.traverse(ast, indent)

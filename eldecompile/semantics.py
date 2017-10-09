@@ -300,7 +300,7 @@ class SourceWalker(GenericASTTraversal, object):
         if self.debug:
             print("XXX indent less len %d" % len(self.indent))
 
-    def traverse(self, node, indent=None, isLambda=False):
+    def traverse(self, node, indent=None):
         if indent is None:
             indent = self.indent
         else:
