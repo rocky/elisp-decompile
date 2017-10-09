@@ -112,7 +112,7 @@ def basic_blocks(instructions):
 
     # Populate label2offset map
     for i, inst in enumerate(instructions):
-        op = inst.type
+        op = inst.kind
         offset = get_offset(inst)
         if op == 'LABEL':
             bblocks.label2offset[inst.attr[1:]] = offset
@@ -123,7 +123,7 @@ def basic_blocks(instructions):
     jump_targets = set()
     bblocks.jumps2offset = {}
     for inst in instructions:
-        op = inst.type
+        op = inst.kind
         offset = get_offset(inst)
 
         if op in JUMP_INSTRUCTIONS:
@@ -162,7 +162,7 @@ def basic_blocks(instructions):
     for i, inst in enumerate(instructions):
         prev_offset = end_offset
         end_offset = get_offset(inst)
-        op = inst.type
+        op = inst.kind
         offset = get_offset(inst)
         if i+1 < len(instructions):
             follow_offset = get_offset(instructions[i+1])

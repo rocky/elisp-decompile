@@ -1,0 +1,27 @@
+byte code for test-dolist-result:
+  args: (a)
+0	constant  (1 2 3)
+1	constant  nil
+2	varbind	  i
+3	dup	  
+4	varbind	  --dolist-tail--
+5	goto-if-nil 2
+8:1	varref	  --dolist-tail--
+9	car	  
+10	varset	  i
+11	constant  princ
+12	varref	  i
+13	call	  1
+14	discard	  
+15	varref	  --dolist-tail--
+16	cdr	  
+17	dup	  
+18	varset	  --dolist-tail--
+19	goto-if-not-nil 1
+22:2	constant  nil
+23	varset	  i
+24	varref	  a
+25	constant  10
+26	plus	  
+27	unbind	  2
+28	return	  

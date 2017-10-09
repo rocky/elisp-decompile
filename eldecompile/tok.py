@@ -4,7 +4,7 @@ class Token:
     """
     def __init__(self, opname, attr=None, offset=-1,
                  op=None):
-        self.type = opname
+        self.kind = opname
         self.op = op
         self.attr = attr
         self.offset = offset
@@ -14,12 +14,12 @@ class Token:
         if isinstance(o, Token):
             # Both are tokens: compare type and attr
             # It's okay if offsets are different
-            return (self.type == o.type)
+            return (self.kind == o.kind)
         else:
-            return self.type == o
+            return self.kind == o
 
     def __repr__(self):
-        return str(self.type)
+        return str(self.kind)
 
     def __repr1__(self, indent, sib_num=''):
         return self.format(line_prefix=indent, sib_num=sib_num)
@@ -33,13 +33,13 @@ class Token:
         else:
             sib_num = ''
         prefix = ('%s%s' % (line_prefix, sib_num))
-        offset_opname = '%5s %-10s' % (self.offset, self.type)
+        offset_opname = '%5s %-10s' % (self.offset, self.kind)
         if not self.attr:
             return "%s%s" % (prefix, offset_opname)
         return "%s%s %s" % (prefix, offset_opname,  self.attr)
 
     def __hash__(self):
-        return hash(self.type)
+        return hash(self.kind)
 
     def __getitem__(self, i):
         raise IndexError

@@ -61,6 +61,7 @@ class ElispParser(GenericASTBuilder):
         expr  ::= and_expr
         expr  ::= not_expr
         expr  ::= dolist_expr
+        expr  ::= dolist_expr_result
 
         # Block releated
         expr  ::= let_expr_star
@@ -94,12 +95,22 @@ class ElispParser(GenericASTBuilder):
 
         when_expr ::= expr GOTO-IF-NIL body COME_FROM LABEL
 
-        dolist_expr ::= list varbind DUP VARBIND
+        dolist_expr ::= dolist_list dolist_init DUP VARBIND
                         GOTO-IF-NIL-ELSE-POP COME_FROM LABEL
-                        VARREF CAR VARSET body VARREF CDR DUP VARSET GOTO-IF-NOT-NIL
-                        CONSTANT COME_FROM LABEL UNBIND
+                        VARREF CAR VARSET body
+                        VARREF CDR DUP VARSET GOTO-IF-NOT-NIL
+                        CONSTANT COME_FROM LABEL
+                        UNBIND
 
-        list ::= expr
+        dolist_expr_result ::= dolist_list dolist_init DUP VARBIND
+                        GOTO-IF-NIL COME_FROM LABEL
+                        VARREF CAR VARSET body
+                        VARREF CDR DUP VARSET GOTO-IF-NOT-NIL
+                        COME_FROM LABEL CONSTANT VARSET expr
+                        UNBIND
+
+        dolist_init   ::= varbind
+        dolist_list   ::= expr
 
 
         # if_else_expr ::= expr GOTO-IF-NIL expr RETURN LABEL

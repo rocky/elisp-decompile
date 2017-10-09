@@ -133,15 +133,16 @@ TABLE_DIRECT = {
     'labeled_clause':	   ( '%c', 1 ),
     'labeled_final_clause': ('\n%|(%c %c)', 1, 2),
 
-    'if_expr':		( '%(if %c\n%+%|%c%)', 0, 2 ),
-    'if_else_expr':	( '%(if %c\n%+%|%c%_%c)%_', 0, 2, 5 ),
-    'when_expr':	( '%(when %c\n%+%|%c%)', 0, 2 ),
-    'or_expr':		( '(or %+%c %c%)', 0, 2 ),
-    'and_expr':		( '(and %+%c %c%)', 0, 2 ),
-    'not_expr':		( '(null %+%c%)', 0 ),
-    'dolist_expr':      ( '%(dolist%+%(%c %c)\n%_%|%c)%_', 1, 0, 10),
+    'if_expr':		  ( '%(if %c\n%+%|%c%)', 0, 2 ),
+    'if_else_expr':	  ( '%(if %c\n%+%|%c%_%c)%_', 0, 2, 5 ),
+    'when_expr':	  ( '%(when %c\n%+%|%c%)', 0, 2 ),
+    'or_expr':		  ( '(or %+%c %c%)', 0, 2 ),
+    'and_expr':		  ( '(and %+%c %c%)', 0, 2 ),
+    'not_expr':		  ( '(null %+%c%)', 0 ),
+    'dolist_expr':        ( '%(dolist%+%(%c %c)\n%_%|%c)%_', 1, 0, 10),
+    'dolist_expr_result': ( '%(dolist%+%(%c %c %c)\n%_%|%c)%_', 1, 0, 20, 10),
 
-    'exprs':            ( '%C', (0, 1000) ),
+    'exprs':              ( '%C', (0, 1000) ),
 
 
     'let_expr_stacked':	( '%(let %.(%.%c)%-%c%)', 0, 1 ),
@@ -314,6 +315,10 @@ class SourceWalker(GenericASTTraversal, object):
         result = self.f.getvalue()
         self.pending_newlines = p
         return result
+
+    def n_dolist_init(self, node):
+        self.write(node[0][-1].attr)
+        self.prune()
 
     def n_discard(self, node):
         self.pop1()
@@ -512,8 +517,8 @@ class SourceWalker(GenericASTTraversal, object):
         for i in MAP_DIRECT[1:]:
             key = key[i]
 
-        if key.type in table:
-            self.template_engine(table[key.type], node)
+        if key.kind in table:
+            self.template_engine(table[key.kind], node)
             self.prune()
 
     def write(self, *data):
