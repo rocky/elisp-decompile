@@ -48,14 +48,18 @@ sample LAP files in `testdata` in case you want to try a canned example.
 
 The specfic functions in `dedis.el` are `disassemble-file` and `disassemble-full`.
 
-So inside Emacs find a function you want to disassemble and run `M-x disassemble-full`
+So inside Emacs find a function you want to disassemble and run `M-x disassemble-full`.
+Or find a bytecode file you want and run or `M-x disassembe-file`
 
-This is pretty much like `disassemble`, but we don't truncate the
-output of docstrings or other things that `disassemble` generally does.
+The first is like `disassemble`, but we don't truncate the
+output of docstrings or other things that `disassemble` generally does. The second is
+like `disassemble-full` but we start out with a bytecode file instead of a lisp function.
 
 ## Disassemble LAP file
 
-After you have a LAP file and have set up the Python code, you can try to disassemble:
+After you have written the results of the last section to LAP file,
+the file should end in `.lap`, and have set up the Python code, you
+can try to disassemble:
 
 ```
 $ python eldecompile/main.py <name-of-lap-file>
@@ -74,12 +78,12 @@ Interestingly, a number of people have proffered the suggestion that
 it might just be easier to understand LAP and disassemble than write this code.
 
 Most people don't know LAP. From working with it so far and from
-seeing what the decompiler has to do, I am pretty convinced that those
-who say they understand it still would have to do a lot of
-time-consuming tedious work to decipher things.
+seeing what the decompiler has to do and how intricate it is, I am
+pretty convinced that those who say they understand LAP have to do *a
+lot* of time-consuming tedious work to decipher things.
 
 This is what computers were invented for. They do this stuff very fast
-compared to a human.
+compared to humans.
 
 Here are some simple examples:
 
@@ -127,3 +131,11 @@ can be some non-locality in when a value is pushed with when it is used and popp
 ## Keyboard bindings
 
 Yet another piece of tedium for the few that know how to do.
+
+See how fast you can come up with the key names for:
+
+```
+[134217761]
+[134217854]
+[134217820]
+```
