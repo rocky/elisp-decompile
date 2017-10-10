@@ -28,13 +28,10 @@ def emacs_key_normalize(name_expr_node):
             i = int(m.group(1))
             if 134217728 <= i <= 134217759:
                 # FIXME: not quite right
-                result = '(kbd "C-M-%s")' % chr(134217759 - i + ord('!'))
+                result = '(kbd "C-M-%s")' % chr(95 - (134217759 - i)).lower()
                 name_expr_node[0].kind = 'TSTRING'
             elif 134217761 <= i <= 134217854:
-                try:
-                    result = '(kbd "M-%s")' % chr(159 - (134217854 - i + ord('!')))
-                except:
-                    from trepan.api import debug; debug()
+                result = '(kbd "M-%s")' % chr(126 - (134217854 - i)).lower()
                 const_node.kind = 'TSTRING'
 
     if result != s:

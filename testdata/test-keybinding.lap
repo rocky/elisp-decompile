@@ -28,11 +28,51 @@ byte code:
 25	discard
 26	constant  global-set-key
 27	constant  [134217728]
-28	constant  isearch-forward
+28	constant  C-m-at
 29	call	  2
 30	discard
-31	constant  local-set-key
-32	constant  [134217759]
-33	constant  isearch-backward
+31	constant  global-set-key
+32	constant  [134217729]
+33	constant  C-M-a
 34	call	  2
-35	return
+35	discard
+36	constant  global-set-key
+37	constant  [134217730]
+38	constant  C-M-b
+39	call	  2
+40	discard
+41	constant  local-set-key
+42	constant  [134217759]
+43	constant  C-M-_
+44	call	  2
+45	discard
+46	constant  local-set-key
+47	constant  [C-M-down]
+48	constant  C-M-down
+49	call	  2
+50	discard
+51	constant  local-set-key
+52	constant  [134217820]
+53	constant  M-backspace
+54	call	  2
+55	discard
+56	constant  local-set-key
+57	constant  [134217822]
+58	constant  M-caret
+59	call	  2
+60	discard
+61	constant  local-set-key
+62	constant  [27 right]
+63	constant  ESC-right
+64	call	  2
+65	discard
+66	constant  local-set-key
+67	constant  [134217843 27]
+68	constant  M-s-ESC
+69	call	  2
+70	discard
+71	constant  local-set-key
+72	constant  [134217824]
+73	constant  M-backtick
+74	call	  2
+75	return
