@@ -4,11 +4,13 @@ import re
 from spark_parser import GenericASTTraversal
 
 TRANSFORM = {
-    ("call_exprn", 4): ('name_expr', 0)
+    ("call_exprn", 4): ('name_expr', 0),
+    ("call_exprn", 5): ('name_expr', 0)
 }
 
-def emacs_key_normalize(const_node):
-    s = const_node[0].attr
+def emacs_key_normalize(name_expr_node):
+    const_node = name_expr_node[0]
+    s = const_node.attr
     result = s
     if s[0] == '"':
         result = '"'
@@ -27,7 +29,7 @@ def emacs_key_normalize(const_node):
             if 134217728 <= i <= 134217759:
                 # FIXME: not quite right
                 result = '(kbd "C-M-%s")' % chr(134217759 - i + ord('!'))
-                const_node.kind = 'TSTRING'
+                name_expr_node[0].kind = 'TSTRING'
             elif 134217761 <= i <= 134217854:
                 try:
                     result = '(kbd "M-%s")' % chr(159 - (134217854 - i + ord('!')))
@@ -66,6 +68,19 @@ class TransformTree(GenericASTTraversal, object):
         if ( fn_name == 'CONSTANT' and
              fn_name.attr in frozenset(['global-set-key', 'local-set-key']) ):
             key_expr = call_node[1][0]
+            if  key_expr == 'name_expr' and key_expr[0] == 'CONSTANT':
+                emacs_key_normalize(key_expr)
+                pass
+            pass
+        return
+
+    def n_call_exprn_5_name_expr_0(self, call_node):
+        assert call_node[0][0] == 'name_expr'
+        name_expr = call_node[0][0]
+        fn_name = name_expr[0]
+        if ( fn_name == 'CONSTANT' and
+             fn_name.attr == 'define-key'):
+            key_expr = call_node[2][0]
             if  key_expr == 'name_expr' and key_expr[0] == 'CONSTANT':
                 emacs_key_normalize(key_expr)
                 pass
