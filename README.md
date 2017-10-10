@@ -121,7 +121,7 @@ The elision is not mine, but what you get back from macroexpand.
 
 It is non-trivial to reconstruct this. And then you have things like
 `dolist` which are just long and boring template kinds of
-things. Because it's long it is very easy to lose site of what it is.
+things. Because it's long it is very easy to lose sight of what it is.
 
 ## Stacked values
 
