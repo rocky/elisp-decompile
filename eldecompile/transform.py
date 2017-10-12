@@ -8,10 +8,8 @@ TRANSFORM = {
     ("call_exprn", 5): ('name_expr', 0)
 }
 
-def emacs_key_normalize(name_expr_node):
-    const_node = name_expr_node[0]
-    s = const_node.attr
-    result = s
+def emacs_key_translate(s):
+    result = ''
     if s[0] == '"':
         result = '"'
         for c in s[1:]:
@@ -21,21 +19,35 @@ def emacs_key_normalize(name_expr_node):
                 result += c
                 pass
             pass
-        const_node.kind = 'TSTRING'
     else:
-        m = re.match("^\[(\d+)\]$", s)
+        m = re.match("^\[(\w+(?: \w+)*)\]$", s)
         if m:
-            i = int(m.group(1))
-            if 134217728 <= i <= 134217759:
-                # FIXME: not quite right
-                result = '(kbd "C-M-%s")' % chr(95 - (134217759 - i)).lower()
-                name_expr_node[0].kind = 'TSTRING'
-            elif 134217761 <= i <= 134217854:
-                result = '(kbd "M-%s")' % chr(126 - (134217854 - i)).lower()
-                const_node.kind = 'TSTRING'
+            for s in m.group(1).split():
+                try:
+                    i = int(s)
+                    if i == 27:
+                        result += ' ESC'
+                    elif 134217728 <= i <= 134217759:
+                        result += ' C-M-%s' % chr(95 - (134217759 - i)).lower()
+                    elif 134217761 <= i <= 134217854:
+                        result += ' M-%s' % chr(126 - (134217854 - i)).lower()
+                except ValueError:
+                    # FIXME: check that is something like "right" "up", etc.
+                    # Also handle <C-M-down>
+                    result += (' <%s>' % s)
 
     if result != s:
-        const_node.attr = result
+        return 'kbd("%s")' % result.lstrip(' ')
+    return s
+
+
+def emacs_key_normalize(name_expr_node):
+    const_node = name_expr_node[0]
+    s = const_node.attr
+    result = emacs_key_translate(s)
+    if result != s:
+        const_node.kind = 'TSTRING'
+        const_node.attr = result.lstrip(' ')
 
 class TransformTree(GenericASTTraversal, object):
     def __init__(self, ast, debug=False):
@@ -86,3 +98,20 @@ class TransformTree(GenericASTTraversal, object):
 
     def traverse(self, node):
         self.preorder(node)
+
+if __name__ == '__main__':
+    for seq in (
+            """
+            [134217761]
+            [134217854]
+            [134217728]
+            [134217729]
+            [134217730]
+            [134217759]
+            [134217820]
+            [134217822]
+            [134217843|27]
+            [27|right]
+            """.split()
+            ):
+        print("'%s' -> '%s'" % (seq,  emacs_key_translate(seq.strip().replace('|', ' '))))
