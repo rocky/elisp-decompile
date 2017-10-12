@@ -106,7 +106,7 @@ have been filled in.
 Or consider `with-temp-buffer`:
 
 ```
-(macroexpand '(with-temp-buffer 5))
+(with-temp-buffer 5)
 ```
 
 This expands to:
