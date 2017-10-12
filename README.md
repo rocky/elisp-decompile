@@ -1,4 +1,4 @@
-A decompiler for Emacs Lisp bytecode... or at least a proof of concept.
+A [decompiler](https://en.wikipedia.org/wiki/Decompiler) for Emacs Lisp bytecode... or at least a proof of concept.
 
 This code uses the [Python spark-parser](https://pypi.python.org/pypi/spark_parser/) for its Earley algorithm parser and the code organization.
 
@@ -112,15 +112,18 @@ Or consider `with-temp-buffer`:
 This expands to:
 
 ```
-(let ((temp-buffer (generate-new-buffer " *temp*")))
-   (with-current-buffer temp-buffer (unwind-protect (progn 5)
-   (and ... ...))))
+(let
+    ((temp-buffer
+      (generate-new-buffer " *temp*")))
+  (with-current-buffer temp-buffer
+    (unwind-protect
+	(progn 5)
+      (and
+       (buffer-name temp-buffer)
+       (kill-buffer temp-buffer)))))
 ```
 
-The elision is not mine, but what you get back from macroexpand.
-
-It is non-trivial to reconstruct this. And then you have things like
-`dolist` which are just long and boring template kinds of
+And then you have things like `dolist` which are just long and boring template kinds of
 things. Because it's long it is very easy to lose sight of what it is.
 
 ## Stacked values
