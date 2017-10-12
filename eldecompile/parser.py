@@ -44,6 +44,7 @@ class ElispParser(GenericASTBuilder):
 
         progn ::= body
 
+        expr  ::= DUP
         expr  ::= setq_expr
         expr  ::= set_expr
 
@@ -86,7 +87,7 @@ class ElispParser(GenericASTBuilder):
         save_current_buffer ::= SAVE-CURRENT-BUFFER body UNBIND
         set_buffer          ::= expr SET-BUFFER
 
-        unary_expr_stacked ::= unary_op
+        unary_expr_stacked  ::= unary_op
         binary_expr_stacked ::= expr binary_op
 
 
@@ -96,23 +97,32 @@ class ElispParser(GenericASTBuilder):
 
         when_expr ::= expr GOTO-IF-NIL body COME_FROM LABEL
 
-        dolist_expr ::= dolist_list dolist_init DUP VARBIND
+        dolist_expr ::= dolist_list dolist_init_var
                         GOTO-IF-NIL-ELSE-POP COME_FROM LABEL
-                        VARREF CAR VARSET body
-                        VARREF CDR DUP VARSET GOTO-IF-NOT-NIL
+                        dolist_loop_iter_set body
+                        DUP VARSET GOTO-IF-NOT-NIL
                         CONSTANT COME_FROM LABEL
                         UNBIND
 
-        dolist_expr_result ::= dolist_list dolist_init DUP VARBIND
+        dolist_expr ::= dolist_list dolist_init_var
+                        GOTO-IF-NIL-ELSE-POP COME_FROM LABEL
+                        dolist_loop_iter_set_stacking body_stacked
+                        DUP VARSET GOTO-IF-NOT-NIL
+                        CONSTANT COME_FROM LABEL
+                        UNBIND
+
+
+        dolist_expr_result ::= dolist_list dolist_init_var
                         GOTO-IF-NIL COME_FROM LABEL
-                        VARREF CAR VARSET body
+                        dolist_loop_iter_set body
                         VARREF CDR DUP VARSET GOTO-IF-NOT-NIL
                         COME_FROM LABEL CONSTANT VARSET expr
                         UNBIND
 
-        dolist_init         ::= varbind
-        dolist_init_stacked ::= varbind
-        dolist_list         ::= expr
+        dolist_loop_iter_set ::= VARREF CAR VARSET
+        dolist_loop_iter_set_stacking ::= VARREF CAR DUP VARSET
+        dolist_init_var      ::= varbind DUP VARBIND
+        dolist_list          ::= expr
 
 
         # if_else_expr ::= expr GOTO-IF-NIL expr RETURN LABEL
@@ -201,6 +211,7 @@ class ElispParser(GenericASTBuilder):
         setq_expr_stacked ::= expr_stacked DUP VARSET
 
         set_expr  ::= expr expr SET
+        set_expr  ::= expr expr STACK-SET SET
 
 
         # FIXME: this is probably to permissive

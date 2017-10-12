@@ -1,0 +1,15 @@
+byte code for test-dotemacs3:
+  args: (foo)
+0	constant  put
+1	constant  set-goal-column
+2	constant  disabled
+3	constant  nil
+4	call	  3
+5	discard
+6	varref	  foo
+7	car
+8	varref	  pair
+9	cdr
+10	car
+11	set
+12	return

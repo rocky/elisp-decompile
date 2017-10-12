@@ -96,7 +96,8 @@
 from __future__ import print_function
 
 import re, sys
-from spark_parser import GenericASTTraversal
+from spark_parser import GenericASTTraversal, GenericASTTraversalPruningException
+from eldecompile.tok import Token
 
 try:
     from io import StringIO
@@ -140,8 +141,7 @@ TABLE_DIRECT = {
     'or_expr':		  ( '(or %+%c %c%)', 0, 2 ),
     'and_expr':		  ( '(and %+%c %c%)', 0, 2 ),
     'not_expr':		  ( '(null %+%c%)', 0 ),
-    'dolist_expr':        ( '%(dolist%+%(%c %c)\n%_%|%c)%_', 1, 0, 10),
-    'dolist_expr_result': ( '%(dolist%+%(%c %c %c)\n%_%|%c)%_', 1, 0, 20, 10),
+    'dolist_expr_result': ( '%(dolist%+%(%c %c %c)\n%_%|%c)%_', 1, 0, 16, 6),
 
     'exprs':              ( '%C', (0, 1000) ),
 
@@ -301,6 +301,12 @@ class SourceWalker(GenericASTTraversal, object):
         if self.debug:
             print("XXX indent less len %d" % len(self.indent))
 
+    def find_first_token(self, node):
+        if isinstance(node, Token):
+            return node
+        else:
+            return self.find_first_token(node[0])
+
     def traverse(self, node, indent=None):
         if indent is None:
             indent = self.indent
@@ -318,8 +324,36 @@ class SourceWalker(GenericASTTraversal, object):
         self.pending_newlines = p
         return result
 
-    def n_dolist_init(self, node):
+    def n_dolist_init_var(self, node):
         self.write(node[0][-1].attr)
+        self.prune()
+
+    def n_dolist_expr(self, node):
+        assert node[0] == 'dolist_list'
+        assert node[1] == 'dolist_init_var'
+        try:
+            self.template_engine(("%(dolist%+%(%c %c)\n%_%|", 1, 0), node)
+        except GenericASTTraversalPruningException:
+            pass
+        assert node[6] == 'body'
+        body = node[6]
+        skipped_last = False
+        if body[0] == 'exprs' and body[0][0] == 'expr_stmt':
+            # If we have a list of exprs and the last one is about --dolist-tail--
+            # it is part of the iteration, so skip it.
+            exprs = body[0]
+            last_expr_stmt = exprs[-1]
+            token = self.find_first_token(last_expr_stmt)
+            if token == 'VARREF' and token.attr == '--dolist-tail--':
+                for n in exprs[:-1]:
+                    self.preorder(n)
+                skipped_last = True
+        if not skipped_last:
+            self.preorder(body)
+        try:
+            self.template_engine(")%_", node)
+        except GenericASTTraversalPruningException:
+            pass
         self.prune()
 
     def n_discard(self, node):

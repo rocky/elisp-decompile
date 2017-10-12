@@ -1,0 +1,87 @@
+byte code for test-dotemacs:
+  args: nil
+0	constant  global-set-key
+1	constant  ""
+2	constant  backward-delete-char-untabify
+3	call	  2
+4	discard
+5	constant  global-set-key
+6	constant  ""
+7	constant  advertised-undo
+8	call	  2
+9	discard
+10	constant  global-set-key
+11	constant  ""
+12	constant  delete-char
+13	call	  2
+14	discard
+15	constant  global-set-key
+16	constant  "m"
+17	constant  vm-mail
+18	call	  2
+19	discard
+20	constant  global-set-key
+21	constant  ""
+22	constant  isearch-forward-regexp
+23	call	  2
+24	discard
+25	constant  global-set-key
+26	constant  ""
+27	constant  isearch-backward-regexp
+28	call	  2
+29	discard
+30	constant  global-set-key
+31	constant  [134217747]
+32	constant  isearch-forward
+33	call	  2
+34	discard
+35	constant  global-set-key
+36	constant  [134217746]
+37	constant  isearch-backward
+38	call	  2
+39	discard
+40	constant  tool-bar-mode
+41	constant  nil
+42	call	  1
+43	discard
+44	constant  auto-compression-mode
+45	call	  0
+46	discard
+47	constant  expand-file-name
+48	constant  "~/elisp"
+49	call	  1
+50	constant  expand-file-name
+51	constant  "~/.emacs.d/lisp"
+52	call	  1
+53	constant  "/usr/local/share/emacs/site-lisp"
+54	constant  "/usr/share/emacs/site-lisp/git"
+55	list4
+56	constant  nil
+57	varbind	  dir
+58	dup
+59	varbind	  --dolist-tail--
+60	goto-if-nil-else-pop 3
+63:1	varref	  --dolist-tail--
+64	car
+65	varset	  dir
+66	constant  file-directory-p
+67	constant  expand-file-name
+68	varref	  dir
+69	call	  1
+70	call	  1
+71	goto-if-nil 2
+74	constant  add-to-list
+75	constant  load-path
+76	constant  expand-file-name
+77	varref	  dir
+78	call	  1
+79	call	  2
+80	discard
+81:2	varref	  --dolist-tail--
+82	cdr
+83	dup
+84	varset	  --dolist-tail--
+85	goto-if-not-nil 1
+88	constant  nil
+89:3	unbind	  2
+90	return
