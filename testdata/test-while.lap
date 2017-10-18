@@ -1,0 +1,8 @@
+byte code for test-while:
+  args: (a)
+0:1	varref	  a
+1	goto-if-nil-else-pop 2
+4	constant  1
+5	varset	  x
+6	goto	  1
+9:2	return	  

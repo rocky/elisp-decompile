@@ -64,6 +64,7 @@ class ElispParser(GenericASTBuilder):
         expr  ::= not_expr
         expr  ::= dolist_expr
         expr  ::= dolist_expr_result
+        expr  ::= while_expr
 
         # Block releated
         expr  ::= let_expr_star
@@ -94,6 +95,12 @@ class ElispParser(GenericASTBuilder):
         # if_expr ::= expr GOTO-IF-NIL-ELSE-POP expr LABEL
         # if_expr ::= expr GOTO-IF-NIL-ELSE-POP progn LABEL
         if_expr ::= expr GOTO-IF-NIL expr COME_FROM LABEL
+
+        if_expr ::= expr GOTO-IF-NIL expr COME_FROM LABEL
+
+        while_expr ::= COME_FROM LABEL expr
+                       GOTO-IF-NIL-ELSE-POP body
+                       GOTO COME_FROM LABEL
 
         when_expr ::= expr GOTO-IF-NIL body COME_FROM LABEL
 

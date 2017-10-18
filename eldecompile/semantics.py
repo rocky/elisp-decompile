@@ -137,6 +137,7 @@ TABLE_DIRECT = {
 
     'if_expr':		  ( '%(if %c\n%+%|%c%)', 0, 2 ),
     'if_else_expr':	  ( '%(if %c\n%+%|%c%_%c)%_', 0, 2, 5 ),
+    'while_expr':	  ( '%(while %c\n%+%|%c%)', 2, 4 ),
     'when_expr':	  ( '%(when %c\n%+%|%c%)', 0, 2 ),
     'or_expr':		  ( '(or %+%c %c%)', 0, 2 ),
     'and_expr':		  ( '(and %+%c %c%)', 0, 2 ),
