@@ -73,6 +73,7 @@ def fn_scanner(fp, show_tokens=False):
                      interactive, fn_type)
     customize = {}
 
+    label = None
     for i, line in enumerate(lines[1+start_adjust:]):
         fields = line.split()
         offset = fields[0]
@@ -84,7 +85,8 @@ def fn_scanner(fp, show_tokens=False):
         offset, opname = fields[:2]
         if opname == 'constant':
             attr = line[line.index(' '):].strip()
-            tokens.append(Token('CONSTANT', attr, offset.strip()))
+            tokens.append(Token('CONSTANT', attr, offset.strip(),
+                                label = label))
         elif opname[:-1] in ('list', 'concat', 'cal'):
             if opname.startswith('call'):
                 count = int(fields[2]) + 1
@@ -96,18 +98,21 @@ def fn_scanner(fp, show_tokens=False):
                 count = int(opname[-1])
                 opname = "%s_%d" % (opname[:-1], count)
             opname = opname.upper().strip()
-            tokens.append(Token(opname, count, offset.strip()))
+            tokens.append(Token(opname, count, offset.strip(),
+                                label = label))
             customize[opname] = int(count)
         elif len(fields) == 3:
             offset, opname, attr = fields
             tokens.append(Token(opname.upper().strip(), attr.strip(),
-                                offset.strip()))
+                                offset.strip(),
+                                label=label))
         elif len(fields) == 2:
             offset, opname = fields
             tokens.append(Token(opname.upper().strip(), None, offset.strip()))
             pass
         else:
             print("Can't handle line %d:\n\t%s" % (i, line))
+        label = None
         pass
 
     if show_tokens:

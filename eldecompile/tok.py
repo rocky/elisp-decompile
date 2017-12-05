@@ -3,11 +3,12 @@ class Token:
     Class representing a byte-code instruction.
     """
     def __init__(self, opname, attr=None, offset=-1,
-                 op=None):
+                 op=None, label=None):
         self.kind = opname
         self.op = op
         self.attr = attr
         self.offset = offset
+        self.label = label
 
     def __eq__(self, o):
         """ '==', but it's okay if offset is different"""

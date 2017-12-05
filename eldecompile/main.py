@@ -2,7 +2,7 @@
 from spark_parser.ast import AST
 
 from eldecompile.scanner import fn_scanner
-from eldecompile.parser import ElispParser
+from eldecompile.parser import ElispParser, ParserError
 from eldecompile.semantics import SourceWalker
 from eldecompile.transform import TransformTree
 from eldecompile.bb import basic_blocks
@@ -57,7 +57,11 @@ def deparse(path):
     parser_debug = {'rules': False, 'transition': False, 'reduce' : True,
                    'errorstack': 'full', 'dups': False }
 
-    ast = p.parse(tokens, debug=parser_debug)
+    try:
+        ast = p.parse(tokens, debug=parser_debug)
+    except ParserError as e:
+        print("file: %s\n\t %s\n" % (path, e))
+        sys.exit(1)
     print(ast)
 
     # .. and Generate Elisp

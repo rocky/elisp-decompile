@@ -1,0 +1,19 @@
+byte code for fib:
+  args: (n)
+0	varref	  n
+1	constant  1
+2	lss
+3	goto-if-nil 1
+6	constant  1
+7	return
+8:1	constant  fib
+9	varref	  n
+10	sub1
+11	call	  1
+12	constant  fib
+13	varref	  n
+14	constant  2
+15	diff
+16	call	  1
+17	plus
+18	return

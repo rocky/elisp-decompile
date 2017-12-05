@@ -6,12 +6,49 @@ from spark_parser import GenericASTBuilder, DEFAULT_DEBUG as PARSER_DEFAULT_DEBU
 
 nop_func = lambda self, args: None
 
+class ParserError(Exception):
+    def __init__(self, token, offset):
+        self.token = token
+        self.offset = offset
+
+    def __str__(self):
+        return "Parse error at or near `%r' instruction at offset %s\n" % \
+               (self.token, self.offset)
+
 class ElispParser(GenericASTBuilder):
     def __init__(self, AST, tokens, start='fn_body', debug=PARSER_DEFAULT_DEBUG):
         self.tokens = tokens
         super(ElispParser, self).__init__(AST, start, debug)
         self.collect = frozenset(['exprs', 'varlist' 'labeled_clauses'])
         self.new_rules = set()
+
+    def error(self, tokens, index):
+        # Find the last label
+        start, finish = -1, -1
+        n = len(tokens)
+        for start in range(index, -1, -1):
+            if tokens[start].label:  break
+            pass
+        for finish in range(index+1, len(tokens)):
+            if tokens[finish].label:  break
+            pass
+        if start == finish == -1:
+            start, finish = (0, n)
+        elif start == -1:
+            start = 0
+        elif finish == -1:
+            finish = n
+
+        err_token = tokens[index]
+        print("Instruction context:")
+        for i in range(start, finish):
+            if i != index:
+                indent = '   '
+            else:
+                indent = '-> '
+            print("%s%s" % (indent, tokens[i]))
+        raise ParserError(err_token, err_token.offset)
+        return
 
     def nonterminal(self, nt, args):
         if nt in self.collect and len(args) > 1:
@@ -189,6 +226,7 @@ class ElispParser(GenericASTBuilder):
         unary_op ::= SEQUENCEP
         unary_op ::= STRINGP
         unary_op ::= SUBR-ARITY
+        unary_op ::= SUB1
         unary_op ::= SUBRP
         unary_op ::= SYMBOL-FUNCTION
         unary_op ::= SYMBOL-NAME
