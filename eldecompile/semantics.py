@@ -162,6 +162,7 @@ TABLE_DIRECT = {
     'PLUS':	( '+' ,  ),
     'QUO':	( '/' ,  ),
     'REM':	( '%' ,  ),
+    'SUB1':	( '1-' , ),
 
     'TSTRING':	        ( '%{attr}', ),
     'VARSET':	        ( '%{attr}', ),
