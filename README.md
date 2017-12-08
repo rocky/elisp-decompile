@@ -92,7 +92,7 @@ deleted the source code and just have the bytecode file.
 But, I know, you always use version control and emacs provides it's
 tilde backup file.
 
-So that leads us to the situation where there are several possible
+So that leads us to the situation where there are _several_ possible
 source code versions around, e.g. a development version and a stable
 version, and you'd like to know which one of those you have loaded.
 
