@@ -72,7 +72,35 @@ the Python and comment this stuff out.
 Also, what we can decompile right now is a bit limited. I see no
 technical difficulties other than lots of work. So please help out.
 
-# Is it worth it?
+# But is it worth it?
+
+### It's GNU Emacs, so of course I have the source code!
+
+There is a difference between being able to find the source code and
+having it accessible when you need it, such as at runtime in a stack
+trace.
+
+When many people hear the word "decompile" they think reverse
+engineering or hacking code where source has deliberately been
+withheld.
+
+There are other situations where a decompiler is useful.
+
+A common case is where you wrote the code, but have accidentally
+deleted the source code and just have the bytecode file.
+
+But, I know, you always use version control and emacs provides it's
+tilde backup file.
+
+So that leads us to the situation where there are several possible
+source code versions around, e.g. a development version and a stable
+version, and you'd like to know which one of those you have loaded.
+
+And then we come to situation where there _is_ no source-code
+file. One can create functions on the fly and change them on the
+fly. Similarly, functions can create functions when run interactively.
+
+### Isn't it simpler to just dissasemble?
 
 Interestingly, a number of people have proffered the suggestion that
 it might just be easier to understand LAP and disassemble than write this code.
@@ -87,7 +115,7 @@ compared to humans.
 
 Here are some simple examples:
 
-## Macros are expanded
+#### Macros are expanded
 
 I would find it tedious enough just to descramble something that has
 been macro expanded. And I am sure people may find that unsatisfying
@@ -126,12 +154,12 @@ This expands to:
 And then you have things like `dolist` which are just long and boring template kinds of
 things. Because it's long it is very easy to lose sight of what it is.
 
-## Stacked values
+#### Stacked values
 
 Keeping track of values pushed on a stack is also tedious. Again there
 can be some non-locality in when a value is pushed with when it is used and popped.
 
-## Keyboard bindings
+#### Keyboard bindings
 
 Yet another piece of tedium for the few that know how to do.
 
