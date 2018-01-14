@@ -17,8 +17,7 @@ I gave a
 slide showing elisp bytecode and a deparse of that back to Emacs Lisp.
 
 
-There isn't a lot on the details of Elisp bytecode, but see [the section on Elisp
-Disassembly](https://www.gnu.org/software/emacs/manual/html_node/elisp/Disassembly.html).
+We are currently working on documenting Elisp bytecode. See https://github.com/rocky/elisp-lap .
 
 You may find yourself consulting the source code: [`emacs/lisp/emacs-lisp/bytecomp.el`](http://git.savannah.gnu.org/cgit/emacs.git/tree/lisp/emacs-lisp/bytecomp.el),
 [`emacs/src/data.c`](http://git.savannah.gnu.org/cgit/emacs.git/tree/src/data.c) and [`emacs/src/bytecode.c`](http://git.savannah.gnu.org/cgit/emacs.git/tree/src/bytecode.c).
