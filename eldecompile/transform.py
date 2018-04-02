@@ -71,9 +71,13 @@ class TransformTree(GenericASTTraversal, object):
 
 
     def n_call_exprn_4_name_expr_0(self, call_node):
-        assert call_node[0][0] == 'name_expr'
-        name_expr = call_node[0][0]
-        fn_name = name_expr[0]
+        expr = call_node[0]
+        if expr[0] == 'name_expr':
+            fn_name = expr[0][0]
+        else:
+            assert expr[0] == 'VARREF'
+            fn_name = expr[0]
+
         if ( fn_name == 'CONSTANT' and
              fn_name.attr in frozenset(['global-set-key', 'local-set-key']) ):
             key_expr = call_node[1][0]

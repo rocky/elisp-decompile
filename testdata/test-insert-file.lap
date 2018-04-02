@@ -1,0 +1,9 @@
+byte code for insert-file:
+  doc-start 58:  Insert contents of file FILENAME into buffer after point.
+  args: (arg1)
+ interactive: "*fInsert file: "
+0	   constant	        insert-file-1
+1	   stack-ref	        1
+2	   constant	        insert-file-contents
+3	   call		        2
+4	   return

@@ -9,7 +9,7 @@ from collections import namedtuple
 FuncDef = namedtuple('FuncDef', ['name', 'args', 'opt_args',
                                  'docstring', 'interactive', 'fn_type'])
 
-def fn_scanner(fp, show_tokens=False):
+def fn_scanner(fp, show_assembly=False):
     tokens = []
     lines = fp.readlines()
     line = lines[0]
@@ -29,31 +29,31 @@ def fn_scanner(fp, show_tokens=False):
         else:
             name = 'unknown'
 
-    line = lines[1]
+    cur_index = 1
+    line = lines[cur_index]
     if line.startswith('  doc:  '):
         docstring = '\n  "%s"\n' % line[len('  doc:  '):].rstrip("\n")
-        start_adjust = 1
+        cur_index += 1
     elif line.startswith('  doc-start '):
         m = re.match('^  doc-start (\d+):  (.*)$', line)
         if m:
             tot_len = int(m.group(1))
             docstring = '\n  "' + m.group(2) + '\n'
             l = len(m.group(2))
-            start_adjust = 1
-            while l < tot_len:
-                line = lines[1 + start_adjust]
+            cur_index += 1
+            while l < tot_len-1:
+                line = lines[cur_index]
                 l += len(line)
                 docstring += line
-                start_adjust += 1
+                cur_index += 1
                 pass
             docstring = docstring.rstrip("\n")
             docstring += '"'
             pass
     else:
         docstring = ''
-        start_adjust = 0
 
-    line = lines[1+start_adjust]
+    line = lines[cur_index]
     m = re.match("^  args: (\([^)]*\))", line)
     if m:
         args = m.group(1)
@@ -61,20 +61,20 @@ def fn_scanner(fp, show_tokens=False):
         args = '()'
     else:
         args = '(?)'
-    start_adjust += 1
+    cur_index += 1
 
-    line = lines[1+start_adjust]
+    line = lines[cur_index]
     if line.startswith(' interactive: '):
         interactive = line[len(' interactive: '):].rstrip("\n")
-        start_adjust += 1
-        line = lines[1+start_adjust]
+        cur_index += 1
+        line = lines[cur_index]
 
     fn_def = FuncDef(name, args, None, docstring,
                      interactive, fn_type)
     customize = {}
 
     label = None
-    for i, line in enumerate(lines[1+start_adjust:]):
+    for i, line in enumerate(lines[cur_index:]):
         fields = line.split()
         offset = fields[0]
         colon_point = offset.find(':')
@@ -84,7 +84,8 @@ def fn_scanner(fp, show_tokens=False):
             tokens.append(Token('LABEL', label, offset))
         offset, opname = fields[:2]
         if opname == 'constant':
-            attr = line[line.index(' '):].strip()
+            attr = line[line.index('constant')+len('constant'):].strip()
+
             tokens.append(Token('CONSTANT', attr, offset.strip(),
                                 label = label))
         elif opname[:-1] in ('list', 'concat', 'cal'):
@@ -115,6 +116,6 @@ def fn_scanner(fp, show_tokens=False):
         label = None
         pass
 
-    if show_tokens:
+    if show_assembly:
         print('\n'.join([str(t) for t in tokens]))
     return fn_def, tokens, customize

@@ -1,4 +1,4 @@
-byte code for gcd:
+byte code for my-gcd:
   doc-start 34:  Greatest Common Divisor of A and B
   args: (a b)
 0	varref	  a
@@ -30,7 +30,7 @@ byte code for gcd:
 32	goto-if-nil 4
 35:3	varref	  a
 36	return
-37:4	constant  gcd
+37:4	constant  my-gcd
 38	varref	  b
 39	varref	  a
 40	diff

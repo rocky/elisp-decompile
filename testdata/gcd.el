@@ -1,4 +1,4 @@
-(defun gcd(a b)
+(defun my-gcd(a b)
   "Greatest Common Divisor of A and B"
   ;; Make a < b
   (if (> a b)
@@ -8,6 +8,6 @@
   (cond
    ((< a 0) nil)
    ((or (= 0 (- b a)) (= a 1)) a)
-   (t (gcd (- b a) a))
+   (t (my-gcd (- b a) a))
    )
 )

@@ -84,6 +84,8 @@ class ElispParser(GenericASTBuilder):
         expr  ::= DUP
         expr  ::= setq_expr
         expr  ::= set_expr
+        expr  ::= STACK-REF
+        expr  ::= VARREF
 
         # Function related
         expr  ::= binary_expr
@@ -188,7 +190,6 @@ class ElispParser(GenericASTBuilder):
         call_expr3 ::= name_expr expr expr expr CALL_3
 
         name_expr ::= CONSTANT
-        name_expr ::= VARREF
 
         binary_expr ::= expr expr binary_op
 
@@ -210,8 +211,9 @@ class ElispParser(GenericASTBuilder):
 
         unary_op ::= ADD1
         unary_op ::= CAR
-        unary_op ::= CDR-SAFE
+        unary_op ::= CAR-SAFE
         unary_op ::= CDR
+        unary_op ::= CDR-SAFE
         unary_op ::= CONSP
         unary_op ::= INSERT
         unary_op ::= INTEGERP
@@ -224,6 +226,7 @@ class ElispParser(GenericASTBuilder):
         unary_op ::= NULL
         unary_op ::= RECORDP
         unary_op ::= SEQUENCEP
+        unary_op ::= STACK-SET
         unary_op ::= STRINGP
         unary_op ::= SUBR-ARITY
         unary_op ::= SUB1
@@ -240,15 +243,15 @@ class ElispParser(GenericASTBuilder):
 
         nullary_expr ::= nullary_op
 
-        nullary_op ::= POINT
-        nullary_op ::= POINT-MIN
-        nullary_op ::= POINT-MAX
-        nullary_op ::= FOLLOWING-CHAR
-        nullary_op ::= PRECEDING-CHAR
-        nullary_op ::= CURRENT-COLUMN
-        nullary_op ::= EOLP
         nullary_op ::= BOLP
         nullary_op ::= CURRENT-BUFFER
+        nullary_op ::= CURRENT-COLUMN
+        nullary_op ::= EOLP
+        nullary_op ::= FOLLOWING-CHAR
+        nullary_op ::= POINT
+        nullary_op ::= POINT-MAX
+        nullary_op ::= POINT-MIN
+        nullary_op ::= PRECEDING-CHAR
         nullary_op ::= WIDEN
 
         setq_expr ::= expr VARSET

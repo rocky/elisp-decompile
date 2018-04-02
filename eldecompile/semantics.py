@@ -168,6 +168,8 @@ TABLE_DIRECT = {
     'VARSET':	        ( '%{attr}', ),
     'VARBIND':	        ( '%{attr}', ),
     'VARREF':	        ( '%{attr}', ),
+    'DUP':	        ( 'DUP', ),
+    'STACK-REF':	( 'stack-ref%{attr}', ),
 }
 
 NULLARY_OPS = tuple("""
@@ -409,7 +411,8 @@ class SourceWalker(GenericASTTraversal, object):
         if node[-1] == 'CALL_1':
             self.template_engine( ('(%Q)', 0), node )
         else:
-            self.template_engine( ('(%Q %l)', 0, (1, 1000)), node )
+            args = node[-1].attr
+            self.template_engine( ('(%Q %l)', 0, (1, args)), node )
         self.prune()
 
     def n_let_expr_star(self, node):
@@ -517,7 +520,7 @@ class SourceWalker(GenericASTTraversal, object):
                 for subnode in node[low:high]:
                     self.preorder(subnode)
                     remaining -= 1
-                    if remaining > 1:
+                    if remaining >= 1:
                         self.write(" ")
                         pass
                     pass

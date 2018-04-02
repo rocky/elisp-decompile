@@ -99,9 +99,13 @@ def get_offset(inst):
         return offset
     if offset.find(':') > -1:
         offset = offset[:offset.find(':')]
+    # try:
+    #   int(offset)
+    # except:
+    #   from trepan.api import debug; debug()
     return int(offset)
 
-def basic_blocks(instructions):
+def basic_blocks(instructions, show_assembly):
     """Create a list of basic blocks found in a code object
     """
 
@@ -147,11 +151,12 @@ def basic_blocks(instructions):
             last_offset = offset
         new_instructions.append(inst)
 
-    instructions = new_instructions
-    print('-' * 40)
-    for i in new_instructions:
+    if show_assembly and instructions != new_instructions:
+      print('-' * 40)
+      for i in new_instructions:
         print(i)
 
+    instructions = new_instructions
     start_offset = 0
     end_offset = -1
     jump_offsets = set()

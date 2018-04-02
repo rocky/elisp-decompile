@@ -79,7 +79,7 @@ redefine OBJECT if it is a symbol."
     (if (or interactive-p (null buffer))
 	(with-output-to-temp-buffer "*Disassemble*"
 	  (set-buffer "*Disassemble*")
-	  (disassemble-internal object indent (not interactive-p)))
+	  (disassemble-internal-full object indent (not interactive-p)))
       (set-buffer buffer)
       (disassemble-internal-full object indent nil)))
   nil)
@@ -87,6 +87,7 @@ redefine OBJECT if it is a symbol."
 
 (defun disassemble-internal-full (obj indent interactive-p)
   (let ((macro 'nil)
+	;; (constants-vector [])
 	(name (when (symbolp obj)
                 (prog1 obj
                   (setq obj (indirect-function obj)))))
@@ -109,6 +110,7 @@ redefine OBJECT if it is a symbol."
                                    name))
         (setq obj (byte-compile obj))
         (if interactive-p (message "Done compiling.  Disassembling..."))))
+    ;; (setq constants-vector (aref obj 2))
     (cond ((consp obj)
 	   (setq args (help-function-arglist obj))	;save arg list
 	   (setq obj (cdr obj))		;throw lambda away
@@ -130,6 +132,7 @@ redefine OBJECT if it is a symbol."
       (if (and doc (stringp doc))
 	  (progn (and (consp obj) (setq obj (cdr obj)))
 		 (indent-to indent)
+		 ;; (princ (format "  constants-vector: %s\n" constants-vector))
 		 (princ (format "  doc-start %d:  " (length doc)) (current-buffer))
 		 (insert doc "\n"))))
     (indent-to indent)
@@ -143,7 +146,7 @@ redefine OBJECT if it is a symbol."
 	    (if (eq (car-safe (car-safe obj)) 'interactive)
 		(setq obj (cdr obj)))
 	    (indent-to indent)
-	    (insert " interactive: ")
+	    (insert "  interactive: ")
 	    (if (eq (car-safe interactive) 'byte-code)
 		(progn
 		  (insert "\n")

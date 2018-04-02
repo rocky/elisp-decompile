@@ -1,0 +1,25 @@
+byte code for test-nyc:
+  doc:  Visit the source code corresponding to the `next-error' message at point.
+  args: nil
+0	current-buffer 
+1	varset	  next-error-last-buffer
+2	save-current-buffer 
+3	varref	  next-error-last-buffer
+4	set-buffer 
+5	discard	  
+6	varref	  next-error-function
+7	constant  0
+8	constant  nil
+9	call	  2
+10	discard	  
+11	varref	  next-error-recenter
+12	goto-if-nil 1
+15	constant  recenter
+16	varref	  next-error-recenter
+17	call	  1
+18	discard	  
+19:1	constant  run-hooks
+20	constant  next-error-hook
+21	call	  1
+22	unbind	  1
+23	return	  

@@ -11,10 +11,11 @@ from eldecompile.dominators import DominatorTree, build_df
 
 
 import os, sys
+import click
 
-def flow_control(name, tokens):
+def flow_control(name, tokens, show_assembly):
 #  Flow control analysis of instruction
-    bblocks, tokens = basic_blocks(tokens)
+    bblocks, tokens = basic_blocks(tokens, show_assembly)
     for bb in bblocks.bb_list:
         print("\t", bb)
     cfg = ControlFlowGraph(bblocks.bb_list)
@@ -40,21 +41,21 @@ def flow_control(name, tokens):
         print("%s had an error" % name)
         return tokens
 
-def deparse(path):
+def deparse(path, show_assembly, show_grammar, show_tree):
     # Scan...
     with open(path, 'r') as fp:
-        fn_def, tokens, customize = fn_scanner(fp)
+        fn_def, tokens, customize = fn_scanner(fp, show_assembly=show_assembly)
         pass
 
     import os.path as osp
     name = osp.basename(path)
-    tokens = flow_control(name, tokens)
+    tokens = flow_control(name, tokens, show_assembly)
 
     # Parse...
     p = ElispParser(AST, tokens)
     p.add_custom_rules(tokens, customize)
 
-    parser_debug = {'rules': False, 'transition': False, 'reduce' : True,
+    parser_debug = {'rules': False, 'transition': False, 'reduce' : show_grammar,
                    'errorstack': 'full', 'dups': False }
 
     try:
@@ -62,7 +63,9 @@ def deparse(path):
     except ParserError as e:
         print("file: %s\n\t %s\n" % (path, e))
         sys.exit(1)
-    print(ast)
+
+    if show_tree:
+        print(ast)
 
     # .. and Generate Elisp
     TransformTree(ast)
@@ -90,14 +93,18 @@ def deparse(path):
         print("%s%s%s)" % (header, indent, result))
 
 
-def main():
-    if len(sys.argv) == 2:
-        path = sys.argv[1]
-    else:
-        # path = '../testdata/binops.dis'
-        # path = '../testdata/control.dis'
-        path = '../testdata/unary-ops.dis'
-    deparse(path)
+@click.command()
+@click.option('-a', '--assembly/--no-assembly', default=False,
+              help='Show LAP assembly')
+@click.option('-g', '--grammar/--no-grammar', default=False,
+              help='Show grammar reductions')
+@click.option('-t', '--tree/--no-tree', default=False,
+              help='Show parse tree')
+@click.argument('lap-filename', type=click.Path(exists=True))
+def main(assembly, grammar, tree, lap_filename):
+    """Lisp Assembler Program (LAP) deparser"""
+    deparse(lap_filename,
+            show_assembly=assembly, show_grammar=grammar, show_tree=tree)
 
 if __name__ == '__main__':
     main()
