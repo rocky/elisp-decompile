@@ -1,6 +1,6 @@
-from dominators import DominatorTree
+from eldecompile.dominators import DominatorTree
 from operator import attrgetter
-from graph import DiGraph, jump_flags, BB_LOOP, BB_NOFOLLOW
+from eldecompile.graph import DiGraph, jump_flags, BB_LOOP, BB_NOFOLLOW
 
 class ControlFlowGraph(object):
   """

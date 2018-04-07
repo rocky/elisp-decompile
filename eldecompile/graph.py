@@ -111,7 +111,7 @@ class DiGraph(object):
         self.nodes.add(node)
 
     def to_dot(self):
-        from dotio import DotConverter
+        from eldecompile.dotio import DotConverter
         return DotConverter.process(self)
 
     @staticmethod

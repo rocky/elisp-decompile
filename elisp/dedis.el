@@ -43,7 +43,7 @@
 
 ;;;###autoload
 (defun disassemble-file (filename)
-  "Disassemble a Emacs bytecode"
+  "Disassemble an Emacs bytecode file"
   ;; Thanks to wasamasa on stackoverflow.
   (interactive
    (list (car (find-file-read-args "Find file: "

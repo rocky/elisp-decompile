@@ -1,0 +1,37 @@
+byte code for cl-gcd:
+  doc-start 69:  Return the greatest common divisor of the arguments.
+
+(fn &rest ARGS)
+  args: (&rest rest)
+0	dup
+1	stack-ref 1
+2	cdr
+3	stack-set 2
+5	car-safe
+6	goto-if-not-nil-else-pop 1
+9	constant  0
+10:1	stack-ref 1
+11:2	dup
+12	goto-if-nil 5
+15	dup
+16	car
+17:3	dup
+18	constant  0
+19	eqlsign
+20	goto-if-not-nil 4
+23	stack-ref 2
+24	stack-ref 1
+25	dup
+26	stack-set 5
+28	rem
+29	stack-set 1
+31	goto	  3
+34:4	stack-ref 1
+35	cdr
+36	discardN-preserve-tos 2
+38	goto	  2
+41:5	discard
+42	constant  abs
+43	stack-ref 1
+44	call	  1
+45	return

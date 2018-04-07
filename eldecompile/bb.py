@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from graph import (BB_ENTRY, BB_JUMP_UNCONDITIONAL, BB_NOFOLLOW)
+from eldecompile.graph import (BB_ENTRY, BB_JUMP_UNCONDITIONAL, BB_NOFOLLOW)
 from eldecompile.tok import Token
 
 class BasicBlock(object):

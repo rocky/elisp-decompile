@@ -2,12 +2,12 @@
 """
   Dominator tree
 
-  Copyright (c) 2017 by Rocky Bernstein
+  Copyright (c) 2017, 2018 by Rocky Bernstein
   Copyright (c) 2014 by Romain Gaucher (@rgaucher)
 """
 
-from graph import TreeGraph, BB_ENTRY
-from traversals import dfs_postorder_nodes
+from eldecompile.graph import TreeGraph, BB_ENTRY
+from eldecompile.traversals import dfs_postorder_nodes
 
 
 class DominatorTree(object):
