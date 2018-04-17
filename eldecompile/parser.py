@@ -72,7 +72,6 @@ class ElispParser(GenericASTBuilder):
         # progn or let fall into this category.
         expr_stmt  ::= expr opt_discard
 
-
         # By its very nature of being sequenced
         # exprs must use a list-like or stmt_expr
 
@@ -104,8 +103,9 @@ class ElispParser(GenericASTBuilder):
         expr  ::= dolist_expr
         expr  ::= dolist_expr_result
         expr  ::= while_expr
+        expr  ::= while_expr_stacked
 
-        # Block releated
+        # Block related
         expr  ::= let_expr_star
         expr  ::= let_expr_stacked
 
@@ -128,6 +128,7 @@ class ElispParser(GenericASTBuilder):
         set_buffer          ::= expr SET-BUFFER
 
         unary_expr_stacked  ::= unary_op
+        unary_expr_stacked  ::= expr_stacked unary_op
         binary_expr_stacked ::= expr binary_op
 
 
@@ -136,6 +137,10 @@ class ElispParser(GenericASTBuilder):
         if_expr ::= expr GOTO-IF-NIL expr COME_FROM LABEL
 
         if_expr ::= expr GOTO-IF-NIL expr COME_FROM LABEL
+
+        while_expr_stacked ::= expr COME_FROM LABEL expr_stacked
+                       GOTO-IF-NIL-ELSE-POP body
+                       GOTO COME_FROM LABEL
 
         while_expr ::= COME_FROM LABEL expr
                        GOTO-IF-NIL-ELSE-POP body
@@ -192,6 +197,7 @@ class ElispParser(GenericASTBuilder):
         name_expr ::= CONSTANT
 
         binary_expr ::= expr expr binary_op
+        binary_expr ::= setq_expr_stacking binary_op
 
         binary_op ::= DIFF
         binary_op ::= EQLSIGN
@@ -257,6 +263,7 @@ class ElispParser(GenericASTBuilder):
         setq_expr ::= expr VARSET
         setq_expr ::= expr DUP VARSET
         setq_expr_stacked ::= expr_stacked DUP VARSET
+        setq_expr_stacking ::= expr DUP VARSET
 
         set_expr  ::= expr expr SET
         set_expr  ::= expr expr STACK-SET SET

@@ -1,0 +1,16 @@
+byte code for test-setq-stacking:
+  args: (a b)
+0	varref	  b
+1:1	constant  0
+2	eqlsign
+3	not
+4	goto-if-nil-else-pop 2
+7	varref	  a
+8	varref	  b
+9	dup
+10	varset	  a
+11	rem
+12	dup
+13	varset	  b
+14	goto	  1
+17:2	return

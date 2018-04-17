@@ -64,6 +64,8 @@
 #     %l  takes a tuple of node indices: low and high. Evaluates
 #         nodes low to high inserting a space in between each one
 #
+#     %s  pushes a value of the eval stack to use as an argument.
+#         _stacked nonterminals work this way
 #     %S  pops a value of the eval stack to use as an argument.
 #         _stacked nonterminals work this way
 #
@@ -138,6 +140,7 @@ TABLE_DIRECT = {
     'if_expr':		  ( '%(if %c\n%+%|%c%)', 0, 2 ),
     'if_else_expr':	  ( '%(if %c\n%+%|%c%_%c)%_', 0, 2, 5 ),
     'while_expr':	  ( '%(while %c\n%+%|%c%)', 2, 4 ),
+    'while_expr_stacked':	( '%(while %s%c\n%+%|%c%)', 0, 3, 5 ),
     'when_expr':	  ( '%(when %c\n%+%|%c%)', 0, 2 ),
     'or_expr':		  ( '(or %+%c %c%)', 0, 2 ),
     'and_expr':		  ( '(and %+%c %c%)', 0, 2 ),
@@ -270,7 +273,11 @@ class SourceWalker(GenericASTTraversal, object):
                  None)
 
     def pop1(self):
-        return self.eval_stack.pop()
+        try:
+            return self.eval_stack.pop()
+        except:
+            from trepan.api import debug; debug()
+            return None
 
     def push1(self, node):
         self.eval_stack.append(node)
@@ -362,6 +369,14 @@ class SourceWalker(GenericASTTraversal, object):
 
     def n_discard(self, node):
         self.pop1()
+
+    def n_unary_expr_stacked(self, node):
+        assert len(node) == 2
+        if node[0] == 'expr_stacked':
+            self.template_engine(TABLE_DIRECT['unary_expr'], node)
+        else:
+            self.template_engine(TABLE_DIRECT['unary_expr_stacked'], node)
+        self.prune()
 
     def n_varlist_stacked(self, node):
         assert len(node) == 4
@@ -465,7 +480,7 @@ class SourceWalker(GenericASTTraversal, object):
 
         # self.println("-----")
         if self.debug:
-            print("XXX", startnode.type)
+            print("XXX", startnode.kind)
 
         fmt = entry[0]
         arg = 1
@@ -506,6 +521,10 @@ class SourceWalker(GenericASTTraversal, object):
                 self.noquote = True
                 self.preorder(node[entry[arg]])
                 self.noquote = False
+                arg += 1
+            elif typ == 's':
+                # push a value on the eval stack
+                self.push1(node[entry[arg]])
                 arg += 1
             elif typ == 'S':
                 # Get value from eval stack
