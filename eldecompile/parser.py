@@ -370,10 +370,12 @@ class ElispParser(GenericASTBuilder):
             #   if we have a condition there is a COME_FROM in the end_clause or
             #   if we don't have a condition there is no COME_FROM in the end_clause
             end_clause = ast[2]
-            return (
-                (ast[0] == 'condition' and
-                     len(end_clause) == 1 and end_clause[0] not in ('COME_FROM', 'RETURN'))
-                or (ast[0] != 'condition' and end_clause[-1] == 'COME_FROM'))
+            if ast[0].kind == 'condition' and len(end_clause) == 1:
+                if (end_clause[0] not in ('COME_FROM', 'RETURN')
+                    and tokens[last] != 'RETURN'):
+                    return True
+            if ast[0].kind != 'condition' and end_clause[-1] == 'COME_FROM':
+                return True
         if rule == ('cond_expr', ('clause', 'labeled_clauses')):
             # Since there are no come froms, each of the clauses
             # must end in a return.
@@ -387,7 +389,7 @@ class ElispParser(GenericASTBuilder):
                 else:
                     return False
                 end_clause = clause[-1]
-                if end_clause[0] != 'RETURN':
+                if end_clause[0].kind != 'RETURN':
                     return True
                 pass
         return False
