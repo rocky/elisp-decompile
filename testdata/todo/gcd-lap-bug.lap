@@ -1,0 +1,16 @@
+byte code for cl-gcd-bug:
+  doc-start 52:  Return the greatest common divisor of the arguments.
+  args: (&rest args)
+0	varref	  args
+1	dup
+2	cdr
+3	varset	  args
+4	car-safe
+5	goto-if-not-nil-else-pop 1
+8	constant  0
+9:1	varbind	  a
+10	constant  1
+11	dup
+12	varset	  a
+13	unbind	  1
+14	return
