@@ -1,9 +1,13 @@
 A [decompiler](https://en.wikipedia.org/wiki/Decompiler) for Emacs Lisp bytecode... or at least a proof of concept.
 
-This code uses the [Python spark-parser](https://pypi.python.org/pypi/spark_parser/) for its Earley algorithm parser and the code organization.
+This code uses the [Python
+spark-parser](https://pypi.python.org/pypi/spark_parser/) for its
+Earley algorithm parser and the code organization.  I have a project
+that implements the [Earley algorithm in Emacs
+Lisp](https://github.com/rocky/elisp-earley). It needs more work
+though to replace the Python code.
 
-This is in a very early stage, but amazingly the code seems sound so
-far.
+This is in a very early stage, but amazingly the code seems sound so far.
 
 Until docs are better organized, see
 [Writing Semantic-action Rules](https://github.com/rocky/python-spark/wiki/Writing-Semantic-action-rules)
