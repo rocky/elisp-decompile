@@ -171,7 +171,6 @@ TABLE_DIRECT = {
     'VARSET':	        ( '%{attr}', ),
     'VARBIND':	        ( '%{attr}', ),
     'VARREF':	        ( '%{attr}', ),
-    'DUP':	        ( 'DUP', ),
     'STACK-REF':	( 'stack-ref%{attr}', ),
 }
 
@@ -249,11 +248,14 @@ class SourceWalker(GenericASTTraversal, object):
     def __init__(self, ast, debug=False):
         GenericASTTraversal.__init__(self, ast=None)
         params = {
+            'f': StringIO(),
             'indent': '',
             }
         self.params = params
+        self.param_stack = []
         self.debug = debug
         self.ERROR = None
+        self.prec = 100
         self.pending_newlines = 0
         self.hide_internal = True
         self.indent_stack = ['']
@@ -273,11 +275,7 @@ class SourceWalker(GenericASTTraversal, object):
                  None)
 
     def pop1(self):
-        try:
-            return self.eval_stack.pop()
-        except:
-            from trepan.api import debug; debug()
-            return None
+        return self.eval_stack.pop()
 
     def push1(self, node):
         self.eval_stack.append(node)
@@ -319,6 +317,7 @@ class SourceWalker(GenericASTTraversal, object):
             return self.find_first_token(node[0])
 
     def traverse(self, node, indent=None):
+        self.param_stack.append(self.params)
         if indent is None:
             indent = self.indent
         else:
@@ -332,6 +331,7 @@ class SourceWalker(GenericASTTraversal, object):
         self.preorder(node)
         self.f.write(u'\n'*self.pending_newlines)
         result = self.f.getvalue()
+        self.params = self.param_stack.pop()
         self.pending_newlines = p
         return result
 
@@ -454,13 +454,23 @@ class SourceWalker(GenericASTTraversal, object):
         self.prune()
 
     def n_expr_stmt(self, node):
-        if (len(node) == 1 or
-            (len(node) == 2 and node[1] == 'opt_discard')):
+        if len(node) == 1:
             self.template_engine( ('%c', 0), node )
+        elif len(node) == 2 and node[1] == 'opt_discard':
+            if node[0] == 'expr' and node[0][0] == 'name_expr':
+                value = self.traverse(node[0][0])
+                self.push1(value)
+            else:
+                self.template_engine( ('%c', 0), node )
         else:
             self.template_engine( ('%C', (0, 1000)), node )
         self.prune()
 
+    def n_opt_discard(self, node):
+        if len(node) == 1:
+            assert node[0] == 'DISCARD'
+            self.pop1()
+        self.prune()
 
     def n_progn(self, node):
         assert node[0] == 'body'
@@ -471,6 +481,11 @@ class SourceWalker(GenericASTTraversal, object):
             self.template_engine( ( '%(progn\n%+%|%c%)', 0 ), node)
         self.prune()
 
+    def n_DUP(self, node):
+        if len(self.eval_stack) == 0:
+            self.write("DUP-empty-stack")
+        else:
+            self.write(self.pop1())
 
     def template_engine(self, entry, startnode):
         """The format template engine.  See the comment at the beginning of
