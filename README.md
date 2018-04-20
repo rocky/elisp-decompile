@@ -12,10 +12,8 @@ https://github.com/rocky/python-uncompyle6/wiki/Deparsing-Paper for a
 more general overview.
 
 I gave a
-[5-minute talk for a very general audience](http://rocky.github.io/NYC-Hackntell). Type
-"s" on a slide to see the text associated with the slide. It has one
-slide showing elisp bytecode and a deparse of that back to Emacs Lisp.
-
+[talk on Emacs bytecode showing this code](http://rocky.github.io/NYC-Emacs-April-2018). Type
+"s" on a slide to see the text associated with the slide.
 
 We are currently working on documenting Elisp bytecode. See https://github.com/rocky/elisp-lap .
 
