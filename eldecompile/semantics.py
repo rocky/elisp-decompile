@@ -279,12 +279,15 @@ class SourceWalker(GenericASTTraversal, object):
 
     def push1(self, node):
         self.eval_stack.append(node)
+        return node
 
+    def stacklen(self):
+        return len(self.eval_stack)
 
     def replace1(self, node):
         """Replace the stack top with node.
         Unary ops do this for example"""
-        if len(self.eval_stack):
+        if self.stacklen():
             self.eval_stack[-1] = node
 
     # def binary_op(self, node):
@@ -406,13 +409,20 @@ class SourceWalker(GenericASTTraversal, object):
     def n_clause(self, node):
         l = len(node)
 
+        start_stacklen = self.stacklen()
         assert l == 2 or l == 3
         if l == 2:
-            self.template_engine( ('\n%|(t %.%c%)', 0), node)
+            self.template_engine( ('\n%|(t %.%c', 0), node)
         elif node[0] == 'opt_label':
-            self.template_engine( ('\n%|(t %.%c%)', 1), node)
+            self.template_engine( ('\n%|(t %.%c', 1), node)
         else:
-            self.template_engine( ('\n%|(%c %.%c%)', 0, 1), node)
+            self.template_engine( ('\n%|(%c %.%c', 0, 1), node)
+        if self.stacklen() > start_stacklen:
+            self.write("%s" % self.pop1())
+
+        assert start_stacklen == self.stacklen()
+        self.write(')')
+        self.indent_less()
         self.prune()
 
     def n_varbind(self, node):
@@ -482,7 +492,7 @@ class SourceWalker(GenericASTTraversal, object):
         self.prune()
 
     def n_DUP(self, node):
-        if len(self.eval_stack) == 0:
+        if self.stacklen() == 0:
             self.write("DUP-empty-stack")
         else:
             self.write(self.pop1())
@@ -550,7 +560,7 @@ class SourceWalker(GenericASTTraversal, object):
                 self.preorder(node[index])
             elif typ == 'l':
                 low, high = entry[arg]
-                remaining = len(node[low:high])
+                remaining = len(node[low:high]) - 1
                 for subnode in node[low:high]:
                     self.preorder(subnode)
                     remaining -= 1
