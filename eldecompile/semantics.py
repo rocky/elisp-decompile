@@ -451,7 +451,8 @@ class SourceWalker(GenericASTTraversal, object):
             self.template_engine( ('(%c %c)', 1, 0), varbind)
             self.template_engine( ('%-%c%)', 1 ), node )
         else:
-            self.template_engine( ('%(let* %.(%.%c)%-%c%)', 0, 1 ), node )
+            self.template_engine( ('%(let* %.(%.%c)%-\n%|%c%)%-', 0, 1 ),
+                                  node )
         self.prune()
 
     # def n_binary_expr(self, node):
