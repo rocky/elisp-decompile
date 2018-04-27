@@ -1,0 +1,19 @@
+byte code for test-or3:
+  doc-start 71:  Print disassembled code for OBJECT in (optional) BUFFER.
+BLAH BLAH BLAH
+  args: (object buffer)
+0	save-excursion
+1	varref	  interactive-p
+2	goto-if-not-nil 1
+5	varref	  buffer
+6	not
+7	goto-if-nil-else-pop 2
+10:1	save-current-buffer
+11	constant  "*Disassemble*"
+12	set-buffer
+13	discard
+14	constant  "foo"
+15	insert
+16	unbind	  1
+17:2	unbind	  1
+18	return

@@ -136,7 +136,10 @@ class ElispParser(GenericASTBuilder):
         # if_expr ::= expr GOTO-IF-NIL-ELSE-POP progn LABEL
         if_expr ::= expr GOTO-IF-NIL expr COME_FROM LABEL
 
+        # We keep nonterminals at position 0 and 2
+        filler  ::=
         if_expr ::= expr GOTO-IF-NIL expr COME_FROM LABEL
+        if_expr ::= expr filler expr COME_FROM LABEL
 
         while_expr_stacked ::= expr COME_FROM LABEL expr_stacked
                        GOTO-IF-NIL-ELSE-POP body
@@ -179,8 +182,9 @@ class ElispParser(GenericASTBuilder):
         # if_else_expr ::= expr GOTO-IF-NIL expr RETURN LABEL
         # if_else_expr ::= expr_stacked GOTO-IF-NIL progn RETURN LABEL
 
+        # Keep nonterminals at positions  0 and 2
         or_expr    ::= expr GOTO-IF-NOT-NIL-ELSE-POP expr opt_come_from opt_label
-        or_expr    ::= expr GOTO-IF-NOT-NIL expr opt_come_from opt_label
+        or_expr    ::= expr GOTO-IF-NOT-NIL          expr GOTO-IF-NIL-ELSE-POP COME_FROM LABEL
 
         # "not_expr" is (not expr) or (null expr). We use
         # not_ instead of null_ to to avoid confusion with nil

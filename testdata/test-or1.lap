@@ -1,0 +1,12 @@
+byte code for test-or1:
+  doc-start 71:  Print disassembled code for OBJECT in (optional) BUFFER.
+BLAH BLAH BLAH
+  args: (object buffer)
+0	varref	  interactive-p
+1	goto-if-not-nil 1
+4	varref	  buffer
+5	not
+6	goto-if-nil-else-pop 2
+9:1	constant  "foo"
+10	insert
+11:2	return
