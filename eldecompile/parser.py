@@ -151,6 +151,9 @@ class ElispParser(GenericASTBuilder):
 
         when_expr ::= expr GOTO-IF-NIL body COME_FROM LABEL
 
+
+        # Note: the VARSET's have special names which we could
+        # check in a reduce rule.
         dolist_expr ::= dolist_list dolist_init_var
                         GOTO-IF-NIL-ELSE-POP COME_FROM LABEL
                         dolist_loop_iter_set body
@@ -328,6 +331,9 @@ class ElispParser(GenericASTBuilder):
         varlist_stacked_inner ::=
 
         let_expr_star ::= varlist body UNBIND
+        # Sometimes the last item in "body" is "UNBIND" so we don't need
+        # to add it here. We could have a reduce check to ensure this.
+        let_expr_star ::= varlist body
 
         varlist  ::= varbind varlist
         varlist  ::= varbind
@@ -366,6 +372,24 @@ class ElispParser(GenericASTBuilder):
         self.check_reduce['clause'] = 'AST'
         self.check_reduce['cond_expr'] = 'AST'
         return
+
+    def debug_reduce(self, rule, tokens, parent, last_token_pos):
+        """Customized format and print for our kind of tokens
+        which gets called in debugging grammar reduce rules
+        """
+        prefix = ''
+        if parent and tokens:
+            p_token = tokens[parent]
+            if hasattr(p_token, 'offset'):
+                prefix += "%3s" % p_token.offset
+                if len(rule[1]) > 1:
+                    prefix += '-%-5s ' % tokens[last_token_pos-1].offset
+                else:
+                    prefix += '       '
+        else:
+            prefix = '          '
+
+        print("%s%s ::= %s (%d)" % (prefix, rule[0], ' '.join(rule[1]), last_token_pos))
 
     def reduce_is_invalid(self, rule, ast, tokens, first, last):
         lhs = rule[0]
