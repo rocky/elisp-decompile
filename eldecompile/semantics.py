@@ -147,6 +147,8 @@ TABLE_DIRECT = {
     'not_expr':		  ( '(null %+%c%)', 0 ),
     'dolist_expr_result': ( '%(dolist%+%(%c %c %c)\n%_%|%c)%_', 1, 0, 16, 6),
 
+    'pop_expr':           ( '(pop %+%c%)', (0, 'VARREF')),
+
     'exprs':              ( '%C', (0, 1000) ),
 
 
@@ -155,6 +157,8 @@ TABLE_DIRECT = {
     'body_stacked':	( '%c', 0 ),
 
     'ADD1':	( '1+' , ),
+    'CAR':	( 'car' , ),
+    'CAR-SAFE':	( 'car-safe' , ),
     'DIFF':	( '-' ,  ),
     'EQLSIGN':	( '=' ,  ),
     'GEQ':	( '>=' , ),
@@ -540,7 +544,17 @@ class SourceWalker(GenericASTTraversal, object):
                 self.write(')')
                 self.indent_less()
             elif typ == 'c':
-                self.preorder(node[entry[arg]])
+                index = entry[arg]
+                if isinstance(index, tuple):
+                    assert node[index[0]] == index[1], (
+                        "at %s[%d], expected %s node; got %s" % (
+                            node.kind, arg, node[index[0]].kind, index[1])
+                        )
+                    index = index[0]
+                assert isinstance(index, int), (
+                    "at %s[%d], %s should be int or tuple" % (
+                        node.kind, arg, type(index)))
+                self.preorder(node[index])
                 arg += 1
             elif typ == 'Q':
                 # Like 'c' but no quoting

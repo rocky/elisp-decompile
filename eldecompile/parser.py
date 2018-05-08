@@ -91,6 +91,7 @@ class ElispParser(GenericASTBuilder):
         expr  ::= unary_expr
         expr  ::= nullary_expr
         expr  ::= name_expr
+        expr  ::= pop_expr
 
         # Control-flow related
         expr  ::= if_expr
@@ -203,8 +204,10 @@ class ElispParser(GenericASTBuilder):
 
         name_expr ::= CONSTANT
 
+        expr_stacking ::= setq_expr_stacking binary_op
+
         binary_expr ::= expr expr binary_op
-        binary_expr ::= setq_expr_stacking binary_op
+        binary_expr ::= expr_stacking binary_op
 
         binary_op ::= DIFF
         binary_op ::= EQLSIGN
@@ -266,6 +269,9 @@ class ElispParser(GenericASTBuilder):
         nullary_op ::= POINT-MIN
         nullary_op ::= PRECEDING-CHAR
         nullary_op ::= WIDEN
+
+        # We could have a checking rule that the VARREF and VARSET refer to the same thing
+        pop_expr ::= VARREF DUP CDR VARSET CAR-SAFE
 
         setq_expr ::= expr VARSET
         setq_expr ::= expr DUP VARSET
