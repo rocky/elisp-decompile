@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from eldecompile.graph import (BB_ENTRY, BB_JUMP_UNCONDITIONAL, BB_NOFOLLOW)
-from eldecompile.tok import Token
+from eldecompile.tok import Token, STACK_EFFECT
 
 class BasicBlock(object):
   """Represents a basic block (or rather extended basic block) from the
@@ -13,6 +13,7 @@ class BasicBlock(object):
   """
 
   def __init__(self, start_offset, end_offset, follow_offset,
+               stack_effect,
                flags = set(),
                jump_offsets=set([])):
 
@@ -29,6 +30,11 @@ class BasicBlock(object):
     # the flow-control graph, we place the following basic block
     # immediately below.
     self.follow_offset = follow_offset
+
+    # The stack effect is how this basic block changes the evaluations stack
+    # usually it is a net 0 effect but there can be disparity when combined with
+    # various large compound structures. (The compounds then have a net effect 0)
+    self.stack_effect = stack_effect
 
     # Jump offsets is the targets of all of the jump instructions
     # inside the basic block. Note that jump offsets can come from
@@ -81,12 +87,49 @@ class BBMgr(object):
     self.jump_targets = {}
     # Pick up appropriate version
 
+  @staticmethod
+  def offset_convert(offset):
+    if isinstance(offset, int):
+      return offset
+    assert isinstance(offset, str)
+    if offset.isdigit():
+      return int(offset)
+    else:
+      return int(offset[:offset.find(':')])
+
+
   def add_bb(self, start_offset, end_offset, follow_offset, flags,
-             jump_offsets):
+             jump_offsets, instructions):
+
+      stack_effect = 0
+      j = 0
+      offset = instructions[j].offset
+      while self.offset_convert(offset) < start_offset:
+        j += 1
+        offset = instructions[j].offset
+      n = len(instructions)
+      while self.offset_convert(offset) <= end_offset:
+        instr = instructions[j]
+        offset = instructions[j].offset
+        j += 1
+        if j == n: break
+        value = STACK_EFFECT[instr.kind.lower()]
+        if isinstance(value, tuple):
+          assert self.offset_convert(offset) == end_offset
+          stack_effect = (stack_effect + value[0], stack_effect + value[1])
+          break
+        else:
+          stack_effect += value
+
+      if not isinstance(stack_effect, tuple) and stack_effect != 0:
+        print("Note: stack disparity %d" % stack_effect)
+
       self.bb_list.append(BasicBlock(start_offset, end_offset,
                                      follow_offset,
+                                     stack_effect=stack_effect,
                                      flags = flags,
                                      jump_offsets = jump_offsets))
+
       start_offset = end_offset
       flags = set([])
       jump_offsets = set([])
@@ -183,10 +226,13 @@ def basic_blocks(instructions, show_assembly):
             # This instruction definitely starts a new basic block
             # Close off any prior basic block
             if start_offset < end_offset:
-                flags, jump_offsets = bblocks.add_bb(start_offset,
-                                                prev_offset, end_offset,
-                                                flags, jump_offsets)
-                start_offset = end_offset
+
+              flags, jump_offsets = bblocks.add_bb(start_offset,
+                                                   prev_offset, end_offset,
+                                                   flags, jump_offsets,
+                                                   instructions)
+              start_offset = end_offset
+
 
         # Add block flags for certain classes of instructions
         if op in JUMP_INSTRUCTIONS:
@@ -206,13 +252,15 @@ def basic_blocks(instructions, show_assembly):
                 pass
             flags, jump_offsets = bblocks.add_bb(start_offset,
                                                  end_offset, follow_offset,
-                                                 flags, jump_offsets)
+                                                 flags, jump_offsets,
+                                                 instructions)
             start_offset = follow_offset
         elif op in NOFOLLOW_INSTRUCTIONS:
             flags.add(BB_NOFOLLOW)
             flags, jump_offsets = bblocks.add_bb(start_offset,
                                                  end_offset, follow_offset,
-                                                 flags, jump_offsets)
+                                                 flags, jump_offsets,
+                                                 instructions)
             start_offset = follow_offset
             pass
         pass

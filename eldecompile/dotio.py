@@ -91,10 +91,11 @@ class DotConverter(object):
       else:
         reach_offset_text = ""
 
-      return ('offsets: %d..%d%s%s%s'
-            % (node.start_offset, node.end_offset,
-               flag_text, jump_text, reach_offset_text))
-
+      str = ('offsets: %d..%d%s%s%s\lstack_effect: %s'
+             % (node.start_offset, node.end_offset,
+                flag_text, jump_text, reach_offset_text,
+                node.stack_effect))
+      return str
 
   def add_node(self, node):
     label = ''

@@ -1,6 +1,8 @@
 #!/bin/bash
 for file in *.lap; do
     echo "=================== $file ================"
-    python ../eldecompile/main.py $file
+    if ! python ../eldecompile/main.py $file; then
+	exit $?
+    fi
     echo "---             end $file      -----------"
 done
