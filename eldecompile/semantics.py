@@ -61,8 +61,11 @@
 #         Used in things like (setq x ...) where x might be a variable ref
 #         which shouldn't be quoted. Calls are simlar too.
 #
-#     %l  takes a tuple of node indices: low and high. Evaluates
-#         nodes low to high inserting a space in between each one
+#     %L  takes a tuple of node indices: low and high. Evaluates
+#         nodes low to high inserting a space in between each one.
+#
+#     %l  like %L but skips the last node in the list which is
+#         presumed to be an operator
 #
 #     %s  pushes a value of the eval stack to use as an argument.
 #         _stacked nonterminals work this way
@@ -127,8 +130,10 @@ TABLE_DIRECT = {
     'binary_expr':	   ( '(%c %+%c %c%)', -1, 0, 1 ),
     'binary_expr_stacked': ( '(%c %+%S %c%)', -1, 0),
 
-    'list_exprn':	   ( '(list %l)', (0, 1000) ),
     'concat_exprn':	   ( '(concat %l)', (0, 1000) ),
+    'list_exprn':	   ( '(list %l)', (0, 1000) ),
+    'min_exprn':	   ( '(min %L)', (0, 1000) ),
+    'max_exprn':	   ( '(max %L)', (0, 1000) ),
     'save_excursion':      ( '(save-excursion\n%+%|%c%)', 1 ),
     'save_current_buffer': ( '(save-current-buffer\n%+%|%c%)', 1 ),
     'set_buffer':          ( '(set-buffer %c)', 0 ),
@@ -576,6 +581,17 @@ class SourceWalker(GenericASTTraversal, object):
             elif typ == 'l':
                 low, high = entry[arg]
                 remaining = len(node[low:high]) - 1
+                for subnode in node[low:high]:
+                    self.preorder(subnode)
+                    remaining -= 1
+                    if remaining >= 1:
+                        self.write(" ")
+                        pass
+                    pass
+                arg += 1
+            elif typ == 'L':
+                low, high = entry[arg]
+                remaining = len(node[low:high])
                 for subnode in node[low:high]:
                     self.preorder(subnode)
                     remaining -= 1

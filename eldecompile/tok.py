@@ -51,6 +51,8 @@ STACK_EFFECT = {
     'list_4':         -3,
     'listn_5':        -4,
     'lss':            -1,
+    'max':            -1,
+    'min':            -1,
     'not':             0,
     'plus':           -1,
     'point':          +1,

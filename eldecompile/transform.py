@@ -1,7 +1,8 @@
 from __future__ import print_function
 
 import re
-from spark_parser import GenericASTTraversal
+from spark_parser import GenericASTTraversal, GenericASTBuilder
+
 
 TRANSFORM = {
     ("call_exprn", 4): ('name_expr', 0),
@@ -69,6 +70,25 @@ class TransformTree(GenericASTTraversal, object):
                 func(node)
             self.prune()
 
+
+    def n_binary_expr(self, call_node):
+        # Flatten f(a (f b))
+        expr = call_node[0]
+        fn_name = call_node[2][0].kind
+        if fn_name not in ('MIN', 'MAX'):
+            return
+        if expr[0] and expr[0] == 'binary_expr':
+            fn_name2 = expr[0][2][0].kind
+        else:
+            return
+
+        if fn_name == fn_name2:
+            args = [expr[0][0], expr[0][1], call_node[1]]
+            nt_name = fn_name.lower() + '_exprn'
+            call_node.kind = nt_name
+            call_node[:len(args)] = args
+            pass
+        return
 
     def n_call_exprn_4_name_expr_0(self, call_node):
         expr = call_node[0]
