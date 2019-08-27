@@ -64,12 +64,17 @@ def deparse(path, show_assembly, show_grammar, show_tree):
         print("file: %s\n\t %s\n" % (path, e))
         sys.exit(1)
 
-    if show_tree:
-        print(ast)
+    # Before transformation
+    # if show_tree:
+    #    print(ast)
 
     # .. and Generate Elisp
-    TransformTree(ast)
-    formatter = SourceWalker(ast)
+    transformed_ast = TransformTree(ast, debug=False).traverse(ast)
+
+    # After transformation
+    if show_tree:
+        print(ast)
+    formatter = SourceWalker(transformed_ast)
     is_file = fn_def.fn_type == 'file'
     if is_file:
         indent = header = ''
@@ -77,6 +82,7 @@ def deparse(path, show_assembly, show_grammar, show_tree):
         indent = '  '
         header = "(%s %s%s%s" % (fn_def.fn_type, fn_def.name, fn_def.args,
                                  fn_def.docstring)
+
     result = formatter.traverse(ast, indent)
     result = result.rstrip()
 

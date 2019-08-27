@@ -1,7 +1,10 @@
 from __future__ import print_function
 
 import re
-from spark_parser import GenericASTTraversal, GenericASTBuilder
+from copy import copy
+from spark_parser import GenericASTTraversal, GenericASTBuilder, GenericASTTraversalPruningException
+from eldecompile.tok import Token
+from eldecompile.treenode import SyntaxTree
 
 
 TRANSFORM = {
@@ -51,10 +54,45 @@ def emacs_key_normalize(name_expr_node):
         const_node.attr = result.lstrip(' ')
 
 class TransformTree(GenericASTTraversal, object):
+
     def __init__(self, ast, debug=False):
+        self.debug = debug
         GenericASTTraversal.__init__(self, ast=None)
-        self.traverse(ast)
         return
+
+    @staticmethod
+    def unop_operator(node):
+        return node[0]
+
+    @staticmethod
+    def binop_operator(node):
+        return node[1][0]
+
+    def preorder(self, node=None):
+        """Walk the tree in roughly 'preorder' (a bit of a lie explained below).
+        For each node with typestring name *name* if the
+        node has a method called n_*name*, call that before walking
+        children.
+
+        In typical use a node with children can call "preorder" in any
+        order it wants which may skip children or order then in ways
+        other than first to last.  In fact, this this happens.  So in
+        this sense this function not strictly preorder.
+        """
+        if node is None:
+            node = self.ast
+
+        try:
+            name = "n_" + self.typestring(node)
+            if hasattr(self, name):
+                func = getattr(self, name)
+                node = func(node)
+        except GenericASTTraversalPruningException:
+            return
+
+        for i, kid in enumerate(node):
+            node[i] = self.preorder(kid)
+        return node
 
     def default(self, node):
         if not hasattr(node, '__len__'):
@@ -71,24 +109,39 @@ class TransformTree(GenericASTTraversal, object):
             self.prune()
 
 
+    def n_unary_expr_stacked(self, node):
+        binary_expr_stacked = node[0][0]
+        if not (node[0] == 'expr_stacked' and binary_expr_stacked == 'binary_expr_stacked'):
+            return node
+        binary_op = self.binop_operator(binary_expr_stacked)
+        unary_op = self.unop_operator(node[1])
+        if unary_op == "NOT" and binary_op == "EQLSIGN":
+            binary_expr_stacked[1][0].kind = "NEQLSIGN"
+            node = SyntaxTree(
+                "binary_expr_stacked",  binary_expr_stacked, transformed_by="n_" + node.kind,
+                )
+        return node
+
     def n_binary_expr(self, call_node):
         # Flatten f(a (f b))
         expr = call_node[0]
         fn_name = call_node[2][0].kind
         if fn_name not in ('MIN', 'MAX'):
-            return
+            return call_node
         if expr[0] and expr[0] == 'binary_expr':
             fn_name2 = expr[0][2][0].kind
         else:
-            return
+            node.transformed_by = "n_" + node.kind
+            return call_node
 
         if fn_name == fn_name2:
             args = [expr[0][0], expr[0][1], call_node[1]]
             nt_name = fn_name.lower() + '_exprn'
             call_node.kind = nt_name
+            node.transformed_by = "n_" + node.kind
             call_node[:len(args)] = args
             pass
-        return
+        return call_node
 
     def n_call_exprn_4_name_expr_0(self, call_node):
         expr = call_node[0]
@@ -105,7 +158,7 @@ class TransformTree(GenericASTTraversal, object):
                 emacs_key_normalize(key_expr)
                 pass
             pass
-        return
+        return node
 
     def n_call_exprn_5_name_expr_0(self, call_node):
         assert call_node[0][0] == 'name_expr'
@@ -118,10 +171,17 @@ class TransformTree(GenericASTTraversal, object):
                 emacs_key_normalize(key_expr)
                 pass
             pass
-        return
+        return node
 
     def traverse(self, node):
         self.preorder(node)
+
+    def transform(self, ast):
+        # self.maybe_show_tree(ast)
+        self.ast = copy(ast)
+        self.ast = self.traverse(self.ast, is_lambda=False)
+        return self.ast
+
 
 if __name__ == '__main__':
     for seq in (

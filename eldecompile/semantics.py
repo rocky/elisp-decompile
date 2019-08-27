@@ -166,6 +166,7 @@ TABLE_DIRECT = {
     'CAR-SAFE':	( 'car-safe' , ),
     'DIFF':	( '-' ,  ),
     'EQLSIGN':	( '=' ,  ),
+    'NEQLSIGN':	( '/=' , ),  # Can only occur via transform
     'GEQ':	( '>=' , ),
     'GTR':	( '>' ,  ),
     'LEQ':	( '<=' , ),
@@ -266,7 +267,6 @@ class SourceWalker(GenericASTTraversal, object):
         self.ERROR = None
         self.prec = 100
         self.pending_newlines = 0
-        self.hide_internal = True
         self.indent_stack = ['']
 
         # A place to put the AST nodes for compuations pushed
@@ -639,5 +639,9 @@ class SourceWalker(GenericASTTraversal, object):
 
     def write(self, *data):
         udata = [to_s(d) for d in data]
-        self.f.write(*udata)
+        try:
+            self.f.write(*udata)
+        except:
+            from trepan.api import debug; debug()
+            pass
         return
