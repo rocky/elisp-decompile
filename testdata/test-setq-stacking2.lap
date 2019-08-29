@@ -1,0 +1,10 @@
+byte code for setq-stacking2:
+  args: (a b)
+0	varref	  a
+1	varref	  b
+2	dup
+3	varset	  a
+4	rem
+5	dup
+6	varset	  b
+7	return

@@ -1,7 +1,13 @@
 #!/usr/bin/env python
 from eldecompile.graph import BB_ENTRY, BB_JUMP_UNCONDITIONAL, BB_NOFOLLOW
-from eldecompile.tok import Token, STACK_EFFECT, STACK_EFFECTS
+from eldecompile.tok import Token
+from eldecompile.stack_effect import STACK_EFFECT, STACK_EFFECTS
 
+def compute_stack_change(instructions):
+    stack_change = 0
+    for instr in instructions:
+        stack_change += STACK_EFFECT[instr.kind.lower()]
+    return stack_change
 
 class BasicBlock(object):
     """Represents a basic block (or rather extended basic block) from the
@@ -135,7 +141,10 @@ class BBMgr(object):
             stack_change = STACK_EFFECT[instr.kind.lower()]
             if isinstance(stack_change, tuple):
                 assert self.offset_convert(offset) == end_offset
-                stack_effect = (stack_effect + stack_change[0], stack_effect + stack_change[1])
+                stack_effect = (
+                    stack_effect + stack_change[0],
+                    stack_effect + stack_change[1],
+                )
                 break
             else:
                 assert isinstance(stack_change, int)
@@ -299,6 +308,7 @@ def basic_blocks(instructions, show_assembly):
         )
 
     return bblocks, instructions
+
 
 # Add Markers for stack access, and control-flow markers
 # This needs to be done *after* control flow analysis and
