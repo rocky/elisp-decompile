@@ -66,7 +66,7 @@ STACK_EFFECTS = {
     'quo':            (-2, +1),
     'rem':            (-2, +1),
     'return':         (-1, +0),
-    'save-current-buffer': (-1, +1),
+    'save-current-buffer': (-0, +1),
     'save-excursion':  (-0, +0),
     'save-window-excursion': (-1, +0),
     'set':            (-2, +1),

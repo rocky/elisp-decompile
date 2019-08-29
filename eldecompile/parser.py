@@ -127,6 +127,7 @@ class ElispParser(GenericASTBuilder):
 
         save_excursion      ::= SAVE-EXCURSION body UNBIND
         save_current_buffer ::= SAVE-CURRENT-BUFFER body UNBIND
+
         set_buffer          ::= expr SET-BUFFER
 
         unary_expr_stacked  ::= STACK-ACCESS unary_op
@@ -143,12 +144,12 @@ class ElispParser(GenericASTBuilder):
         if_expr ::= expr filler expr COME_FROM LABEL
 
         while_expr1 ::= expr COME_FROM LABEL expr
-                       GOTO-IF-NIL-ELSE-POP body
-                       GOTO COME_FROM LABEL
+                        GOTO-IF-NIL-ELSE-POP body
+                        GOTO COME_FROM LABEL
 
         while_expr2 ::= COME_FROM LABEL expr
-                       GOTO-IF-NIL-ELSE-POP body
-                       GOTO COME_FROM LABEL
+                        GOTO-IF-NIL-ELSE-POP body
+                        GOTO COME_FROM LABEL
 
         when_expr ::= expr GOTO-IF-NIL body COME_FROM LABEL
 
@@ -381,6 +382,7 @@ class ElispParser(GenericASTBuilder):
                 self.add_unique_rule(rule, opname_base)
             pass
         # self.check_reduce['progn'] = 'AST'
+        self.check_reduce['while_expr2'] = 'AST'
         self.check_reduce['clause'] = 'AST'
         self.check_reduce['cond_expr'] = 'AST'
         return
@@ -416,7 +418,14 @@ class ElispParser(GenericASTBuilder):
                     return True
             if ast[0].kind != 'condition' and end_clause[-1] == 'COME_FROM':
                 return True
-        if rule == ('cond_expr', ('clause', 'labeled_clauses')):
+        elif lhs == "while_expr2":
+            # Check that "expr" isn't a stacked expression.
+            # Otherwise it should be handled by while_expr1
+            expr = ast[2]
+            while expr.kind.endswith("expr"):
+                expr = expr[0]
+            return expr.kind.endswith("stacked")
+        elif rule == ('cond_expr', ('clause', 'labeled_clauses')):
             # Since there are no come froms, each of the clauses
             # must end in a return.
             for n in ast:

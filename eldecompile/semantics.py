@@ -135,7 +135,7 @@ TABLE_DIRECT = {
     'min_exprn':	   ( '(min %L)', (0, 1000) ),
     'max_exprn':	   ( '(max %L)', (0, 1000) ),
     'save_excursion':      ( '(save-excursion\n%+%|%c%)', 1 ),
-    'save_current_buffer': ( '(save-current-buffer\n%+%|%c%)', 1 ),
+    'save_current_buffer': ( '(save-current-buffer\n%+%|%c%)', 2 ),
     'set_buffer':          ( '(set-buffer %c)', 0 ),
 
     'cond_expr':	   ( '%(cond %.%c%c%)', 0, 1 ),
