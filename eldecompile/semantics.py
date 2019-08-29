@@ -144,8 +144,8 @@ TABLE_DIRECT = {
 
     'if_expr':		  ( '%(if %c\n%+%|%c%)', 0, 2 ),
     'if_else_expr':	  ( '%(if %c\n%+%|%c%_%c)%_', 0, 2, 5 ),
-    'while_expr':	  ( '%(while %c\n%+%|%c%)', 2, 4 ),
-    'while_expr_stacked':	( '%(while %s%c\n%+%|%c%)', 0, 3, 5 ),
+    'while_expr1':	  ( '%(while %P%c\n%+%|%c%)', 0, 3, 5 ),
+    'while_expr2':	  ( '%(while %c\n%+%|%c%)', 2, 4 ),
     'when_expr':	  ( '%(when %c\n%+%|%c%)', 0, 2 ),
     'or_expr':		  ( '(or %+%c %c%)', 0, 2 ),
     'and_expr':		  ( '(and %+%c %c%)', 0, 2 ),
@@ -289,6 +289,9 @@ class SourceWalker(GenericASTTraversal, object):
     def push1(self, node):
         self.eval_stack.append(node)
         return node
+
+    def access(self):
+        return self.eval_stack[0]
 
     def stacklen(self):
         return len(self.eval_stack)
@@ -469,8 +472,8 @@ class SourceWalker(GenericASTTraversal, object):
     #     self.template_engine(( '(%c %c %c)', 2, 0, 1), node)
 
     def n_unary_expr(self, node):
-        self.replace1(node)
         self.template_engine( ('(%c %c)', 1, 0), node )
+        self.replace1(node)
         self.prune()
 
     def n_expr_stmt(self, node):
@@ -505,7 +508,7 @@ class SourceWalker(GenericASTTraversal, object):
         if self.stacklen() == 0:
             self.write("DUP-empty-stack")
         else:
-            self.write(self.pop1())
+            self.write("DUP-place holder")
 
     def template_engine(self, entry, startnode):
         """The format template engine.  See the comment at the beginning of
@@ -575,6 +578,11 @@ class SourceWalker(GenericASTTraversal, object):
                 # Get value from eval stack
                 subnode = self.pop1()
                 self.preorder(subnode)
+            elif typ == 'P':
+                # Push value to eval stack
+                index = entry[arg]
+                self.push1(node[index])
+                arg += 1
             elif typ == 'p':
                 (index, self.prec) = entry[arg]
                 self.preorder(node[index])

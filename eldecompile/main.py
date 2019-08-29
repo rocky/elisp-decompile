@@ -5,7 +5,7 @@ from eldecompile.scanner import fn_scanner
 from eldecompile.parser import ElispParser, ParserError
 from eldecompile.semantics import SourceWalker
 from eldecompile.transform import TransformTree
-from eldecompile.bb import basic_blocks
+from eldecompile.bb import basic_blocks, ingest
 from eldecompile.cfg import ControlFlowGraph
 from eldecompile.dominators import DominatorTree, build_df
 
@@ -14,17 +14,12 @@ import os, sys
 import click
 
 
-def flow_control(name, tokens, show_assembly):
+def flow_control(name, instructions, show_assembly):
     #  Flow control analysis of instruction
-    bblocks, tokens = basic_blocks(tokens, show_assembly)
+    bblocks, instructions = basic_blocks(instructions, show_assembly)
     for bb in bblocks.bb_list:
         print("\t", bb)
     cfg = ControlFlowGraph(bblocks.bb_list)
-    dot_path = "/tmp/flow-%s.dot" % name
-    png_path = "/tmp/flow-%s.png" % name
-    open(dot_path, "w").write(cfg.graph.to_dot())
-    print("%s written" % dot_path)
-    os.system("dot -Tpng %s > %s" % (dot_path, png_path))
     try:
         dom_tree = DominatorTree(cfg).tree()
         dom_tree = build_df(dom_tree)
@@ -33,15 +28,21 @@ def flow_control(name, tokens, show_assembly):
         open(dot_path, "w").write(dom_tree.to_dot())
         print("%s written" % dot_path)
         os.system("dot -Tpng %s > %s" % (dot_path, png_path))
+        dot_path = "/tmp/flow-%s.dot" % name
+        png_path = "/tmp/flow-%s.png" % name
+        open(dot_path, "w").write(cfg.graph.to_dot())
+        print("%s written" % dot_path)
+        os.system("dot -Tpng %s > %s" % (dot_path, png_path))
         print("=" * 30)
-        return tokens
+        instructions = ingest(bblocks, instructions, show_assembly)
+        return instructions
     except:
         import traceback
 
         traceback.print_exc()
         print("Unexpected error:", sys.exc_info()[0])
         print("%s had an error" % name)
-        return tokens
+        return instructions
 
 
 def deparse(path, show_assembly, show_grammar, show_tree):

@@ -69,6 +69,7 @@ class Edge(object):
         self.kind = kind
         self.data = data
 
+
     @classmethod
     def reset(self):
        self.GLOBAL_COUNTER = 0

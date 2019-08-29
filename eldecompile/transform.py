@@ -66,7 +66,7 @@ class TransformTree(GenericASTTraversal, object):
 
     @staticmethod
     def binop_operator(node):
-        return node[1][0]
+        return node[2][0]
 
     def preorder(self, node=None):
         """Walk the tree in roughly 'preorder' (a bit of a lie explained below).
@@ -109,16 +109,16 @@ class TransformTree(GenericASTTraversal, object):
             self.prune()
 
 
-    def n_unary_expr_stacked(self, node):
-        binary_expr_stacked = node[0][0]
-        if not (node[0] == 'expr_stacked' and binary_expr_stacked == 'binary_expr_stacked'):
+    def n_unary_expr(self, node):
+        binary_expr = node[0][0]
+        if not (node[0] == 'expr' and binary_expr in ("binary_expr", "binary_expr_stacked")):
             return node
-        binary_op = self.binop_operator(binary_expr_stacked)
+        binary_op = self.binop_operator(binary_expr)
         unary_op = self.unop_operator(node[1])
         if unary_op == "NOT" and binary_op == "EQLSIGN":
-            binary_expr_stacked[1][0].kind = "NEQLSIGN"
+            binary_expr[2][0].kind = "NEQLSIGN"
             node = SyntaxTree(
-                "binary_expr_stacked",  binary_expr_stacked, transformed_by="n_" + node.kind,
+                node[0][0].kind,  binary_expr, transformed_by="n_" + node.kind,
                 )
         return node
 
@@ -138,7 +138,7 @@ class TransformTree(GenericASTTraversal, object):
             args = [expr[0][0], expr[0][1], call_node[1]]
             nt_name = fn_name.lower() + '_exprn'
             call_node.kind = nt_name
-            node.transformed_by = "n_" + node.kind
+            call_node.transformed_by = "n_" + call_node.kind
             call_node[:len(args)] = args
             pass
         return call_node
