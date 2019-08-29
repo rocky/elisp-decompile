@@ -6,7 +6,10 @@ from eldecompile.stack_effect import STACK_EFFECT, STACK_EFFECTS
 def compute_stack_change(instructions):
     stack_change = 0
     for instr in instructions:
-        stack_change += STACK_EFFECT[instr.kind.lower()]
+        stack_effect = STACK_EFFECT[instr.kind.lower()]
+        if isinstance(stack_effect, tuple):
+            stack_effect = stack_effect[0]
+        stack_change += stack_effect
     return stack_change
 
 class BasicBlock(object):

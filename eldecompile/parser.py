@@ -386,7 +386,7 @@ class ElispParser(GenericASTBuilder):
         self.check_reduce['while_expr2'] = 'AST'
         self.check_reduce['clause'] = 'AST'
         self.check_reduce['cond_expr'] = 'AST'
-        # self.check_reduce['expr_stmt'] = 'tokens'
+        self.check_reduce['expr_stmt'] = 'tokens'
         return
 
     def debug_reduce(self, rule, tokens, parent, last_token_pos):
@@ -427,8 +427,12 @@ class ElispParser(GenericASTBuilder):
             while expr.kind.endswith("expr"):
                 expr = expr[0]
             return expr.kind.endswith("stacked")
-        # elif lhs == "expr_stmt":
-        #     return compute_stack_change(tokens[first:last]) != 0
+        elif lhs == "expr_stmt":
+            stack_change = compute_stack_change(tokens[first:last])
+            if not (stack_change == 0
+                or (stack_change == 1 and last < len(tokens) and
+                    tokens[last] == "RETURN")):
+                return False
         elif rule == ('cond_expr', ('clause', 'labeled_clauses')):
             # Since there are no come froms, each of the clauses
             # must end in a return.
