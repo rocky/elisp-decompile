@@ -138,7 +138,7 @@ class TransformTree(GenericASTTraversal, object):
             args = [expr[0][0], expr[0][1], call_node[1]]
             nt_name = fn_name.lower() + '_exprn'
             call_node.kind = nt_name
-            node.transformed_by = "n_" + node.kind
+            call_node.transformed_by = "n_" + call_node.kind
             call_node[:len(args)] = args
             pass
         return call_node
