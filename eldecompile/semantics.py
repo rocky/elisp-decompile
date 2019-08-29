@@ -121,22 +121,29 @@ TABLE_R0 = {
 }
 
 TABLE_DIRECT = {
-    'setq_expr':	   ( '%(setq %Q %+%c%)', -1, 0 ),
+    'setq_expr':	   ( '%(setq %Q %+%c%)', -1,
+                             (0, "expr") ),
     'setq_expr_stacked':   ( '%(setq %Q %+%c%)', -1, 0 ),
-    'set_expr':            ( '%(set %c %+%c%)', 0, 1 ),
+    'set_expr':            ( '%(set %c %+%c%)',
+                             (0, "expr"), (1, "expr") ),
     'nullary_expr':	   ( '(%c)', 0 ),
     'unary_expr':	   ( '(%c %+%c%)', 1, 0 ),
     'unary_expr_stacked':  ( '(%c %+%S%)', 0 ),
-    'binary_expr':	   ( '(%c %+%c %c%)', -1, 0, 1 ),
+    'binary_expr':	   ( '(%c %+%c %c%)',
+                             (-1, "binary_op"),
+                             (0, "expr"), (1, "expr") ),
     'binary_expr_stacked': ( '(%c %+%S %c%)', -1, 0),
 
     'concat_exprn':	   ( '(concat %l)', (0, 1000) ),
     'list_exprn':	   ( '(list %l)', (0, 1000) ),
     'min_exprn':	   ( '(min %L)', (0, 1000) ),
     'max_exprn':	   ( '(max %L)', (0, 1000) ),
-    'save_excursion':      ( '(save-excursion\n%+%|%c%)', 1 ),
-    'save_current_buffer': ( '(save-current-buffer\n%+%|%c%)', 2 ),
-    'set_buffer':          ( '(set-buffer %c)', 0 ),
+    'save_excursion':      ( '(save-excursion\n%+%|%c%)',
+                             (1, "body") ),
+    'save_current_buffer': ( '(save-current-buffer\n%+%|%c%)',
+                             (1, "body") ),
+    'set_buffer':          ( '(set-buffer %c)',
+                             (0, "expr") ),
 
     'cond_expr':	   ( '%(cond %.%c%c%)', 0, 1 ),
     'labeled_clause':	   ( '%c', 1 ),
@@ -551,13 +558,13 @@ class SourceWalker(GenericASTTraversal, object):
             elif typ == ')':
                 self.write(')')
                 self.indent_less()
-            elif typ == 'c':
+            elif typ == "c":
                 index = entry[arg]
                 if isinstance(index, tuple):
                     assert node[index[0]] == index[1], (
                         "at %s[%d], expected %s node; got %s" % (
                             node.kind, arg, node[index[0]].kind, index[1])
-                        )
+                    )
                     index = index[0]
                 assert isinstance(index, int), (
                     "at %s[%d], %s should be int or tuple" % (
@@ -583,9 +590,22 @@ class SourceWalker(GenericASTTraversal, object):
                 index = entry[arg]
                 self.push1(node[index])
                 arg += 1
-            elif typ == 'p':
-                (index, self.prec) = entry[arg]
+            elif typ == "p":
+                p = self.prec
+                tup = entry[arg]
+                assert isinstance(tup, tuple)
+                if len(tup) == 3:
+                    (index, nonterm_name, self.prec) = tup
+                    assert node[index] == nonterm_name, (
+                        "at %s[%d], expected '%s' node; got '%s'"
+                        % (node.kind, arg, nonterm_name, node[index].kind)
+                    )
+                else:
+                    assert len(tup) == 2
+                    (index, self.prec) = entry[arg]
                 self.preorder(node[index])
+                self.prec = p
+                arg += 1
             elif typ == 'l':
                 low, high = entry[arg]
                 remaining = len(node[low:high]) - 1
