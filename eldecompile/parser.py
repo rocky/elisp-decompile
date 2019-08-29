@@ -66,6 +66,7 @@ class ElispParser(GenericASTBuilder):
     def p_elisp_grammar(self, args):
         '''# The start or goal symbol
         fn_body ::= body opt_return
+        fn_body ::= body stacked_return
 
         # expr_stmt is an expr where the value it produces
         # might not be needed. List-like things like
@@ -88,7 +89,9 @@ class ElispParser(GenericASTBuilder):
 
         # Function related
         expr  ::= binary_expr
+        expr  ::= binary_expr_stacked
         expr  ::= unary_expr
+        expr  ::= unary_expr_stacked
         expr  ::= nullary_expr
         expr  ::= name_expr
         expr  ::= pop_expr
@@ -103,8 +106,8 @@ class ElispParser(GenericASTBuilder):
         expr  ::= not_expr
         expr  ::= dolist_expr
         expr  ::= dolist_expr_result
-        expr  ::= while_expr
-        expr  ::= while_expr_stacked
+        expr  ::= while_expr1
+        expr  ::= while_expr2
 
         # Block related
         expr  ::= let_expr_star
@@ -120,17 +123,15 @@ class ElispParser(GenericASTBuilder):
         body_stacked  ::= expr_stacked exprs
         body_stacked  ::= expr_stacked
 
-        expr_stacked ::= unary_expr_stacked
-        expr_stacked ::= binary_expr_stacked
-        expr_stacked ::= setq_expr_stacked
+        expr ::= setq_expr_stacked
 
         save_excursion      ::= SAVE-EXCURSION body UNBIND
         save_current_buffer ::= SAVE-CURRENT-BUFFER body UNBIND
+
         set_buffer          ::= expr SET-BUFFER
 
-        unary_expr_stacked  ::= unary_op
-        unary_expr_stacked  ::= expr_stacked unary_op
-        binary_expr_stacked ::= expr binary_op
+        unary_expr_stacked  ::= STACK-ACCESS unary_op
+        binary_expr_stacked ::= expr STACK-ACCESS binary_op
 
 
         # if_expr ::= expr GOTO-IF-NIL-ELSE-POP expr LABEL
@@ -142,13 +143,13 @@ class ElispParser(GenericASTBuilder):
         if_expr ::= expr GOTO-IF-NIL expr COME_FROM LABEL
         if_expr ::= expr filler expr COME_FROM LABEL
 
-        while_expr_stacked ::= expr COME_FROM LABEL expr_stacked
-                       GOTO-IF-NIL-ELSE-POP body
-                       GOTO COME_FROM LABEL
+        while_expr1 ::= expr COME_FROM LABEL expr
+                        GOTO-IF-NIL-ELSE-POP body
+                        GOTO COME_FROM LABEL
 
-        while_expr ::= COME_FROM LABEL expr
-                       GOTO-IF-NIL-ELSE-POP body
-                       GOTO COME_FROM LABEL
+        while_expr2 ::= COME_FROM LABEL expr
+                        GOTO-IF-NIL-ELSE-POP body
+                        GOTO COME_FROM LABEL
 
         when_expr ::= expr GOTO-IF-NIL body COME_FROM LABEL
 
@@ -207,6 +208,7 @@ class ElispParser(GenericASTBuilder):
         expr_stacking ::= setq_expr_stacking binary_op
 
         binary_expr ::= expr expr binary_op
+        unary_expr  ::= STACK-ACCESS expr binary_op
         binary_expr ::= expr_stacking binary_op
 
         binary_op ::= DIFF
@@ -226,6 +228,7 @@ class ElispParser(GenericASTBuilder):
         binary_op ::= TIMES
 
         unary_expr ::= expr unary_op
+        unary_expr ::= STACK-ACCESS unary_op
 
         unary_op ::= ADD1
         unary_op ::= CAR
@@ -288,6 +291,7 @@ class ElispParser(GenericASTBuilder):
         end_clause ::= GOTO COME_FROM
         end_clause ::= RETURN COME_FROM
         end_clause ::= RETURN
+        end_clause ::= stacked_return
 
         cond_expr  ::= clause labeled_clauses come_froms LABEL
         cond_expr  ::= clause labeled_clauses
@@ -349,6 +353,7 @@ class ElispParser(GenericASTBuilder):
 
         opt_discard ::= DISCARD?
         opt_return  ::= RETURN?
+        stacked_return  ::= STACK-ACCESS RETURN
 
         '''
         return
@@ -377,6 +382,7 @@ class ElispParser(GenericASTBuilder):
                 self.add_unique_rule(rule, opname_base)
             pass
         # self.check_reduce['progn'] = 'AST'
+        self.check_reduce['while_expr2'] = 'AST'
         self.check_reduce['clause'] = 'AST'
         self.check_reduce['cond_expr'] = 'AST'
         return
@@ -408,11 +414,18 @@ class ElispParser(GenericASTBuilder):
             end_clause = ast[2]
             if ast[0].kind == 'condition' and len(end_clause) == 1:
                 if (end_clause[0] not in ('COME_FROM', 'RETURN')
-                    and tokens[last] != 'RETURN'):
+                    and last < len(tokens) and tokens[last] != 'RETURN'):
                     return True
             if ast[0].kind != 'condition' and end_clause[-1] == 'COME_FROM':
                 return True
-        if rule == ('cond_expr', ('clause', 'labeled_clauses')):
+        elif lhs == "while_expr2":
+            # Check that "expr" isn't a stacked expression.
+            # Otherwise it should be handled by while_expr1
+            expr = ast[2]
+            while expr.kind.endswith("expr"):
+                expr = expr[0]
+            return expr.kind.endswith("stacked")
+        elif rule == ('cond_expr', ('clause', 'labeled_clauses')):
             # Since there are no come froms, each of the clauses
             # must end in a return.
             for n in ast:
@@ -425,7 +438,7 @@ class ElispParser(GenericASTBuilder):
                 else:
                     return False
                 end_clause = clause[-1]
-                if end_clause[0].kind != 'RETURN':
+                if not (end_clause[0].kind in ("RETURN", "stacked_return")):
                     return True
                 pass
         return False

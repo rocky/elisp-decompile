@@ -132,7 +132,20 @@ def build_df(t):
             t.root = node
         node.bb.doms = node.doms = set([node])
         node.bb.reach_offset = node.reach_offset = node.bb.end_offset
-        for n in node.children:
+        for i, n in enumerate(node.children):
+
+            if isinstance(node.bb.cumulative_stack_effect, int):
+                cum_stack_effect = node.bb.cumulative_stack_effect
+            else:
+                cum_stack_effect = node.bb.cumulative_stack_effect[-(i+1)]
+
+            if isinstance(n.bb.stack_effect, int):
+                n.bb.cumulative_stack_effect += cum_stack_effect
+            else:
+                n.bb.cumulative_stack_effect = [
+                    j + cum_stack_effect
+                    for j in n.bb.cumulative_stack_effect
+                ]
             dfs(seen, n)
             node.doms |= node.doms
             node.bb.doms |= node.doms
@@ -142,7 +155,7 @@ def build_df(t):
         #       (node.number, [n.number for n in node.children]))
 
     seen = set([])
-    for node in t.nodes:
+    for node in sorted(list(t.nodes), key=lambda n: n.number):
         if node not in seen:
             dfs(seen, node)
     return t
