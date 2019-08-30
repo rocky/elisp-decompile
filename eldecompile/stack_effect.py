@@ -30,6 +30,7 @@ STACK_EFFECTS = {
     'concatn_6':      (-5, +1),
     'concatn_7':      (-6, +1),
     'cons':           (-2, +1),
+    'consp':          (-1, +1),
     'constant':       (-0, +1),
     'current-buffer': (-0, +1),
     'current-column': (-0, +1),
