@@ -386,6 +386,13 @@ class ElispParser(GenericASTBuilder):
         self.check_reduce['while_expr2'] = 'AST'
         self.check_reduce['clause'] = 'AST'
         self.check_reduce['cond_expr'] = 'AST'
+
+        # "expr_stmt' is an expression used as a statement and
+        # are derived from "expr". The intent of the reduction test
+        # is to try to make sure the "expr_stmt" is used in a statement
+        # kind of context. Without limiting these, limit larger expressions
+        # might not form. Also we see a lot of extra (spurious reductions)
+        # from expr_stmt->stmt->stmts->body.
         self.check_reduce['expr_stmt'] = 'tokens'
         return
 
@@ -429,10 +436,17 @@ class ElispParser(GenericASTBuilder):
             return expr.kind.endswith("stacked")
         elif lhs == "expr_stmt":
             stack_change = compute_stack_change(tokens[first:last])
+            # Below, the various instructions test for instructions marking the
+            # end of a basic block.
+            # FIXME: should we do something more precise?
             if not (stack_change == 0
-                or (stack_change == 1 and last < len(tokens) and
-                    tokens[last] == "RETURN")):
-                return False
+                or (stack_change != 0 and last < len(tokens) and
+                    tokens[last] in (
+                        "RETURN", "STACK-ACCESS", "UNBIND",
+                        "COME_FROM", "GOTO", "LABEL", "DUP",
+                        "GOTO-IF-NOT-NIL"
+                    ))):
+                return True
         elif rule == ('cond_expr', ('clause', 'labeled_clauses')):
             # Since there are no come froms, each of the clauses
             # must end in a return.
