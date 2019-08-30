@@ -45,6 +45,7 @@ STACK_EFFECTS = {
     'goto':           (-0, +0),
     'goto-if-nil':    (-1, +0),
     'goto-if-nil-else-pop': ((-1, -1), (0, 1)),
+    'goto-if-not-nil-else-pop': ((-1, -1), (0, 1)),
     'goto-if-not-nil': (-1, +0),
     'gtr':            (-2, +1),
     'insert':         (-1, +1),

@@ -159,9 +159,10 @@ TABLE_DIRECT = {
     'not_expr':		  ( '(null %+%c%)', 0 ),
     'dolist_expr_result': ( '%(dolist%+%(%c %c %c)\n%_%|%c)%_', 1, 0, 16, 6),
 
-    'pop_expr':           ( '(pop %+%c%)', (0, 'VARREF')),
+    'pop_expr':           ( '(pop %+%c%)', (0, 'VARREF') ),
 
     'exprs':              ( '%C', (0, 1000) ),
+    "expr_return":        ( "\n%|%c", (0, "expr") ),
 
 
     'let_expr_stacked':	( '%(let %.(%.%c)%-%c%)', 0, 1 ),

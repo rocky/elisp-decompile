@@ -3,6 +3,7 @@ from eldecompile.graph import BB_ENTRY, BB_JUMP_UNCONDITIONAL, BB_NOFOLLOW
 from eldecompile.tok import Token
 from eldecompile.stack_effect import STACK_EFFECT, STACK_EFFECTS
 
+
 def compute_stack_change(instructions):
     stack_change = 0
     for instr in instructions:
@@ -11,6 +12,7 @@ def compute_stack_change(instructions):
             stack_effect = stack_effect[0]
         stack_change += stack_effect
     return stack_change
+
 
 class BasicBlock(object):
     """Represents a basic block (or rather extended basic block) from the
@@ -95,6 +97,7 @@ JUMP_UNCONDITONAL = frozenset(["GOTO"])
 JUMP_CONDITIONAL = frozenset(
     """
 GOTO-IF-NIL GOTO-IF-NIL-ELSE-POP GOTO-IF-NOT-NIL GOTO-IF-NOT-NIL-POP
+GOTO-IF-NOT-NIL-ELSE-POP
 """.split()
 )
 JUMP_INSTRUCTIONS = JUMP_CONDITIONAL | JUMP_UNCONDITONAL
@@ -306,7 +309,12 @@ def basic_blocks(instructions, show_assembly):
     if start_offset <= end_offset:
         bblocks.bb_list.append(
             BasicBlock(
-                start_offset, end_offset, None, stack_effect=stack_effect, flags=flags, jump_offsets=jump_offsets
+                start_offset,
+                end_offset,
+                None,
+                stack_effect=stack_effect,
+                flags=flags,
+                jump_offsets=jump_offsets,
             )
         )
 
