@@ -62,11 +62,11 @@ class TransformTree(GenericASTTraversal, object):
 
     @staticmethod
     def unop_operator(node):
-        return node[0]
+        return node[0].kind
 
     @staticmethod
     def binop_operator(node):
-        return node[2][0]
+        return node[2][0].kind
 
     def preorder(self, node=None):
         """Walk the tree in roughly 'preorder' (a bit of a lie explained below).
@@ -122,26 +122,44 @@ class TransformTree(GenericASTTraversal, object):
                 )
         return node
 
-    def n_binary_expr(self, call_node):
+    def n_binary_expr(self, node):
         # Flatten f(a (f b))
-        expr = call_node[0]
-        fn_name = call_node[2][0].kind
+        expr = node[0]
+        fn_name = node[2][0].kind
         if fn_name not in ('MIN', 'MAX'):
-            return call_node
+            return node
         if expr[0] and expr[0] == 'binary_expr':
             fn_name2 = expr[0][2][0].kind
         else:
             node.transformed_by = "n_" + node.kind
-            return call_node
+            return node
 
         if fn_name == fn_name2:
-            args = [expr[0][0], expr[0][1], call_node[1]]
+            args = [expr[0][0], expr[0][1], node[1]]
             nt_name = fn_name.lower() + '_exprn'
-            call_node.kind = nt_name
-            call_node.transformed_by = "n_" + call_node.kind
-            call_node[:len(args)] = args
+            node.kind = nt_name
+            node.transformed_by = "n_" + node.kind
+            node[:len(args)] = args
             pass
-        return call_node
+        return node
+
+    def n_unary_expr(self, node):
+        assert node[0] == "expr"
+        expr = node[0]
+        unary_op1 = self.unop_operator(node[1])
+        if expr[0] == "unary_expr":
+            unary_op2 = self.unop_operator(expr[0][1])
+            # Handle (cxr (xyr ... )) -> (cxyr ...)
+            # FIXME: We combine only two functions. subr.el has up to 4 levels
+            if re.match("C[AD]R", unary_op1) and re.match("C[AD]R", unary_op2):
+                c12r = f"C%s%sR" % (unary_op1[1:2], unary_op2[1:2])
+                expr[0][1][0].kind = c12r
+                node = SyntaxTree(
+                    node.kind,  expr[0], transformed_by="n_" + node.kind
+                    )
+            pass
+        return node
+
 
     def n_call_exprn_4_name_expr_0(self, call_node):
         expr = call_node[0]

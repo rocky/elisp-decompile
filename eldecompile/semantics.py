@@ -121,75 +121,76 @@ TABLE_R0 = {
 }
 
 TABLE_DIRECT = {
-    'setq_expr':	   ( '%(setq %Q %+%c%)', -1,
+    "setq_expr":	   ( "%(setq %Q %+%c%)", -1,
                              (0, "expr") ),
-    'setq_expr_stacked':   ( '%(setq %Q %+%c%)', -1, 0 ),
-    'set_expr':            ( '%(set %c %+%c%)',
+    "setq_expr_stacked":   ( "%(setq %+%Q %c%)%-", -1, 0 ),
+    "set_expr":            ( "%(set %+%c %c%)%-",
                              (0, "expr"), (1, "expr") ),
-    'nullary_expr':	   ( '(%c)', 0 ),
-    'unary_expr':	   ( '(%c %+%c%)', 1, 0 ),
-    'unary_expr_stacked':  ( '(%c %+%S%)', 0 ),
-    'binary_expr':	   ( '(%c %+%c %c%)',
+    "nullary_expr":	   ( "(%c)", 0 ),
+    "unary_expr":	   ( "(%c %+%c%)", 1, 0 ),
+    "unary_expr_stacked":  ( "(%c %+%S%)%-", 0 ),
+    "binary_expr":	   ( "(%c %+%c %c%)%-",
                              (-1, "binary_op"),
                              (0, "expr"), (1, "expr") ),
-    'binary_expr_stacked': ( '(%c %+%S %c%)', -1, 0),
+    "binary_expr_stacked": ( "(%c %+%S %c%)", -1, 0),
 
-    'concat_exprn':	   ( '(concat %l)', (0, 1000) ),
-    'list_exprn':	   ( '(list %l)', (0, 1000) ),
-    'min_exprn':	   ( '(min %L)', (0, 1000) ),
-    'max_exprn':	   ( '(max %L)', (0, 1000) ),
-    'save_excursion':      ( '(save-excursion\n%+%|%c%)',
+    "concat_exprn":	   ( "(concat %l)", (0, 1000) ),
+    "list_exprn":	   ( "(list %l)", (0, 1000) ),
+    "min_exprn":	   ( "(min %L)", (0, 1000) ),
+    "max_exprn":	   ( "(max %L)", (0, 1000) ),
+    "save_excursion":      ( "(save-excursion\n%+%|%c%)",
                              (1, "body") ),
-    'save_current_buffer': ( '(save-current-buffer\n%+%|%c%)',
+    "save_current_buffer": ( "(save-current-buffer\n%+%|%c%)",
                              (1, "body") ),
-    'set_buffer':          ( '(set-buffer %c)',
+    "set_buffer":          ( "(set-buffer %c)",
                              (0, "expr") ),
 
-    'cond_expr':	   ( '%(cond %.%c%c%)', 0, 1 ),
-    'labeled_clause':	   ( '%c', 1 ),
-    'labeled_final_clause': ('\n%|(%c %c)', 1, 2),
+    "cond_expr":	   ( "%(cond %.%c%c%)", 0, 1 ),
+    "labeled_clause":	   ( "%c", 1 ),
+    "labeled_final_clause": ("\n%|(%c %c)", 1, 2),
 
-    'if_expr':		  ( '%(if %c\n%+%|%c%)', 0, 2 ),
-    'if_else_expr':	  ( '%(if %c\n%+%|%c%_%c)%_', 0, 2, 5 ),
-    'while_expr1':	  ( '%(while %P%c\n%+%|%c%)', 0, 3, 5 ),
-    'while_expr2':	  ( '%(while %c\n%+%|%c%)', 2, 4 ),
-    'when_expr':	  ( '%(when %c\n%+%|%c%)', 0, 2 ),
-    'or_expr':		  ( '(or %+%c %c%)', 0, 2 ),
-    'and_expr':		  ( '(and %+%c %c%)', 0, 2 ),
-    'not_expr':		  ( '(null %+%c%)', 0 ),
-    'dolist_expr_result': ( '%(dolist%+%(%c %c %c)\n%_%|%c)%_', 1, 0, 16, 6),
+    "if_expr":		  ( "%(if %c\n%+%|%c%)", 0, 2 ),
+    "if_else_expr":	  ( "%(if %c\n%+%|%c%_%c)%_", 0, 2, 5 ),
+    "while_expr1":	  ( "%(while %P%c\n%+%|%c%)", 0, 3, 5 ),
+    "while_expr2":	  ( "%(while %c\n%+%|%c%)", 2, 4 ),
+    "when_expr":	  ( "%(when %c\n%+%|%c%)", 0, 2 ),
+    "or_expr":		  ( "(or %+%c %c%)", 0, 2 ),
+    "and_expr":		  ( "(and %+%c %c%)", 0, 2 ),
+    "not_expr":		  ( "(null %+%c%)", 0 ),
+    "dolist_expr_result": ( "%(dolist%+%(%c %c %c)\n%_%|%c)%_", 1, 0, 16, 6),
 
-    'pop_expr':           ( '(pop %+%c%)', (0, 'VARREF') ),
+    "pop_expr":           ( "(pop %+%c%)", (0, "VARREF") ),
 
-    'exprs':              ( '%C', (0, 1000) ),
+    "exprs":              ( "%C", (0, 1000) ),
     "expr_return":        ( "\n%|%c", (0, "expr") ),
 
 
-    'let_expr_stacked':	( '%(let %.(%.%c)%-%c%)', 0, 1 ),
-    # 'progn':		( '%(progn\n%+%|%c%)', 0 ),
-    'body_stacked':	( '%c', 0 ),
+    "let_expr_stacked":	( "%(let %.(%.%c)%-%c%)", 0, 1 ),
+    # "progn":		( "%(progn\n%+%|%c%)", 0 ),
+    "body_stacked":	( "%c", 0 ),
 
-    'ADD1':	( '1+' , ),
-    'CAR':	( 'car' , ),
-    'CAR-SAFE':	( 'car-safe' , ),
-    'DIFF':	( '-' ,  ),
-    'EQLSIGN':	( '=' ,  ),
-    'NEQLSIGN':	( '/=' , ),  # Can only occur via transform
-    'GEQ':	( '>=' , ),
-    'GTR':	( '>' ,  ),
-    'LEQ':	( '<=' , ),
-    'LSS':	( '<' ,  ),
-    'MULT':	( '*' ,  ),
-    'PLUS':	( '+' ,  ),
-    'QUO':	( '/' ,  ),
-    'REM':	( '%' ,  ),
-    'SUB1':	( '1-' , ),
+    "ADD1":	( "1+" ,   ),
+    "CAR":	( "car" ,  ),
+    "CADR":	( "cadr" , ),
+    "CAR-SAFE":	( "car-safe" , ),
+    "DIFF":	( "-" ,  ),
+    "EQLSIGN":	( "=" ,  ),
+    "NEQLSIGN":	( "/=" , ),  # Can only occur via transform
+    "GEQ":	( ">=" , ),
+    "GTR":	( ">" ,  ),
+    "LEQ":	( "<=" , ),
+    "LSS":	( "<" ,  ),
+    "MULT":	( "*" ,  ),
+    "PLUS":	( "+" ,  ),
+    "QUO":	( "/" ,  ),
+    "REM":	( "%" ,  ),
+    "SUB1":	( "1-" , ),
 
-    'TSTRING':	        ( '%{attr}', ),
-    'VARSET':	        ( '%{attr}', ),
-    'VARBIND':	        ( '%{attr}', ),
-    'VARREF':	        ( '%{attr}', ),
-    'STACK-REF':	( 'stack-ref%{attr}', ),
+    "TSTRING":	        ( "%{attr}", ),
+    "VARSET":	        ( "%{attr}", ),
+    "VARBIND":	        ( "%{attr}", ),
+    "VARREF":	        ( "%{attr}", ),
+    "STACK-REF":	( "stack-ref%{attr}", ),
 }
 
 NULLARY_OPS = tuple("""
@@ -247,7 +248,7 @@ def to_s(s):
     if PYTHON3:
         return s
     else:
-        return s.decode('utf-8')
+        return s.decode("utf-8")
 
 class SourceWalkerError(Exception):
     def __init__(self, errmsg):
@@ -258,16 +259,16 @@ class SourceWalkerError(Exception):
 
 class SourceWalker(GenericASTTraversal, object):
 
-    indent = property(lambda s: s.params['indent'],
-                 lambda s, x: s.params.__setitem__('indent', x),
-                 lambda s: s.params.__delitem__('indent'),
+    indent = property(lambda s: s.params["indent"],
+                 lambda s, x: s.params.__setitem__("indent", x),
+                 lambda s: s.params.__delitem__("indent"),
                  None)
 
     def __init__(self, ast, debug=False):
         GenericASTTraversal.__init__(self, ast=None)
         params = {
-            'f': StringIO(),
-            'indent': '',
+            "f": StringIO(),
+            "indent": "",
             }
         self.params = params
         self.param_stack = []
@@ -275,7 +276,7 @@ class SourceWalker(GenericASTTraversal, object):
         self.ERROR = None
         self.prec = 100
         self.pending_newlines = 0
-        self.indent_stack = ['']
+        self.indent_stack = [""]
 
         # A place to put the AST nodes for compuations pushed
         # on the evaluation stack
@@ -552,10 +553,10 @@ class SourceWalker(GenericASTTraversal, object):
                 if self.debug:
                     print("XXX . indent count", count)
                 self.indent_more(' ' * count)
-            elif typ == '+':	self.indent_more()
-            elif typ == '-':	self.indent_less()
-            elif typ == '_':	self.indent_less('  ')  # For else part of if/else
-            elif typ == '|':	self.write(self.indent)
+            elif typ == "+":	self.indent_more()
+            elif typ == "-":	self.indent_less()
+            elif typ == "_":	self.indent_less('  ')  # For else part of if/else
+            elif typ == "|":	self.write(self.indent)
             elif typ == ')':
                 self.write(')')
                 self.indent_less()
