@@ -1,11 +1,8 @@
 A [decompiler](https://en.wikipedia.org/wiki/Decompiler) for Emacs Lisp bytecode... or at least a proof of concept.
 
 This code uses the [Python
-spark-parser](https://pypi.python.org/pypi/spark_parser/) for its
-Earley algorithm parser and the code organization.  I have a project
-that implements the [Earley algorithm in Emacs
-Lisp](https://github.com/rocky/elisp-earley). It needs more work
-though to replace the Python code.
+spark-parser](https://pypi.python.org/pypi/spark_parser/) for its Earley algorithm parser and the code organization.  I have a project that implements the [Earley algorithm in Emacs
+Lisp](https://github.com/rocky/elisp-earley). It needs _a lot_ more work though to replace the Python code.
 
 This is in a very early stage, but amazingly the code seems sound so far.
 
@@ -19,16 +16,14 @@ I gave a
 [talk on Emacs bytecode showing this code](http://rocky.github.io/NYC-Emacs-April-2018). Type
 "s" on a slide to see the text associated with the slide.
 
-We are currently working on documenting Elisp bytecode. See https://github.com/rocky/elisp-lap .
+We are currently working on documenting Elisp bytecode. See https://github.com/rocky/elisp-bytecode .
 
 You may find yourself consulting the source code: [`emacs/lisp/emacs-lisp/bytecomp.el`](http://git.savannah.gnu.org/cgit/emacs.git/tree/lisp/emacs-lisp/bytecomp.el),
 [`emacs/src/data.c`](http://git.savannah.gnu.org/cgit/emacs.git/tree/src/data.c) and [`emacs/src/bytecode.c`](http://git.savannah.gnu.org/cgit/emacs.git/tree/src/bytecode.c).
 
 # Using this code
 
-Perhaps (with help, possibly yours) this will all get converted to
-Emacs Lisp. But for now it's Python since the decompiler code I have
-is currently in that language.
+Perhaps (with help, possibly yours) this will all get converted to Emacs Lisp. But for now it's Python since the decompiler code I have is currently in that language.
 
 ## Set up Python project
 
@@ -77,42 +72,31 @@ technical difficulties other than lots of work. So please help out.
 
 ### It's GNU Emacs, so of course I have the source code!
 
-There is a difference between being able to find the source code and
-having it accessible when you need it, such as at runtime in a stack
-trace.
+There is a difference between being able to find the source code and having it accessible when you need it, such as at runtime in a stack trace.
 
-When many people hear the word "decompile" they think reverse
-engineering or hacking code where source has deliberately been
-withheld.
+When many people hear the word "decompile" they think reverse engineering or hacking code where source has deliberately been withheld.
 
 There are other situations where a decompiler is useful.
 
-A common case is where you wrote the code, but have accidentally
-deleted the source code and just have the bytecode file.
+A common case is where you wrote the code, but have accidentally deleted the source code and just have the bytecode file.
 
-But, I know, you always use version control and emacs provides it's
-tilde backup file.
+But, I know, you always use version control and emacs provides it's tilde backup file.
 
-So that leads us to the situation where there are _several_ possible
-source code versions around, e.g. a development version and a stable
+So that leads us to the situation where there are _several_ possible source code versions around, e.g. a development version and a stable
 version, and you'd like to know which one of those you have loaded.
 
-And then we come to situation where there _is_ no source-code
-file. One can create functions on the fly and change them on the
+And then we come to situation where there _is_ no source-code file. One can create functions on the fly and change them on the
 fly. Similarly, functions can create functions when run interactively.
 
 ### Isn't it simpler to just dissasemble?
 
-Interestingly, a number of people have proffered the suggestion that
-it might just be easier to understand LAP and disassemble than write this code.
+Interestingly, a number of people have proffered the suggestion that it might just be easier to understand LAP and disassemble than write this code.
 
-Most people don't know LAP. From working with it so far and from
-seeing what the decompiler has to do and how intricate it is, I am
-pretty convinced that those who say they understand LAP have to do *a
-lot* of time-consuming tedious work to decipher things.
+Most people don't know LAP. In fact, before I started writing the [Elisp bytecode reference](https://github.com/rocky/elisp-bytecode), there really _wasn't_ any good documentation on LAP, short of reading source code.
 
-This is what computers were invented for. They do this stuff very fast
-compared to humans.
+From writng this decompiler and noting all of the subtleties and intricracies, I am pretty convinced that those who say they understand LAP have to do *a lot* of time-consuming tedious work to decipher things.
+
+This is what computers were invented for. They do this stuff very fast compared to humans.
 
 Here are some simple examples:
 
@@ -152,13 +136,11 @@ This expands to:
        (kill-buffer temp-buffer)))))
 ```
 
-And then you have things like `dolist` which are just long and boring template kinds of
-things. Because it's long it is very easy to lose sight of what it is.
+And then you have things like `dolist` which are just long and boring template kinds of things. Because it's long it is very easy to lose sight of what it is.
 
 #### Stacked values
 
-Keeping track of values pushed on a stack is also tedious. Again there
-can be some non-locality in when a value is pushed with when it is used and popped.
+Keeping track of values pushed on a stack is also tedious. Again there can be some non-locality in when a value is pushed with when it is used and popped.
 
 #### Keyboard bindings
 
