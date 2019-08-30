@@ -123,13 +123,13 @@ TABLE_R0 = {
 TABLE_DIRECT = {
     "setq_expr":	   ( "%(setq %Q %+%c%)", -1,
                              (0, "expr") ),
-    "setq_expr_stacked":   ( "%(setq %+%Q %c%)%-", -1, 0 ),
-    "set_expr":            ( "%(set %+%c %c%)%-",
+    "setq_expr_stacked":   ( "%(setq %+%Q %c%)", -1, 0 ),
+    "set_expr":            ( "%(set %+%c %c%)",
                              (0, "expr"), (1, "expr") ),
     "nullary_expr":	   ( "(%c)", 0 ),
     "unary_expr":	   ( "(%c %+%c%)", 1, 0 ),
-    "unary_expr_stacked":  ( "(%c %+%S%)%-", 0 ),
-    "binary_expr":	   ( "(%c %+%c %c%)%-",
+    "unary_expr_stacked":  ( "(%c %+%S%)", 0 ),
+    "binary_expr":	   ( "(%c %+%c %c%)",
                              (-1, "binary_op"),
                              (0, "expr"), (1, "expr") ),
     "binary_expr_stacked": ( "(%c %+%S %c%)", -1, 0),
@@ -165,7 +165,7 @@ TABLE_DIRECT = {
     "expr_return":        ( "\n%|%c", (0, "expr") ),
 
 
-    "let_expr_stacked":	( "%(let %.(%.%c)%-%c%)", 0, 1 ),
+    "let_expr_stacked":	( "%(let %.(%.%c)%c%)", 0, 1 ),
     # "progn":		( "%(progn\n%+%|%c%)", 0 ),
     "body_stacked":	( "%c", 0 ),
 
@@ -472,7 +472,7 @@ class SourceWalker(GenericASTTraversal, object):
             self.template_engine( ('(%c %c)', 1, 0), varbind)
             self.template_engine( ('%-%c%)', 1 ), node )
         else:
-            self.template_engine( ('%(let* %.(%.%c)%-\n%|%c%)%-', 0, 1 ),
+            self.template_engine( ('%(let* %.(%.%c)\n%|%c%)', 0, 1 ),
                                   node )
         self.prune()
 
@@ -554,11 +554,13 @@ class SourceWalker(GenericASTTraversal, object):
                     print("XXX . indent count", count)
                 self.indent_more(' ' * count)
             elif typ == "+":	self.indent_more()
-            elif typ == "-":	self.indent_less()
+            elif typ == "-":
+                self.indent_less()
+
             elif typ == "_":	self.indent_less('  ')  # For else part of if/else
             elif typ == "|":	self.write(self.indent)
-            elif typ == ')':
-                self.write(')')
+            elif typ == ")":
+                self.write(")")
                 self.indent_less()
             elif typ == "c":
                 index = entry[arg]
@@ -641,7 +643,7 @@ class SourceWalker(GenericASTTraversal, object):
                         pass
                     pass
                 arg += 1
-            elif typ == '{':
+            elif typ == "{":
                 d = node.__dict__
                 expr = m.group('expr')
                 try:
@@ -649,10 +651,10 @@ class SourceWalker(GenericASTTraversal, object):
                 except:
                     print(node)
                     raise
-            elif typ == '(':
+            elif typ == "(":
                 if not self.f.getvalue().endswith("\n" + self.indent):
                     self.write("\n" + self.indent)
-                self.write('(')
+                self.write("(")
             m = escape.search(fmt, i)
         self.write(fmt[i:])
 
