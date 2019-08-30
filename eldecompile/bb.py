@@ -306,7 +306,7 @@ def basic_blocks(instructions, show_assembly):
     if start_offset <= end_offset:
         bblocks.bb_list.append(
             BasicBlock(
-                start_offset, end_offset, None, flags=flags, jump_offsets=jump_offsets
+                start_offset, end_offset, None, stack_effect=stack_effect, flags=flags, jump_offsets=jump_offsets
             )
         )
 

@@ -606,29 +606,29 @@ class SourceWalker(GenericASTTraversal, object):
                 self.preorder(node[index])
                 self.prec = p
                 arg += 1
-            elif typ == 'l':
+            elif typ == "l":
                 low, high = entry[arg]
                 remaining = len(node[low:high]) - 1
                 for subnode in node[low:high]:
                     self.preorder(subnode)
                     remaining -= 1
-                    if remaining >= 1:
+                    if remaining >= 0:
                         self.write(" ")
                         pass
                     pass
                 arg += 1
-            elif typ == 'L':
+            elif typ == "L":
                 low, high = entry[arg]
                 remaining = len(node[low:high])
                 for subnode in node[low:high]:
                     self.preorder(subnode)
                     remaining -= 1
-                    if remaining >= 1:
+                    if remaining >= 0:
                         self.write(" ")
                         pass
                     pass
                 arg += 1
-            elif typ == 'C':
+            elif typ == "C":
                 low, high = entry[arg]
                 remaining = len(node[low:high])
                 for subnode in node[low:high]:
