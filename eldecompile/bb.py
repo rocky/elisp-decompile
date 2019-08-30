@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 from eldecompile.graph import BB_ENTRY, BB_JUMP_UNCONDITIONAL, BB_NOFOLLOW
 from eldecompile.tok import Token
 from eldecompile.stack_effect import STACK_EFFECT, STACK_EFFECTS

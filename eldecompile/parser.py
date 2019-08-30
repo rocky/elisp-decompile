@@ -3,7 +3,7 @@
 
 import re
 from spark_parser import GenericASTBuilder, DEFAULT_DEBUG as PARSER_DEFAULT_DEBUG
-from bb import compute_stack_change
+from eldecompile.bb import compute_stack_change
 
 nop_func = lambda self, args: None
 
@@ -84,6 +84,7 @@ class ElispParser(GenericASTBuilder):
         progn ::= body
 
         expr_stacked  ::= DUP
+        expr  ::= DUP
         expr  ::= setq_expr
         expr  ::= set_expr
         expr  ::= STACK-REF

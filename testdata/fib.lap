@@ -2,7 +2,7 @@ byte code for fib:
   args: (n)
 0	varref	  n
 1	constant  1
-2	lss
+2	leq
 3	goto-if-nil 1
 6	constant  1
 7	return

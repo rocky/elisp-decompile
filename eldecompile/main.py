@@ -125,8 +125,8 @@ def deparse(path, show_assembly, show_grammar, show_tree):
 )
 @click.option(
     "--tree",
-    default=None,
-    type=click.Choice(["after", "before", "full", None]),
+    default="none",
+    type=click.Choice(["after", "before", "full", "none"]),
     help="Show parse tree",
 )
 @click.option("-t", "tree_alias", flag_value="after", help="alias for --tree=after")

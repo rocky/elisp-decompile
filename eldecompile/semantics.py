@@ -67,20 +67,20 @@
 #     %l  like %L but skips the last node in the list which is
 #         presumed to be an operator
 #
-#     %s  pushes a value of the eval stack to use as an argument.
-#         _stacked nonterminals work this way
-#     %S  pops a value of the eval stack to use as an argument.
-#         _stacked nonterminals work this way
+#     %p  pushes a value of the eval stack to use as an argument.
+#     %P  pops a value of the eval stack to use as an argument.
 #
 #     %|  Insert spaces to the current indentation level. Takes no arguments.
 #
 #     %. Set the indent level to be where we currently are at[d. Takes no arguments.
 
 #     %+ increase current indentation level. Takes no arguments.
-#        pushes indent level on onto stack
+#        pushes indent level on onto stack. Note that %)
+#        decreases the indent.
 #
 #     %- decrease current indentation level. Takes no arguments.
-#        indent level is obtained from the stack
+#        indent level is obtained from the stack Note that %)
+#        decreases the indent, so often this isn't needed.
 #
 #     %_ decrease current indentation level of an if statement for an else
 #        block. It is expected that there will be another %_ after the else.
@@ -151,7 +151,7 @@ TABLE_DIRECT = {
 
     "if_expr":		  ( "%(if %c\n%+%|%c%)", 0, 2 ),
     "if_else_expr":	  ( "%(if %c\n%+%|%c%_%c)%_", 0, 2, 5 ),
-    "while_expr1":	  ( "%(while %P%c\n%+%|%c%)", 0, 3, 5 ),
+    "while_expr1":	  ( "%(while %p%c\n%+%|%c%)", 0, 3, 5 ),
     "while_expr2":	  ( "%(while %c\n%+%|%c%)", 2, 4 ),
     "when_expr":	  ( "%(when %c\n%+%|%c%)", 0, 2 ),
     "or_expr":		  ( "(or %+%c %c%)", 0, 2 ),
@@ -274,7 +274,6 @@ class SourceWalker(GenericASTTraversal, object):
         self.param_stack = []
         self.debug = debug
         self.ERROR = None
-        self.prec = 100
         self.pending_newlines = 0
         self.indent_stack = [""]
 
@@ -454,11 +453,11 @@ class SourceWalker(GenericASTTraversal, object):
         self.prune()
 
     def n_call_exprn(self, node):
-        if node[-1] == 'CALL_1':
+        if node[-1] == "CALL_1":
             self.template_engine( ('(%Q)', 0), node )
         else:
             args = node[-1].attr
-            self.template_engine( ('(%Q %l)', 0, (1, args)), node )
+            self.template_engine( ("(%p%Q %l%P)", 0, 0, (1, args)), node )
         self.prune()
 
     def n_let_expr_star(self, node):
@@ -517,7 +516,9 @@ class SourceWalker(GenericASTTraversal, object):
         if self.stacklen() == 0:
             self.write("DUP-empty-stack")
         else:
-            self.write("DUP-place holder")
+            val = self.eval_stack[0]
+            s = val if isinstance(val, str) else self.traverse(val)
+            self.write(s)
 
     def template_engine(self, entry, startnode):
         """The format template engine.  See the comment at the beginning of
@@ -581,34 +582,17 @@ class SourceWalker(GenericASTTraversal, object):
                 self.preorder(node[entry[arg]])
                 self.noquote = False
                 arg += 1
-            elif typ == 's':
-                # push a value on the eval stack
-                self.push1(node[entry[arg]])
-                arg += 1
-            elif typ == 'S':
+            elif typ == "S":
                 # Get value from eval stack
                 subnode = self.pop1()
                 self.preorder(subnode)
-            elif typ == 'P':
+            elif typ == "p":
                 # Push value to eval stack
                 index = entry[arg]
                 self.push1(node[index])
                 arg += 1
-            elif typ == "p":
-                p = self.prec
-                tup = entry[arg]
-                assert isinstance(tup, tuple)
-                if len(tup) == 3:
-                    (index, nonterm_name, self.prec) = tup
-                    assert node[index] == nonterm_name, (
-                        "at %s[%d], expected '%s' node; got '%s'"
-                        % (node.kind, arg, nonterm_name, node[index].kind)
-                    )
-                else:
-                    assert len(tup) == 2
-                    (index, self.prec) = entry[arg]
-                self.preorder(node[index])
-                self.prec = p
+            elif typ == "P":
+                self.pop1()
                 arg += 1
             elif typ == "l":
                 low, high = entry[arg]
