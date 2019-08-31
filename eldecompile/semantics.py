@@ -433,7 +433,8 @@ class SourceWalker(GenericASTTraversal, object):
         assert l == 2 or l == 3
         if l == 2:
             self.template_engine( ('\n%|(t %.%c', 0), node)
-        elif node[0] == 'opt_label':
+        # Check for first item in a (cond ..)
+        elif node[0] == 'opt_label' and node[2][-1] != "COME_FROM":
             self.template_engine( ('\n%|(t %.%c', 1), node)
         else:
             self.template_engine( ('\n%|(%c %.%c', 0, 1), node)

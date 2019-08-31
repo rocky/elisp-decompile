@@ -137,14 +137,14 @@ class ElispParser(GenericASTBuilder):
         binary_expr_stacked ::= expr STACK-ACCESS binary_op
 
 
+        # We keep nonterminals at position 0 and 2
+        if_expr ::= expr GOTO-IF-NIL expr opt_come_from opt_label
+        filler  ::=
+        if_expr ::= expr filler expr COME_FROM LABEL
+
         # if_expr ::= expr GOTO-IF-NIL-ELSE-POP expr LABEL
         # if_expr ::= expr GOTO-IF-NIL-ELSE-POP progn LABEL
-        if_expr ::= expr GOTO-IF-NIL expr COME_FROM LABEL
-
-        # We keep nonterminals at position 0 and 2
-        filler  ::=
-        if_expr ::= expr GOTO-IF-NIL expr COME_FROM LABEL
-        if_expr ::= expr filler expr COME_FROM LABEL
+        if_expr ::= expr GOTO-IF-NIL expr
 
         while_expr1 ::= expr COME_FROM LABEL expr
                         GOTO-IF-NIL-ELSE-POP body
