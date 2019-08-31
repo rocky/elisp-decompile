@@ -193,6 +193,7 @@ class ElispParser(GenericASTBuilder):
         # Keep nonterminals at positions  0 and 2
         or_expr    ::= expr GOTO-IF-NOT-NIL-ELSE-POP expr opt_come_from opt_label
         or_expr    ::= expr GOTO-IF-NOT-NIL          expr GOTO-IF-NIL-ELSE-POP COME_FROM LABEL
+        or_expr    ::= expr GOTO-IF-NOT-NIL expr
 
         # "not_expr" is (not expr) or (null expr). We use
         # not_ instead of null_ to to avoid confusion with nil
