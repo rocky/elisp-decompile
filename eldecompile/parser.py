@@ -103,13 +103,13 @@ class ElispParser(GenericASTBuilder):
         # Control-flow related
         expr  ::= if_form
         # expr  ::= if_else_form
-        expr  ::= when_expr
+        expr  ::= when_macro
         expr  ::= cond_form
         expr  ::= or_expr
         expr  ::= and_expr
         expr  ::= not_expr
-        expr  ::= dolist_expr
-        expr  ::= dolist_expr_result
+        expr  ::= dolist_macro
+        expr  ::= dolist_macro_result
         expr  ::= while_form1
         expr  ::= while_form2
         expr  ::= unwind_protect_form
@@ -156,21 +156,21 @@ class ElispParser(GenericASTBuilder):
                         GOTO-IF-NIL-ELSE-POP body
                         GOTO COME_FROM LABEL
 
-        when_expr ::= expr GOTO-IF-NIL body COME_FROM LABEL
+        when_macro ::= expr GOTO-IF-NIL body COME_FROM LABEL
 
 
         unwind_protect_form ::= expr UNWIND-PROTECT opt_exprs
 
         # Note: the VARSET's have special names which we could
         # check in a reduce rule.
-        dolist_expr ::= dolist_list dolist_init_var
+        dolist_macro ::= dolist_list dolist_init_var
                         GOTO-IF-NIL-ELSE-POP COME_FROM LABEL
                         dolist_loop_iter_set body
                         DUP VARSET GOTO-IF-NOT-NIL
                         CONSTANT COME_FROM LABEL
                         UNBIND
 
-        dolist_expr ::= dolist_list dolist_init_var
+        dolist_macro ::= dolist_list dolist_init_var
                         GOTO-IF-NIL-ELSE-POP COME_FROM LABEL
                         dolist_loop_iter_set_stacking body_stacked
                         DUP VARSET GOTO-IF-NOT-NIL
@@ -178,7 +178,7 @@ class ElispParser(GenericASTBuilder):
                         UNBIND
 
 
-        dolist_expr_result ::= dolist_list dolist_init_var
+        dolist_macro_result ::= dolist_list dolist_init_var
                         GOTO-IF-NIL COME_FROM LABEL
                         dolist_loop_iter_set body
                         VARREF CDR DUP VARSET GOTO-IF-NOT-NIL

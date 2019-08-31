@@ -156,11 +156,11 @@ TABLE_DIRECT = {
     "while_form2":	  ( "%(while %c\n%+%|%c%)", 2, 4 ),
     "unwind_protect_form":( "%(unwind-protect\n%+%|%c%_%Q)%_",
                             (2, "opt_exprs"), (0, "expr") ),
-    "when_expr":	  ( "%(when %c\n%+%|%c%)", 0, 2 ),
+    "when_macro":	  ( "%(when %c\n%+%|%c%)", 0, 2 ),
     "or_expr":		  ( "(or %+%c %c%)", 0, 2 ),
     "and_expr":		  ( "(and %+%c %c%)", 0, 2 ),
     "not_expr":		  ( "(null %+%c%)", 0 ),
-    "dolist_expr_result": ( "%(dolist%+%(%c %c %c)\n%_%|%c)%_", 1, 0, 16, 6),
+    "dolist_macro_result": ( "%(dolist%+%(%c %c %c)\n%_%|%c)%_", 1, 0, 16, 6),
 
     "pop_expr":           ( "(pop %+%c%)", (0, "VARREF") ),
 
@@ -365,7 +365,7 @@ class SourceWalker(GenericASTTraversal, object):
         self.write(node[0][-1].attr)
         self.prune()
 
-    def n_dolist_expr(self, node):
+    def n_dolist_macro(self, node):
         assert node[0] == 'dolist_list'
         assert node[1] == 'dolist_init_var'
         try:
