@@ -97,7 +97,7 @@ def fn_scanner_internal(lines, start, name, docstring, fn_type, show_assembly=Fa
                                 label = label))
         elif opname[:-1] in ('list', 'concat', 'cal'):
             if opname.startswith('call'):
-                count = int(fields[2]) + 1
+                count = int(fields[2])
                 opname = "%s_%d" % (opname, count)
             elif opname[-1] == 'N':
                 count = int(fields[2])

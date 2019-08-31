@@ -386,10 +386,15 @@ class ElispParser(GenericASTBuilder):
 
     def add_custom_rules(self, tokens, customize):
         for opname, v in customize.items():
-            if re.match(r'^LIST|CONCAT|CALL', opname):
+            if re.match(r"^LIST|CONCAT|CALL", opname):
                 opname_base = opname[:opname.index('_')]
                 if opname_base[-1] == 'N':
                     opname_base = opname_base[:-1]
+                if opname_base == "CALL":
+                    # Elisp calls add the function name as the 1st parameter.
+                    # However Elisp convention is not to count that in
+                    # the opcode.
+                    v += 1
                 nt = "%s_exprn" % (opname_base.lower())
                 rule = '%s ::= %s%s' % (nt, ('expr ' * v), opname)
                 self.add_unique_rule(rule, opname_base)

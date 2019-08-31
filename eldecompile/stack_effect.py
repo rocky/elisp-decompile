@@ -6,18 +6,16 @@ STACK_EFFECTS = {
     'bobp':           (-2, +1),
     'bolp':           ( 0, +1),
 
-    # FIXME: Our calls seem to be one off from elisp, because we
-    # are counting the function name. so call_1 is elisp call[0]
-    'call_1':         (-1, +1), # Generalize by preprocessing
-    'call_2':         (-2, +1),
-    'call_3':         (-3, +1),
-    'call_4':         (-4, +1),
-    'call_5':         (-5, +1),
-    'call_6':         (-6, +1),
-    'call_7':         (-7, +1),
-    'call_8':         (-8, +1),
-    'call_9':         (-9, +1),
-    'call_10':       (-10, +1),
+    'call_0':         (-1, +1), # Generalize by preprocessing
+    'call_1':         (-2, +1),
+    'call_2':         (-3, +1),
+    'call_3':         (-4, +1),
+    'call_4':         (-5, +1),
+    'call_5':         (-6, +1),
+    'call_6':         (-7, +1),
+    'call_7':         (-8, +1),
+    'call_8':         (-9, +1),
+    'call_9':        (-10, +1),
     'car':            (-1, +1),
     'car-safe':       (-1, +1),
     'cdr':            (-1, +1),

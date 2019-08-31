@@ -457,7 +457,7 @@ class SourceWalker(GenericASTTraversal, object):
         self.prune()
 
     def n_call_exprn(self, node):
-        if node[-1] == "CALL_1":
+        if node[-1] == "CALL_0":
             self.template_engine( ('(%Q)', 0), node )
         else:
             args = node[-1].attr
