@@ -140,9 +140,6 @@ class BBMgr(object):
         while self.offset_convert(offset) <= end_offset:
             instr = instructions[j]
             offset = instructions[j].offset
-            j += 1
-            if j == n:
-                break
             stack_change = STACK_EFFECT[instr.kind.lower()]
             if isinstance(stack_change, tuple):
                 assert self.offset_convert(offset) == end_offset
@@ -154,6 +151,8 @@ class BBMgr(object):
             else:
                 assert isinstance(stack_change, int)
                 stack_effect += stack_change
+            j += 1
+            if j == n: break
 
         bb = BasicBlock(
             start_offset,
@@ -327,7 +326,7 @@ def ingest(bblocks, instructions, show_assembly):
     last_offset = -1
     new_instructions = []
     # stack_size = 0
-    stack_surplus = 0
+    stack_effect = 0
     for i, inst in enumerate(instructions):
         offset = get_offset(inst)
         if offset != last_offset:
@@ -349,18 +348,18 @@ def ingest(bblocks, instructions, show_assembly):
             # else:
             #     stack_effect = bb.stack_effect[0]
             # stack_size + cumulative_effect - stack_effect
-            stack_surplus = 0
+            stack_effect = 0
 
         read_write = STACK_EFFECTS[inst.kind.lower()]
         if isinstance(read_write[0], int):
             # stack_size += read_write[0]
-            stack_surplus += read_write[0]
-            if stack_surplus < 0:
-                for j in range(stack_surplus, 0):
+            stack_effect += read_write[0]
+            if stack_effect < 0:
+                for j in range(stack_effect, 0):
                     new_instructions.append(Token("STACK-ACCESS", -j, offset))
-                stack_surplus = 0
+                stack_effect = 0
             # stack_size += read_write[1]
-            stack_surplus += read_write[1]
+            stack_effect += read_write[1]
         new_instructions.append(inst)
 
     if show_assembly and instructions != new_instructions:

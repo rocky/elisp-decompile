@@ -70,7 +70,7 @@ STACK_EFFECTS = {
     'quo':            (-2, +1),
     'rem':            (-2, +1),
     'return':         (-1, +0),
-    'save-current-buffer': (-0, +1),
+    'save-current-buffer': (-0, +0),
     'save-excursion':  (-0, +0),
     'save-window-excursion': (-1, +0),
     'set':            (-2, +1),
@@ -79,7 +79,8 @@ STACK_EFFECTS = {
     'stack-access':   (-0, +0), # A pseudo instruction
     'sub1':           (-1, +1),
     'unbind':         (-0, +0),
-    'varbind':        (-0, +1),
+    'unwind-protect': (-1, +0),
+    'varbind':        (-1, +0),
     'varref':         (-0, +1),
     'varset':         (-1, +0),
     'widen':          (-0, +1),
