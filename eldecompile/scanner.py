@@ -10,11 +10,9 @@ FuncDef = namedtuple('FuncDef', ['name', 'args', 'opt_args',
                                  'docstring', 'interactive', 'fn_type'])
 
 def fn_scanner(fp, show_assembly=False):
-    tokens = []
     lines = fp.readlines()
     line = lines[0]
     fn_type = 'defun'
-    interactive = None
     m = re.match("^byte code for macro (\S+):$", line)
     if m:
         fn_type = 'defmacro'
@@ -53,7 +51,13 @@ def fn_scanner(fp, show_assembly=False):
     else:
         docstring = ''
 
-    line = lines[cur_index]
+    args = fn_scanner_internal(lines, cur_index, name, docstring, fn_type, show_assembly)
+    return args[0:-1]
+
+# FIXME: docstring should probably not be passed.
+def fn_scanner_internal(lines, start, name, docstring, fn_type, show_assembly=False):
+
+    line = lines[start]
     m = re.match("^  args: (\([^)]*\))", line)
     if m:
         args = m.group(1)
@@ -61,21 +65,24 @@ def fn_scanner(fp, show_assembly=False):
         args = '()'
     else:
         args = '(?)'
-    cur_index += 1
 
-    line = lines[cur_index]
+    start += 1
+    line = lines[start]
+    interactive = None
     if line.startswith(' interactive: '):
         interactive = line[len(' interactive: '):].rstrip("\n")
-        cur_index += 1
-        line = lines[cur_index]
+        start += 1
 
+    tokens = []
     fn_def = FuncDef(name, args, None, docstring,
                      interactive, fn_type)
     customize = {}
 
     label = None
-    for i, line in enumerate(lines[cur_index:]):
+    for i, line in enumerate(lines[start:]):
         fields = line.split()
+        if len(fields) == 0:
+            break
         offset = fields[0]
         colon_point = offset.find(':')
         if colon_point >= 0:
@@ -118,4 +125,4 @@ def fn_scanner(fp, show_assembly=False):
 
     if show_assembly:
         print('\n'.join([str(t) for t in tokens]))
-    return fn_def, tokens, customize
+    return fn_def, tokens, customize, i
