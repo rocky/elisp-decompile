@@ -78,7 +78,8 @@ class ElispParser(GenericASTBuilder):
         # By its very nature of being sequenced
         # exprs must use a list-like or stmt_expr
 
-        exprs ::= expr_stmt+
+        exprs     ::= expr_stmt+
+        opt_exprs ::= expr_stmt*
 
 
         progn ::= body
@@ -100,25 +101,26 @@ class ElispParser(GenericASTBuilder):
         expr  ::= pop_expr
 
         # Control-flow related
-        expr  ::= if_expr
-        expr  ::= if_else_expr
+        expr  ::= if_form
+        # expr  ::= if_else_form
         expr  ::= when_expr
-        expr  ::= cond_expr
+        expr  ::= cond_form
         expr  ::= or_expr
         expr  ::= and_expr
         expr  ::= not_expr
         expr  ::= dolist_expr
         expr  ::= dolist_expr_result
-        expr  ::= while_expr1
-        expr  ::= while_expr2
+        expr  ::= while_form1
+        expr  ::= while_form2
+        expr  ::= unwind_protect_form
 
         # Block related
         expr  ::= let_expr_star
         expr  ::= let_expr_stacked
 
         # Buffer related
-        expr  ::= save_excursion
-        expr  ::= save_current_buffer
+        expr  ::= save_excursion_form
+        expr  ::= save_current_buffer_form
         expr  ::= set_buffer
 
         body  ::= exprs
@@ -128,8 +130,8 @@ class ElispParser(GenericASTBuilder):
 
         expr ::= setq_expr_stacked
 
-        save_excursion      ::= SAVE-EXCURSION body UNBIND
-        save_current_buffer ::= SAVE-CURRENT-BUFFER body UNBIND
+        save_excursion_form      ::= SAVE-EXCURSION body UNBIND
+        save_current_buffer_form ::= SAVE-CURRENT-BUFFER body UNBIND
 
         set_buffer          ::= expr SET-BUFFER
 
@@ -138,24 +140,26 @@ class ElispParser(GenericASTBuilder):
 
 
         # We keep nonterminals at position 0 and 2
-        if_expr ::= expr GOTO-IF-NIL expr opt_come_from opt_label
+        if_form ::= expr GOTO-IF-NIL expr opt_come_from opt_label
         filler  ::=
-        if_expr ::= expr filler expr COME_FROM LABEL
+        if_form ::= expr filler expr COME_FROM LABEL
 
-        # if_expr ::= expr GOTO-IF-NIL-ELSE-POP expr LABEL
-        # if_expr ::= expr GOTO-IF-NIL-ELSE-POP progn LABEL
-        if_expr ::= expr GOTO-IF-NIL expr
+        # if_form ::= expr GOTO-IF-NIL-ELSE-POP expr LABEL
+        # if_form ::= expr GOTO-IF-NIL-ELSE-POP progn LABEL
+        if_form ::= expr GOTO-IF-NIL expr
 
-        while_expr1 ::= expr COME_FROM LABEL expr
+        while_form1 ::= expr COME_FROM LABEL expr
                         GOTO-IF-NIL-ELSE-POP body
                         GOTO COME_FROM LABEL
 
-        while_expr2 ::= COME_FROM LABEL expr
+        while_form2 ::= COME_FROM LABEL expr
                         GOTO-IF-NIL-ELSE-POP body
                         GOTO COME_FROM LABEL
 
         when_expr ::= expr GOTO-IF-NIL body COME_FROM LABEL
 
+
+        unwind_protect_form ::= expr UNWIND-PROTECT opt_exprs
 
         # Note: the VARSET's have special names which we could
         # check in a reduce rule.
@@ -187,8 +191,8 @@ class ElispParser(GenericASTBuilder):
         dolist_list          ::= expr
 
 
-        # if_else_expr ::= expr GOTO-IF-NIL expr RETURN LABEL
-        # if_else_expr ::= expr_stacked GOTO-IF-NIL progn RETURN LABEL
+        # if_else_form ::= expr GOTO-IF-NIL expr RETURN LABEL
+        # if_else_form ::= expr_stacked GOTO-IF-NIL progn RETURN LABEL
 
         # Keep nonterminals at positions  0 and 2
         or_expr    ::= expr GOTO-IF-NOT-NIL-ELSE-POP expr opt_come_from opt_label
@@ -199,7 +203,7 @@ class ElispParser(GenericASTBuilder):
         # not_ instead of null_ to to avoid confusion with nil
         not_expr   ::= expr GOTO-IF-NOT-NIL
 
-        and_expr   ::= expr GOTO-IF-NIL-ELSE-POP expr COME_FROM LABEL
+        and_expr   ::= expr GOTO-IF-NIL-ELSE-POP expr opt_come_from opt_label
         # and_expr ::= expr GOTO-IF-NIL expr opt_label
 
         expr       ::= call_exprn
@@ -302,8 +306,8 @@ class ElispParser(GenericASTBuilder):
         end_clause ::= RETURN
         end_clause ::= stacked_return
 
-        cond_expr  ::= clause labeled_clauses come_froms LABEL
-        cond_expr  ::= clause labeled_clauses
+        cond_form  ::= clause labeled_clauses come_froms LABEL
+        cond_form  ::= clause labeled_clauses
 
         opt_come_froms ::= come_froms?
         come_froms ::= COME_FROM+
@@ -393,9 +397,9 @@ class ElispParser(GenericASTBuilder):
                 self.add_unique_rule(rule, opname_base)
             pass
         # self.check_reduce['progn'] = 'AST'
-        self.check_reduce['while_expr2'] = 'AST'
+        self.check_reduce['while_form2'] = 'AST'
         self.check_reduce['clause'] = 'AST'
-        self.check_reduce['cond_expr'] = 'AST'
+        self.check_reduce['cond_form'] = 'AST'
 
         # "expr_stmt' is an expression used as a statement and
         # are derived from "expr". The intent of the reduction test
@@ -437,7 +441,7 @@ class ElispParser(GenericASTBuilder):
                     return True
             if ast[0].kind != 'condition' and end_clause[-1] == 'COME_FROM':
                 return True
-        elif lhs == "while_expr2":
+        elif lhs == "while_form2":
             # Check that "expr" isn't a stacked expression.
             # Otherwise it should be handled by while_expr1
             expr = ast[2]
@@ -457,7 +461,7 @@ class ElispParser(GenericASTBuilder):
                         "GOTO-IF-NOT-NIL"
                     ))):
                 return True
-        elif rule == ('cond_expr', ('clause', 'labeled_clauses')):
+        elif rule == ('cond_form', ('clause', 'labeled_clauses')):
             # Since there are no come froms, each of the clauses
             # must end in a return.
             for n in ast:

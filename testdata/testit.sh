@@ -1,4 +1,7 @@
 #!/bin/bash
+me=${BASH_SOURCE[0]}
+mydir=$(dirname $me)
+builtin cd $mydir
 if (( $# == 0 )) ; then
     files=*.lap
 else

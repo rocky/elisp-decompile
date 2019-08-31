@@ -138,21 +138,24 @@ TABLE_DIRECT = {
     "list_exprn":	   ( "(list %l)", (0, 1000) ),
     "min_exprn":	   ( "(min %L)", (0, 1000) ),
     "max_exprn":	   ( "(max %L)", (0, 1000) ),
-    "save_excursion":      ( "(save-excursion\n%+%|%c%)",
-                             (1, "body") ),
-    "save_current_buffer": ( "(save-current-buffer\n%+%|%c%)",
-                             (1, "body") ),
     "set_buffer":          ( "(set-buffer %c)",
                              (0, "expr") ),
 
-    "cond_expr":	   ( "%(cond %.%c%c%)", 0, 1 ),
+    "cond_form":	        ( "%(cond %.%c%c%)", 0, 1 ),
+    "if_form":		        ( "%(if %c\n%+%|%c%)", 0, 2 ),
+    "if_else_form":	        ( "%(if %c\n%+%|%c%_%c)%_", 0, 2, 5 ),
+    "save_excursion_form":      ( "%(save-excursion\n%+%|%c%)",
+                                  (1, "body") ),
+    "save_current_buffer_form": ( "%(save-current-buffer\n%+%|%c%)",
+                                  (1, "body") ),
+
     "labeled_clause":	   ( "%c", 1 ),
     "labeled_final_clause": ("\n%|(%c %c)", 1, 2),
 
-    "if_expr":		  ( "%(if %c\n%+%|%c%)", 0, 2 ),
-    "if_else_expr":	  ( "%(if %c\n%+%|%c%_%c)%_", 0, 2, 5 ),
-    "while_expr1":	  ( "%(while %p%c\n%+%|%c%)", 0, 3, 5 ),
-    "while_expr2":	  ( "%(while %c\n%+%|%c%)", 2, 4 ),
+    "while_form1":	  ( "%(while %p%c\n%+%|%c%)", 0, 3, 5 ),
+    "while_form2":	  ( "%(while %c\n%+%|%c%)", 2, 4 ),
+    "unwind_protect_form":( "%(unwind-protect\n%+%|%c%_%Q)%_",
+                            (2, "opt_exprs"), (0, "expr") ),
     "when_expr":	  ( "%(when %c\n%+%|%c%)", 0, 2 ),
     "or_expr":		  ( "(or %+%c %c%)", 0, 2 ),
     "and_expr":		  ( "(and %+%c %c%)", 0, 2 ),
@@ -577,10 +580,20 @@ class SourceWalker(GenericASTTraversal, object):
                         node.kind, arg, type(index)))
                 self.preorder(node[index])
                 arg += 1
-            elif typ == 'Q':
+            elif typ == "Q":
                 # Like 'c' but no quoting
                 self.noquote = True
-                self.preorder(node[entry[arg]])
+                index = entry[arg]
+                if isinstance(index, tuple):
+                    assert node[index[0]] == index[1], (
+                        "at %s[%d], expected %s node; got %s" % (
+                            node.kind, arg, node[index[0]].kind, index[1])
+                    )
+                    index = index[0]
+                assert isinstance(index, int), (
+                    "at %s[%d], %s should be int or tuple" % (
+                        node.kind, arg, type(index)))
+                self.preorder(node[index])
                 self.noquote = False
                 arg += 1
             elif typ == "S":
