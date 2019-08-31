@@ -1,0 +1,32 @@
+byte code for test-dotemacs6:
+  args: nil
+0	constant  fboundp
+1	constant  global-font-lock-mode
+2	call	  1
+3	goto-if-nil 1
+6	constant  global-font-lock-mode
+7	constant  t
+8	call	  1
+9	discard
+10:1	constant  define-key
+11	varref	  esc-map
+12	constant  "h"
+13	constant  help-for-help
+14	call	  3
+15	discard
+16	constant  define-key
+17	varref	  esc-map
+18	constant  "g"
+19	constant  goto-line
+20	call	  3
+21	discard
+22	constant  "/usr/local/lib/info/"
+23	constant  "/usr/local/info/"
+24	constant  "/usr/share/info/"
+25	constant  expand-file-name
+26	constant  "~/info"
+27	call	  1
+28	list4
+29	dup
+30	varset	  Info-directory-list
+31	return

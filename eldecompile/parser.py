@@ -457,9 +457,19 @@ class ElispParser(GenericASTBuilder):
                 or (stack_change != 0 and last < len(tokens) and
                     tokens[last] in (
                         "RETURN", "STACK-ACCESS", "UNBIND",
-                        "COME_FROM", "GOTO", "LABEL", "DUP",
+                        "COME_FROM", "GOTO", "LABEL",
                         "GOTO-IF-NOT-NIL"
                     ))):
+                if last >= len(tokens):
+                    return False
+                if (tokens[last] == "DUP"
+                    and tokens[last+1] == "VARSET"):
+                    # If dup is followed by "VARSET" it isn't an expr_stmt
+                    # unless it is at the end and we are returning that value.
+                    # FIXME: There must be a better way to express this.
+                    # The VARSET might be generalized as an instruction which
+                    # reads the value of DUP for example.
+                    return last + 2 < len(tokens) and tokens[last+2] == "RETURN"
                 return True
         elif rule == ('cond_form', ('clause', 'labeled_clauses')):
             # Since there are no come froms, each of the clauses
