@@ -139,7 +139,7 @@ def deparse(path, show_assembly, write_cfg, show_grammar, show_tree):
 @click.option("-T", "tree_alias", flag_value="full", help="alias for --tree=full")
 @click.argument("lap-filename", type=click.Path(exists=True))
 def main(assembly, graphs, grammar, tree, tree_alias, lap_filename):
-    """Lisp Assembler Program (LAP) deparser"""
+    """Lisp Assembler Program (LAP) decompiler"""
     if tree_alias:
         tree = tree_alias
     deparse(lap_filename, show_assembly=assembly,

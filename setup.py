@@ -16,5 +16,5 @@ setup(
     author="Rocky Bernstein",
     install_requires=("spark_parser>=1.8.9",),
     name="lapdecompile",
-    entry_points={"console_scripts": ["lapdecompile   = lapdecompile.main:main"]},
+    entry_points={"console_scripts": ["lap-decompile   = lapdecompile.main:main"]},
 )
