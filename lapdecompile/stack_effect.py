@@ -74,6 +74,7 @@ STACK_EFFECTS = {
     'set':            (-2, +1),
     'set-buffer':     (-1, +1),
     'stack-ref':      (-0, +1),
+    'stack-set':      (-1, +0),
     'stack-access':   (-0, +0), # A pseudo instruction
     'sub1':           (-1, +1),
     'unbind':         (-0, +0),
