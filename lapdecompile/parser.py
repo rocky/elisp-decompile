@@ -126,8 +126,8 @@ class ElispParser(GenericASTBuilder):
         expr  ::= unwind_protect_form
 
         # Block related
-        expr  ::= let_expr_star
-        expr  ::= let_expr_stacked
+        expr  ::= let_form_star
+        expr  ::= let_form_stacked
 
         # Buffer related
         expr  ::= save_excursion_form
@@ -369,16 +369,16 @@ class ElispParser(GenericASTBuilder):
         opt_come_from ::= COME_FROM?
         opt_label     ::= LABEL?
 
-        let_expr_stacked ::= varlist_stacked body_stacked UNBIND
+        let_form_stacked ::= varlist_stacked body_stacked UNBIND
 
         varlist_stacked ::= expr varlist_stacked_inner DUP VARBIND
         varlist_stacked_inner ::= expr varlist_stacked_inner VARBIND
         varlist_stacked_inner ::=
 
-        let_expr_star ::= varlist body UNBIND
+        let_form_star ::= varlist body UNBIND
         # Sometimes the last item in "body" is "UNBIND" so we don't need
         # to add it here. We could have a reduce check to ensure this.
-        let_expr_star ::= varlist body
+        let_form_star ::= varlist body
 
         varlist  ::= varbind varlist
         varlist  ::= varbind

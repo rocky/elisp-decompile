@@ -345,7 +345,7 @@ class SourceWalker(GenericASTTraversal, object):
             self.template_engine(("(%p%Q %l%P)", 0, 0, (1, args + 1)), node)
         self.prune()
 
-    def n_let_expr_star(self, node):
+    def n_let_form_star(self, node):
         if node[0] == "varlist" and len(node[0]) == 1:
             # If we have just one binding, use let rather than let*.
             # Also don't put the varbind on a new line as we would

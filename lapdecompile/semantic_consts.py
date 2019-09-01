@@ -60,7 +60,7 @@ TABLE_DIRECT = {
     "expr_return":        ( "\n%|%c", (0, "expr") ),
 
 
-    "let_expr_stacked":	( "%(let %.(%.%c)%c%)", 0, 1 ),
+    "let_form_stacked":	( "%(let %.(%.%c)%c%)", 0, 1 ),
     # "progn":		( "%(progn\n%+%|%c%)", 0 ),
     "body_stacked":	( "%c", 0 ),
 
