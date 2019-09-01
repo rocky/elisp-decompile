@@ -52,7 +52,10 @@
 #   Escapes in the format string are:
 #
 #     %c  evaluate the node recursively. Its argument is a single
-#         integer representing a node index.
+#         integer or tuple representing a node index.
+#         If a tuple is given, the first item is the node index while
+#         the second item is a string giving the node/noterminal name.
+#         This name will be checked at runtime against the node type.
 #
 #     %C  evaluate indicated children in order each on a new line.
 #         Its argument is a tuple of start and end node indices.
@@ -68,7 +71,16 @@
 #         presumed to be an operator
 #
 #     %p  pushes a value of the eval stack to use as an argument.
+#         Its argument is like %c.
 #     %P  pops a value of the eval stack to use as an argument.
+#         effectively discards the value that is on the stack.
+#
+#     %S  like %P but we use or write the value of the stack.
+#         The stack value can either be an AST node or a string.
+#         If a node, the we preorder the node to add the string value
+#         If a string, then we just use that. Note this brings out
+#         the symbolic nature of our eval stack. We are not saving
+#         value, but symbolic names of variables and so on.
 #
 #     %|  Insert spaces to the current indentation level. Takes no arguments.
 #
@@ -126,6 +138,8 @@ TABLE_DIRECT = {
     "setq_expr_stacked":   ( "%(setq %+%Q %c%)", -1, 0 ),
     "set_expr":            ( "%(set %+%c %c%)",
                              (0, "expr"), (1, "expr") ),
+    "set_expr_stacked":    ( "%(set %+%c %c%)",
+                             (0, "expr_stacked"), (1, "expr") ),
     "setq_expr_dup":       ( "%(setq %+%c %c%p)",
                              -1, (0, "expr"), -1 ),
     "nullary_expr":	   ( "(%c)", 0 ),
@@ -369,12 +383,14 @@ class SourceWalker(GenericASTTraversal, object):
 
     def n_dolist_macro(self, node):
         assert node[0] == 'dolist_list'
-        assert node[1] == 'dolist_init_var'
+        dolist_init_var = node[1]
+        assert dolist_init_var == 'dolist_init_var'
+        self.push1(self.traverse(dolist_init_var[0][1]))
         try:
             self.template_engine(("%(dolist%+%(%c %c)\n%_%|", 1, 0), node)
         except GenericASTTraversalPruningException:
             pass
-        assert node[6] == 'body'
+        assert node[6] in ("body", "body_stacked")
         body = node[6]
         skipped_last = False
         if body[0] == 'exprs' and body[0][0] == 'expr_stmt':
@@ -399,9 +415,11 @@ class SourceWalker(GenericASTTraversal, object):
         self.pop1()
 
     def n_unary_expr_stacked(self, node):
-        assert len(node) == 2
+        assert 1 <= len(node) <= 2
         if node[0] == 'expr_stacked':
             self.template_engine(TABLE_DIRECT['unary_expr'], node)
+        elif node[0] == 'unary_op':
+            self.template_engine(( '(%c %S)', 0), node[0])
         else:
             self.template_engine(TABLE_DIRECT['unary_expr_stacked'], node)
         self.prune()
@@ -601,7 +619,10 @@ class SourceWalker(GenericASTTraversal, object):
             elif typ == "S":
                 # Get value from eval stack
                 subnode = self.pop1()
-                self.preorder(subnode)
+                if isinstance(subnode, str):
+                    self.write(subnode)
+                else:
+                    self.preorder(subnode)
             elif typ == "p":
                 # Push value to eval stack
                 index = entry[arg]

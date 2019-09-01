@@ -1,0 +1,26 @@
+byte code for test-dotemacs5:
+  args: nil
+0	constant  ((calendar-latitude 40.7))
+1	constant  nil
+2	varbind	  pair
+3	dup	  
+4	varbind	  --dolist-tail--
+5	goto-if-nil-else-pop 2
+8:1	varref	  --dolist-tail--
+9	car	  
+10	dup	  
+11	varset	  pair
+12	car	  
+13	varref	  pair
+14	cdr	  
+15	car	  
+16	set	  
+17	discard	  
+18	varref	  --dolist-tail--
+19	cdr	  
+20	dup	  
+21	varset	  --dolist-tail--
+22	goto-if-not-nil 1
+25	constant  nil
+26:2	unbind	  2
+27	return	  

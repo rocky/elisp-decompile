@@ -91,6 +91,10 @@ class ElispParser(GenericASTBuilder):
         progn ::= body
 
         expr_stacked  ::= DUP
+        expr_stacked  ::= unary_expr_stacked
+        expr_stacked  ::= binary_expr_stacked
+        expr_stacked  ::= set_expr_stacked
+
         expr  ::= DUP
         expr  ::= setq_expr
         expr  ::= setq_expr_dup
@@ -132,7 +136,7 @@ class ElispParser(GenericASTBuilder):
 
         body  ::= exprs
 
-        body_stacked  ::= expr_stacked exprs
+        body_stacked  ::= expr_stacked opt_discard exprs
         body_stacked  ::= expr_stacked
 
         expr ::= setq_expr_stacked
@@ -142,8 +146,14 @@ class ElispParser(GenericASTBuilder):
 
         set_buffer          ::= expr SET-BUFFER
 
+        # FIXME: Are the STACK-ACCESS and without similar but
+        # different notions of "expr_stacked"that should to be
+        # disambiguated?
+
         unary_expr_stacked  ::= STACK-ACCESS unary_op
+        unary_expr_stacked  ::= unary_op
         binary_expr_stacked ::= expr STACK-ACCESS binary_op
+        binary_expr_stacked ::= expr_stacked binary_op
 
 
         # We keep nonterminals at position 0 and 2
@@ -307,6 +317,7 @@ class ElispParser(GenericASTBuilder):
 
         set_expr  ::= expr expr SET
         set_expr  ::= expr expr STACK-SET SET
+        set_expr_stacked  ::= expr_stacked expr SET
 
 
         # FIXME: this is probably to permissive
@@ -422,6 +433,7 @@ class ElispParser(GenericASTBuilder):
         # might not form. Also we see a lot of extra (spurious reductions)
         # from expr_stmt->stmt->stmts->body.
         self.check_reduce['expr_stmt'] = 'tokens'
+        self.check_reduce['unary_expr_stacked'] = 'tokens'
         return
 
     def debug_reduce(self, rule, tokens, parent, last_token_pos):
@@ -455,6 +467,9 @@ class ElispParser(GenericASTBuilder):
                     return True
             if ast[0].kind != 'condition' and end_clause[-1] == 'COME_FROM':
                 return True
+        elif lhs == "unary_expr_stacked":
+            # Check that previous token doesn't push something on the stack
+            return first > 1 and tokens[first-1] != "VARSET"
         elif lhs == "while_form2":
             # Check that "expr" isn't a stacked expression.
             # Otherwise it should be handled by while_expr1
@@ -468,13 +483,13 @@ class ElispParser(GenericASTBuilder):
             # end of a basic block.
             # FIXME: should we do something more precise?
             if not (stack_change == 0
-                or (stack_change != 0 and last < len(tokens) and
+                or (stack_change > 0 and last < len(tokens) and
                     tokens[last] in (
                         "RETURN", "STACK-ACCESS", "UNBIND",
                         "COME_FROM", "GOTO", "LABEL",
                         "GOTO-IF-NOT-NIL"
                     ))):
-                if last >= len(tokens):
+                if last >= len(tokens) or stack_change < 0:
                     return False
                 if (tokens[last] == "DUP"
                     and tokens[last+1] == "VARSET"):
