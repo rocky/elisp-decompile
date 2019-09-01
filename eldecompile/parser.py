@@ -157,7 +157,7 @@ class ElispParser(GenericASTBuilder):
 
 
         # We keep nonterminals at position 0 and 2
-        if_form ::= expr GOTO-IF-NIL expr_stmt opt_come_from opt_label
+        if_form ::= expr GOTO-IF-NIL expr opt_come_from opt_label
         filler  ::=
         if_form ::= expr filler expr_stmt COME_FROM LABEL
 
@@ -425,6 +425,7 @@ class ElispParser(GenericASTBuilder):
         self.check_reduce['while_form2'] = 'AST'
         self.check_reduce['clause'] = 'AST'
         self.check_reduce['cond_form'] = 'AST'
+        self.check_reduce['if_form'] = 'AST'
 
         # "expr_stmt' is an expression used as a statement and
         # are derived from "expr". The intent of the reduction test
@@ -470,6 +471,10 @@ class ElispParser(GenericASTBuilder):
         elif lhs == "unary_expr_stacked":
             # Check that previous token doesn't push something on the stack
             return first > 1 and tokens[first-1] != "VARSET"
+        elif lhs == "if_form" and rule[1][1].startswith("GOTO"):
+            # Check that GOTO goes to the right place
+            if last == len(tokens): return True
+            return ast[1].offset != str(tokens[last+1].attr)
         elif lhs == "while_form2":
             # Check that "expr" isn't a stacked expression.
             # Otherwise it should be handled by while_expr1

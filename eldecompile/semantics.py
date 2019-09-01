@@ -481,7 +481,7 @@ class SourceWalker(GenericASTTraversal, object):
             self.template_engine( ('(%Q)', 0), node )
         else:
             args = node[-1].attr
-            self.template_engine( ("(%p%Q %l%P)", 0, 0, (1, args)), node )
+            self.template_engine( ("(%p%Q %l%P)", 0, 0, (1, args+1)), node )
         self.prune()
 
     def n_let_expr_star(self, node):

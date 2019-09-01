@@ -191,6 +191,33 @@ class TransformTree(GenericASTTraversal, object):
             pass
         return node
 
+    def n_clause(self, node):
+        body = node[1]
+        if body != "body":
+            return node
+        exprs = body[0]
+        assert exprs == "exprs"
+        first_expr = exprs[0]
+        if first_expr == "expr_stmt" and first_expr[0][0] == "if_form":
+            # Remove if_form. That is
+            # cond ((if (expr) ... )) =>
+            # cond ((expr) ...)
+            end_clause = node[-1]
+            assert end_clause == "end_clause"
+            if_form = first_expr[0][0]
+            condition = SyntaxTree("condition",
+                                   [if_form[0], if_form[1],
+                                   SyntaxTree("opt_come_from", []),
+                                    SyntaxTree("opt_label", [])])
+            body = SyntaxTree("body",
+                              SyntaxTree("exprs",
+                                         SyntaxTree("expr_stmt",
+                                                    SyntaxTree("expr", if_form[2]))))
+            node = SyntaxTree(
+                "clause", [condition, body, end_clause],
+                transformed_by="n_" + node.kind)
+        return node
+
     def traverse(self, node):
         self.preorder(node)
 
