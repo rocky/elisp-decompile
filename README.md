@@ -58,7 +58,7 @@ the file should end in `.lap`, and have set up the Python code, you
 can try to disassemble:
 
 ```
-$ python eldecompile/main.py <name-of-lap-file>
+$ lapdecompile <name-of-lap-file> [options]
 ```
 
 There is perhaps a *lot* of debug output. There is even some flow
