@@ -1,24 +1,24 @@
-from __future__ import print_function
-
 import re
 from copy import copy
-from spark_parser import GenericASTTraversal, GenericASTBuilder, GenericASTTraversalPruningException
-from eldecompile.tok import Token
-from eldecompile.treenode import SyntaxTree
+from spark_parser import (
+    GenericASTTraversal,
+    GenericASTBuilder,
+    GenericASTTraversalPruningException,
+)
+from lapdecompile.tok import Token
+from lapdecompile.treenode import SyntaxTree
 
 
-TRANSFORM = {
-    ("call_exprn", 4): ('name_expr', 0),
-    ("call_exprn", 5): ('name_expr', 0)
-}
+TRANSFORM = {("call_exprn", 4): ("name_expr", 0), ("call_exprn", 5): ("name_expr", 0)}
+
 
 def emacs_key_translate(s):
-    result = ''
+    result = ""
     if s[0] == '"':
         result = '"'
         for c in s[1:]:
             if ord(c) < 31:
-                result += '\C-%s' % chr(ord('a') + ord(c) - 1)
+                result += "\C-%s" % chr(ord("a") + ord(c) - 1)
             else:
                 result += c
                 pass
@@ -30,18 +30,18 @@ def emacs_key_translate(s):
                 try:
                     i = int(s)
                     if i == 27:
-                        result += ' ESC'
+                        result += " ESC"
                     elif 134217728 <= i <= 134217759:
-                        result += ' C-M-%s' % chr(95 - (134217759 - i)).lower()
+                        result += " C-M-%s" % chr(95 - (134217759 - i)).lower()
                     elif 134217761 <= i <= 134217854:
-                        result += ' M-%s' % chr(126 - (134217854 - i)).lower()
+                        result += " M-%s" % chr(126 - (134217854 - i)).lower()
                 except ValueError:
                     # FIXME: check that is something like "right" "up", etc.
                     # Also handle <C-M-down>
-                    result += (' <%s>' % s)
+                    result += " <%s>" % s
 
     if result != s:
-        return 'kbd("%s")' % result.lstrip(' ')
+        return 'kbd("%s")' % result.lstrip(" ")
     return s
 
 
@@ -50,11 +50,11 @@ def emacs_key_normalize(name_expr_node):
     s = const_node.attr
     result = emacs_key_translate(s)
     if result != s:
-        const_node.kind = 'TSTRING'
-        const_node.attr = result.lstrip(' ')
+        const_node.kind = "TSTRING"
+        const_node.attr = result.lstrip(" ")
+
 
 class TransformTree(GenericASTTraversal, object):
-
     def __init__(self, ast, debug=False):
         self.debug = debug
         GenericASTTraversal.__init__(self, ast=None)
@@ -95,7 +95,7 @@ class TransformTree(GenericASTTraversal, object):
         return node
 
     def default(self, node):
-        if not hasattr(node, '__len__'):
+        if not hasattr(node, "__len__"):
             return
         l = len(node)
         key = (node.kind, l)
@@ -108,27 +108,28 @@ class TransformTree(GenericASTTraversal, object):
                 func(node)
             self.prune()
 
-
     def n_unary_expr(self, node):
         binary_expr = node[0][0]
-        if not (node[0] == 'expr' and binary_expr in ("binary_expr", "binary_expr_stacked")):
+        if not (
+            node[0] == "expr" and binary_expr in ("binary_expr", "binary_expr_stacked")
+        ):
             return node
         binary_op = self.binop_operator(binary_expr)
         unary_op = self.unop_operator(node[1])
         if unary_op == "NOT" and binary_op == "EQLSIGN":
             binary_expr[2][0].kind = "NEQLSIGN"
             node = SyntaxTree(
-                node[0][0].kind,  binary_expr, transformed_by="n_" + node.kind,
-                )
+                node[0][0].kind, binary_expr, transformed_by="n_" + node.kind
+            )
         return node
 
     def n_binary_expr(self, node):
         # Flatten f(a (f b))
         expr = node[0]
         fn_name = node[2][0].kind
-        if fn_name not in ('MIN', 'MAX'):
+        if fn_name not in ("MIN", "MAX"):
             return node
-        if expr[0] and expr[0] == 'binary_expr':
+        if expr[0] and expr[0] == "binary_expr":
             fn_name2 = expr[0][2][0].kind
         else:
             node.transformed_by = "n_" + node.kind
@@ -136,10 +137,10 @@ class TransformTree(GenericASTTraversal, object):
 
         if fn_name == fn_name2:
             args = [expr[0][0], expr[0][1], node[1]]
-            nt_name = fn_name.lower() + '_exprn'
+            nt_name = fn_name.lower() + "_exprn"
             node.kind = nt_name
             node.transformed_by = "n_" + node.kind
-            node[:len(args)] = args
+            node[: len(args)] = args
             pass
         return node
 
@@ -154,38 +155,35 @@ class TransformTree(GenericASTTraversal, object):
             if re.match("C[AD]R", unary_op1) and re.match("C[AD]R", unary_op2):
                 c12r = f"C%s%sR" % (unary_op1[1:2], unary_op2[1:2])
                 expr[0][1][0].kind = c12r
-                node = SyntaxTree(
-                    node.kind,  expr[0], transformed_by="n_" + node.kind
-                    )
+                node = SyntaxTree(node.kind, expr[0], transformed_by="n_" + node.kind)
             pass
         return node
 
-
     def n_call_exprn_4_name_expr_0(self, call_node):
         expr = call_node[0]
-        if expr[0] == 'name_expr':
+        if expr[0] == "name_expr":
             fn_name = expr[0][0]
         else:
-            assert expr[0] == 'VARREF'
+            assert expr[0] == "VARREF"
             fn_name = expr[0]
 
-        if ( fn_name == 'CONSTANT' and
-             fn_name.attr in frozenset(['global-set-key', 'local-set-key']) ):
+        if fn_name == "CONSTANT" and fn_name.attr in frozenset(
+            ["global-set-key", "local-set-key"]
+        ):
             key_expr = call_node[1][0]
-            if  key_expr == 'name_expr' and key_expr[0] == 'CONSTANT':
+            if key_expr == "name_expr" and key_expr[0] == "CONSTANT":
                 emacs_key_normalize(key_expr)
                 pass
             pass
         return node
 
     def n_call_exprn_5_name_expr_0(self, call_node):
-        assert call_node[0][0] == 'name_expr'
+        assert call_node[0][0] == "name_expr"
         name_expr = call_node[0][0]
         fn_name = name_expr[0]
-        if ( fn_name == 'CONSTANT' and
-             fn_name.attr == 'define-key'):
+        if fn_name == "CONSTANT" and fn_name.attr == "define-key":
             key_expr = call_node[2][0]
-            if  key_expr == 'name_expr' and key_expr[0] == 'CONSTANT':
+            if key_expr == "name_expr" and key_expr[0] == "CONSTANT":
                 emacs_key_normalize(key_expr)
                 pass
             pass
@@ -205,17 +203,24 @@ class TransformTree(GenericASTTraversal, object):
             end_clause = node[-1]
             assert end_clause == "end_clause"
             if_form = first_expr[0][0]
-            condition = SyntaxTree("condition",
-                                   [if_form[0], if_form[1],
-                                   SyntaxTree("opt_come_from", []),
-                                    SyntaxTree("opt_label", [])])
-            body = SyntaxTree("body",
-                              SyntaxTree("exprs",
-                                         SyntaxTree("expr_stmt",
-                                                    SyntaxTree("expr", if_form[2]))))
+            condition = SyntaxTree(
+                "condition",
+                [
+                    if_form[0],
+                    if_form[1],
+                    SyntaxTree("opt_come_from", []),
+                    SyntaxTree("opt_label", []),
+                ],
+            )
+            body = SyntaxTree(
+                "body",
+                SyntaxTree(
+                    "exprs", SyntaxTree("expr_stmt", SyntaxTree("expr", if_form[2]))
+                ),
+            )
             node = SyntaxTree(
-                "clause", [condition, body, end_clause],
-                transformed_by="n_" + node.kind)
+                "clause", [condition, body, end_clause], transformed_by="n_" + node.kind
+            )
         return node
 
     def traverse(self, node):
@@ -228,9 +233,8 @@ class TransformTree(GenericASTTraversal, object):
         return self.ast
 
 
-if __name__ == '__main__':
-    for seq in (
-            """
+if __name__ == "__main__":
+    for seq in """
             [134217761]
             [134217854]
             [134217728]
@@ -241,6 +245,7 @@ if __name__ == '__main__':
             [134217822]
             [134217843|27]
             [27|right]
-            """.split()
-            ):
-        print("'%s' -> '%s'" % (seq,  emacs_key_translate(seq.strip().replace('|', ' '))))
+            """.split():
+        print(
+            "'%s' -> '%s'" % (seq, emacs_key_translate(seq.strip().replace("|", " ")))
+        )

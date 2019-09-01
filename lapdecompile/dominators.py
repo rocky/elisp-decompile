@@ -6,8 +6,8 @@
   Copyright (c) 2014 by Romain Gaucher (@rgaucher)
 """
 
-from eldecompile.graph import TreeGraph, BB_ENTRY
-from eldecompile.traversals import dfs_postorder_nodes
+from lapdecompile.graph import TreeGraph, BB_ENTRY
+from lapdecompile.traversals import dfs_postorder_nodes
 
 
 class DominatorTree(object):
@@ -22,12 +22,10 @@ class DominatorTree(object):
         self.df = {}
         self.build()
 
-
     def build(self):
         graph = self.cfg.graph
         self.entry = self.cfg.entry_node
         self.build_dominators(graph, self.entry)
-
 
     def build_dominators(self, graph, entry):
         """
@@ -67,8 +65,8 @@ class DominatorTree(object):
                 while po_finger2 < po_finger1:
                     finger2 = doms.get(finger2, None)
                     if finger2 is None:
-                       no_solution = True
-                       break
+                        no_solution = True
+                        break
                     po_finger2 = post_order_number[finger2]
                 if no_solution:
                     break
@@ -78,20 +76,20 @@ class DominatorTree(object):
         while changed:
             changed = False
             for b in reversed(post_order):
-              if b == entry:
-                continue
-              predecessors = b.predecessors
-              new_idom = next(iter(predecessors))
-              for p in predecessors:
-                if p == new_idom:
-                  continue
-                if p in doms:
-                  new_idom = intersec(p, new_idom)
-              if b not in doms or doms[b] != new_idom:
-                doms[b] = new_idom
-                changed = True
+                if b == entry:
+                    continue
+                predecessors = b.predecessors
+                new_idom = next(iter(predecessors))
+                for p in predecessors:
+                    if p == new_idom:
+                        continue
+                    if p in doms:
+                        new_idom = intersec(p, new_idom)
+                if b not in doms or doms[b] != new_idom:
+                    doms[b] = new_idom
+                    changed = True
+                    pass
                 pass
-              pass
         return
 
     def tree(self):
@@ -113,10 +111,11 @@ class DominatorTree(object):
                     parent_node = t.make_add_node(parent)
                     t_nodes[parent] = parent_node
                 parent_node = t_nodes[parent]
-                t.make_add_edge(parent_node, cur_node, 'dom-edge')
+                t.make_add_edge(parent_node, cur_node, "dom-edge")
                 pass
             pass
         return t
+
 
 # Note: this has to be done after calling tree
 def build_df(t):
@@ -137,14 +136,13 @@ def build_df(t):
             if isinstance(node.bb.cumulative_stack_effect, int):
                 cum_stack_effect = node.bb.cumulative_stack_effect
             else:
-                cum_stack_effect = node.bb.cumulative_stack_effect[-(i+1)]
+                cum_stack_effect = node.bb.cumulative_stack_effect[-(i + 1)]
 
             if isinstance(n.bb.stack_effect, int):
                 n.bb.cumulative_stack_effect += cum_stack_effect
             else:
                 n.bb.cumulative_stack_effect = [
-                    j + cum_stack_effect
-                    for j in n.bb.cumulative_stack_effect
+                    j + cum_stack_effect for j in n.bb.cumulative_stack_effect
                 ]
             dfs(seen, n)
             node.doms |= node.doms

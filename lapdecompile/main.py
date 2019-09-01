@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 from spark_parser.ast import AST
 
-from eldecompile.scanner import fn_scanner
-from eldecompile.parser import ElispParser, ParserError
-from eldecompile.semantics import SourceWalker
-from eldecompile.transform import TransformTree
-from eldecompile.bb import basic_blocks, ingest
-from eldecompile.cfg import ControlFlowGraph
-from eldecompile.dominators import DominatorTree, build_df
+from lapdecompile.scanner import fn_scanner
+from lapdecompile.parser import ElispParser, ParserError
+from lapdecompile.semantics import SourceWalker
+from lapdecompile.transform import TransformTree
+from lapdecompile.bb import basic_blocks, ingest
+from lapdecompile.cfg import ControlFlowGraph
+from lapdecompile.dominators import DominatorTree, build_df
 
 
 import os, sys

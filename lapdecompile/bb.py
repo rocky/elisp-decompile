@@ -1,6 +1,6 @@
-from eldecompile.graph import BB_ENTRY, BB_JUMP_UNCONDITIONAL, BB_NOFOLLOW
-from eldecompile.tok import Token
-from eldecompile.stack_effect import STACK_EFFECT, STACK_EFFECTS
+from lapdecompile.graph import BB_ENTRY, BB_JUMP_UNCONDITIONAL, BB_NOFOLLOW
+from lapdecompile.tok import Token
+from lapdecompile.stack_effect import STACK_EFFECT, STACK_EFFECTS
 
 
 def compute_stack_change(instructions):
@@ -152,7 +152,8 @@ class BBMgr(object):
                 assert isinstance(stack_change, int)
                 stack_effect += stack_change
             j += 1
-            if j == n: break
+            if j == n:
+                break
 
         bb = BasicBlock(
             start_offset,

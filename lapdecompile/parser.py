@@ -3,7 +3,7 @@
 
 import re
 from spark_parser import GenericASTBuilder, DEFAULT_DEBUG as PARSER_DEFAULT_DEBUG
-from eldecompile.bb import compute_stack_change
+from lapdecompile.bb import compute_stack_change
 
 nop_func = lambda self, args: None
 

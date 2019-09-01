@@ -14,18 +14,20 @@ BB_JUMP_UNCONDITIONAL = 6
 
 
 FLAG2NAME = {
-  BB_ENTRY: 'entry',
-  BB_NOFOLLOW: 'no fallthrough',
-  BB_LOOP: 'loop',
-  BB_JUMP_UNCONDITIONAL: 'unconditional',
+    BB_ENTRY: "entry",
+    BB_NOFOLLOW: "no fallthrough",
+    BB_LOOP: "loop",
+    BB_JUMP_UNCONDITIONAL: "unconditional",
 }
 
 
 jump_flags = set([BB_JUMP_UNCONDITIONAL])
 nofollow_flags = set([BB_NOFOLLOW])
 
+
 def format_flags(flags):
-    return ', '.join([FLAG2NAME[flag] for flag in FLAG2NAME if flag in flags])
+    return ", ".join([FLAG2NAME[flag] for flag in FLAG2NAME if flag in flags])
+
 
 class Node(object):
     GLOBAL_COUNTER = 0
@@ -33,9 +35,9 @@ class Node(object):
     def __init__(self, bb):
         Node.GLOBAL_COUNTER += 1
         if bb.number is None:
-          self.number = Node.GLOBAL_COUNTER
+            self.number = Node.GLOBAL_COUNTER
         else:
-          self.number = bb.number
+            self.number = bb.number
         self.flags = bb.flags
         self.bb = bb
         bb.number = Node.GLOBAL_COUNTER
@@ -51,15 +53,18 @@ class Node(object):
         return isinstance(obj, Node) and obj.number == self.number
 
     def __hash__(self):
-        return hash('node-' + str(self.number))
+        return hash("node-" + str(self.number))
 
     def __repr__(self):
-        return 'Node%d(flags=%s, bb=%s)' % (self.number, repr(self.flags), repr(self.bb))
+        return "Node%d(flags=%s, bb=%s)" % (
+            self.number,
+            repr(self.flags),
+            repr(self.bb),
+        )
 
 
 class Edge(object):
     GLOBAL_COUNTER = 0
-
 
     def __init__(self, source, dest, kind, data):
         Edge.GLOBAL_COUNTER += 1
@@ -69,10 +74,9 @@ class Edge(object):
         self.kind = kind
         self.data = data
 
-
     @classmethod
     def reset(self):
-       self.GLOBAL_COUNTER = 0
+        self.GLOBAL_COUNTER = 0
 
     def __ne__(self, obj):
         return not self == obj
@@ -81,11 +85,16 @@ class Edge(object):
         return isinstance(obj, Edge) and obj.id == self.id
 
     def __hash__(self):
-        return hash('edge-' + str(self.id))
+        return hash("edge-" + str(self.id))
 
     def __repr__(self):
-        return 'Edge%d(source=%s, dest=%s, kind=%s, data=%s)' \
-               % (self.id, self.source, self.dest, repr(self.kind), repr(self.data))
+        return "Edge%d(source=%s, dest=%s, kind=%s, data=%s)" % (
+            self.id,
+            self.source,
+            self.dest,
+            repr(self.kind),
+            repr(self.data),
+        )
 
 
 class DiGraph(object):
@@ -101,7 +110,7 @@ class DiGraph(object):
 
     def add_edge(self, edge):
         if edge in self.edges:
-          raise Exception('Edge already present')
+            raise Exception("Edge already present")
         source_node, dest_node = edge.source, edge.dest
 
         self.edges.add(edge)
@@ -112,7 +121,8 @@ class DiGraph(object):
         self.nodes.add(node)
 
     def to_dot(self):
-        from eldecompile.dotio import DotConverter
+        from lapdecompile.dotio import DotConverter
+
         return DotConverter.process(self)
 
     @staticmethod
@@ -134,13 +144,15 @@ class DiGraph(object):
         self.add_edge(edge)
         return edge
 
+
 class TreeGraph(DiGraph):
     """
       A simple tree structure for basic blocks.
     """
+
     def add_edge(self, edge):
         if edge in self.edges:
-            raise Exception('Edge already present')
+            raise Exception("Edge already present")
         source_node, dest_node = edge.source, edge.dest
 
         self.add_node(source_node)

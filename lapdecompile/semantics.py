@@ -114,15 +114,12 @@ from __future__ import print_function
 
 import re, sys
 from spark_parser import GenericASTTraversal, GenericASTTraversalPruningException
-from eldecompile.tok import Token
+from lapdecompile.tok import Token
 
 try:
     from io import StringIO
 except:
     from StringIO import StringIO
-
-PYTHON3 = (sys.version_info >= (3, 0))
-
 
 TAB = ' ' *4   # is less spacy than "\t"
 INDENT_PER_LEVEL = ' ' # additional intent per pretty-print level
@@ -262,12 +259,6 @@ escape = re.compile(r'''
                 ((?P<type> [^{] ) |
                  ( [{] (?P<expr> [^}]* ) [}] ))
         ''', re.VERBOSE)
-
-def to_s(s):
-    if PYTHON3:
-        return s
-    else:
-        return s.decode("utf-8")
 
 class SourceWalkerError(Exception):
     def __init__(self, errmsg):
@@ -439,7 +430,7 @@ class SourceWalker(GenericASTTraversal, object):
                  or self.noquote)):
             # Not integer or string and not explicitly unquoted
             self.f.write(u"'")
-        self.f.write(to_s(node.attr))
+        self.f.write(node.attr)
 
     def n_varlist_stacked_inner(self, node):
         if len(node) == 3:
@@ -691,7 +682,7 @@ class SourceWalker(GenericASTTraversal, object):
             self.prune()
 
     def write(self, *data):
-        udata = [to_s(d) for d in data]
+        udata = [d for d in data]
         try:
             self.f.write(*udata)
         except:

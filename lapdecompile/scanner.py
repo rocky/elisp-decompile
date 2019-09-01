@@ -3,7 +3,7 @@
 We take input from ELISP disassembly
 """
 import re
-from eldecompile.tok import Token
+from lapdecompile.tok import Token
 from collections import namedtuple
 
 FuncDef = namedtuple('FuncDef', ['name', 'args', 'opt_args',

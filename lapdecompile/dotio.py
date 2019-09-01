@@ -6,7 +6,13 @@
   :copyright: (c) 2014 by Romain Gaucher (@rgaucher)
 """
 
-from eldecompile.graph import DiGraph, BB_ENTRY, BB_NOFOLLOW, BB_JUMP_UNCONDITIONAL, format_flags
+from lapdecompile.graph import (
+    DiGraph,
+    BB_ENTRY,
+    BB_NOFOLLOW,
+    BB_JUMP_UNCONDITIONAL,
+    format_flags,
+)
 
 DOT_STYLE = """
 rankdir=TD; ordering=out;
@@ -82,11 +88,10 @@ class DotConverter(object):
         if style == "" and edge.source.bb.unreachable:
             style = '[style="dashed"] [arrowhead="empty"]'
 
-        if (edge.kind == 'fallthrough' and
-            BB_JUMP_UNCONDITIONAL in edge.source.flags):
-          # style = '[color="black:invis:black"]'
-          # style = '[style="dotted"] [arrowhead="empty"]'
-          style = '[style="invis"]'
+        if edge.kind == "fallthrough" and BB_JUMP_UNCONDITIONAL in edge.source.flags:
+            # style = '[color="black:invis:black"]'
+            # style = '[style="dotted"] [arrowhead="empty"]'
+            style = '[style="invis"]'
 
         nid1 = self.node_ids[edge.source]
         nid2 = self.node_ids[edge.dest]
