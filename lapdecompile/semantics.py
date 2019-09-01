@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+"""
+Syntax-directed translation from (transformed) parse tree to Elisp source code.
+"""
+
 # The below is a bit long, but still it is somehwat abbreviated.
 # See https://github.com/rocky/python-uncompyle6/wiki/Table-driven-semantic-actions.
 # for a more complete explanation, nicely marked up and with examples.
@@ -13,9 +18,8 @@
 # sorts of things, and soon you'll find you want a short notation to
 # describe rules and not have to create methods at all.
 #
-# So another other way to specify a semantic rule for a nonterminal is via
-# one of the tables MAP_R0, MAP_R, or MAP_DIRECT where the key is the
-# nonterminal name.
+# So another other way to specify a semantic rule for a nonterminal is
+# via the table MAP_DIRECT where the key is the nonterminal name.
 #
 # These dictionaries use a printf-like syntax to direct substitution
 # from attributes of the nonterminal and its children..
@@ -34,16 +38,12 @@
 # AST tree for N.
 #
 #
-#          N&K               N                  N
-#         / | ... \        / | ... \          / | ... \
-#        O  O      O      O  O      K         O O      O
-#                                                      |
-#                                                      K
-#      TABLE_DIRECT      TABLE_R             TABLE_R0
+#           N&K
+#         /  | ... \
+#        O   O      O
 #
-#   The default table is TABLE_DIRECT. By far, most rules used work this way.
-#   TABLE_R0 is rarely used.
-
+#      TABLE_DIRECT
+#
 #   The key K is then extracted from the subtree and used to find one
 #   of the tables, T listed above.  The result after applying T[K] is
 #   a format string and arguments (a la printf()) for the formatting
@@ -115,150 +115,20 @@ from __future__ import print_function
 import re, sys
 from spark_parser import GenericASTTraversal, GenericASTTraversalPruningException
 from lapdecompile.tok import Token
+from lapdecompile.semantic_consts import TAB, INDENT_PER_LEVEL, TABLE_DIRECT
 
-try:
-    from io import StringIO
-except:
-    from StringIO import StringIO
+from io import StringIO
 
-TAB = ' ' *4   # is less spacy than "\t"
-INDENT_PER_LEVEL = ' ' # additional intent per pretty-print level
-TABLE_R = {
-}
-
-TABLE_R0 = {
-}
-
-TABLE_DIRECT = {
-    "setq_expr":	   ( "%(setq %Q %+%c%)", -1,
-                             (0, "expr") ),
-    "setq_expr_stacked":   ( "%(setq %+%Q %c%)", -1, 0 ),
-    "set_expr":            ( "%(set %+%c %c%)",
-                             (0, "expr"), (1, "expr") ),
-    "set_expr_stacked":    ( "%(set %+%c %c%)",
-                             (0, "expr_stacked"), (1, "expr") ),
-    "setq_expr_dup":       ( "%(setq %+%c %c%p)",
-                             -1, (0, "expr"), -1 ),
-    "nullary_expr":	   ( "(%c)", 0 ),
-    "unary_expr":	   ( "(%c %+%c%)", 1, 0 ),
-    "unary_expr_stacked":  ( "(%c %+%S%)", 0 ),
-    "binary_expr":	   ( "(%c %+%c %c%)",
-                             (-1, "binary_op"),
-                             (0, "expr"), (1, "expr") ),
-    "binary_expr_stacked": ( "(%c %+%S %c%)", -1, 0),
-
-    "concat_exprn":	   ( "(concat %l)", (0, 1000) ),
-    "list_exprn":	   ( "(list %l)", (0, 1000) ),
-    "min_exprn":	   ( "(min %L)", (0, 1000) ),
-    "max_exprn":	   ( "(max %L)", (0, 1000) ),
-    "set_buffer":          ( "(set-buffer %c)",
-                             (0, "expr") ),
-
-    "cond_form":	        ( "%(cond %.%c%c%)", 0, 1 ),
-    "if_form":		        ( "%(if %c\n%+%|%c%)", 0, 2 ),
-    "if_else_form":	        ( "%(if %c\n%+%|%c%_%c)%_", 0, 2, 5 ),
-    "save_excursion_form":      ( "%(save-excursion\n%+%|%c%)",
-                                  (1, "body") ),
-    "save_current_buffer_form": ( "%(save-current-buffer\n%+%|%c%)",
-                                  (1, "body") ),
-
-    "labeled_clause":	   ( "%c", 1 ),
-    "labeled_final_clause": ("\n%|(%c %c)", 1, 2),
-
-    "while_form1":	  ( "%(while %p%c\n%+%|%c%)", 0, 3, 5 ),
-    "while_form2":	  ( "%(while %c\n%+%|%c%)", 2, 4 ),
-    "unwind_protect_form":( "%(unwind-protect\n%+%|%c%_%Q)%_",
-                            (2, "opt_exprs"), (0, "expr") ),
-    "when_macro":	  ( "%(when %c\n%+%|%c%)", 0, 2 ),
-    "or_expr":		  ( "(or %+%c %c%)", 0, 2 ),
-    "and_expr":		  ( "(and %+%c %c%)", 0, 2 ),
-    "not_expr":		  ( "(null %+%c%)", 0 ),
-    "dolist_macro_result": ( "%(dolist%+%(%c %c %c)\n%_%|%c)%_", 1, 0, 16, 6),
-
-    "pop_expr":           ( "(pop %+%c%)", (0, "VARREF") ),
-
-    "exprs":              ( "%C", (0, 1000) ),
-    "expr_return":        ( "\n%|%c", (0, "expr") ),
-
-
-    "let_expr_stacked":	( "%(let %.(%.%c)%c%)", 0, 1 ),
-    # "progn":		( "%(progn\n%+%|%c%)", 0 ),
-    "body_stacked":	( "%c", 0 ),
-
-    "ADD1":	( "1+" ,   ),
-    "CAR":	( "car" ,  ),
-    "CADR":	( "cadr" , ),
-    "CAR-SAFE":	( "car-safe" , ),
-    "DIFF":	( "-" ,  ),
-    "EQLSIGN":	( "=" ,  ),
-    "NEQLSIGN":	( "/=" , ),  # Can only occur via transform
-    "GEQ":	( ">=" , ),
-    "GTR":	( ">" ,  ),
-    "LEQ":	( "<=" , ),
-    "LSS":	( "<" ,  ),
-    "MULT":	( "*" ,  ),
-    "PLUS":	( "+" ,  ),
-    "QUO":	( "/" ,  ),
-    "REM":	( "%" ,  ),
-    "SUB1":	( "1-" , ),
-
-    "TSTRING":	        ( "%{attr}", ),
-    "VARSET":	        ( "%{attr}", ),
-    "VARBIND":	        ( "%{attr}", ),
-    "VARREF":	        ( "%{attr}", ),
-    "STACK-REF":	( "stack-ref%{attr}", ),
-}
-
-NULLARY_OPS = tuple("""
-point
-point-min
-point-max
-following-char
-preceding-char
-current-column
-eolp
-bolp
-current-buffer
-widen
-""".split())
-
-UNARY_OPS = tuple("""
-car cdr cdr-safe consp
-insert integerp
-keywordp listp
-markerp mutexp
-multibyte-string-p
-natnump
-nlistp
-not
-null numberp
-recordp
-sequencep stringp subr-arity subrp
-symbol-function symbol-plist symbol-name symbolp
-threadp
-type-of
-user-ptrp
-vector-or-char-tablep vectorp
-""".split())
-
-BINARY_OPS = tuple("""
-aref eq equal fset max min
-remove-variable-watcher
-setcar setcdr setplist
-""".split())
-
-for op in BINARY_OPS + UNARY_OPS + NULLARY_OPS:
-    TABLE_DIRECT[op.upper()] = ( op, )
-
-
-MAP_DIRECT = (TABLE_DIRECT, )
-
-escape = re.compile(r'''
+escape = re.compile(
+    r"""
             (?P<prefix> [^%]* )
             % ( \[ (?P<child> -? \d+ ) \] )?
                 ((?P<type> [^{] ) |
                  ( [{] (?P<expr> [^}]* ) [}] ))
-        ''', re.VERBOSE)
+        """,
+    re.VERBOSE,
+)
+
 
 class SourceWalkerError(Exception):
     def __init__(self, errmsg):
@@ -267,19 +137,19 @@ class SourceWalkerError(Exception):
     def __str__(self):
         return self.errmsg
 
+
 class SourceWalker(GenericASTTraversal, object):
 
-    indent = property(lambda s: s.params["indent"],
-                 lambda s, x: s.params.__setitem__("indent", x),
-                 lambda s: s.params.__delitem__("indent"),
-                 None)
+    indent = property(
+        lambda s: s.params["indent"],
+        lambda s, x: s.params.__setitem__("indent", x),
+        lambda s: s.params.__delitem__("indent"),
+        None,
+    )
 
     def __init__(self, ast, debug=False):
         GenericASTTraversal.__init__(self, ast=None)
-        params = {
-            "f": StringIO(),
-            "indent": "",
-            }
+        params = {"f": StringIO(), "indent": ""}
         self.params = params
         self.param_stack = []
         self.debug = debug
@@ -296,10 +166,12 @@ class SourceWalker(GenericASTTraversal, object):
         self.noquote = False
         return
 
-    f = property(lambda s: s.params['f'],
-                 lambda s, x: s.params.__setitem__('f', x),
-                 lambda s: s.params.__delitem__('f'),
-                 None)
+    f = property(
+        lambda s: s.params["f"],
+        lambda s, x: s.params.__setitem__("f", x),
+        lambda s: s.params.__delitem__("f"),
+        None,
+    )
 
     def pop1(self):
         return self.eval_stack.pop()
@@ -326,7 +198,6 @@ class SourceWalker(GenericASTTraversal, object):
     #     self.pop1()
     #     self.replace1(node)
 
-
     def indent_more(self, indent=TAB):
         self.indent += indent
         if self.debug:
@@ -339,7 +210,7 @@ class SourceWalker(GenericASTTraversal, object):
             self.indent = self.indent_stack[-1]
         else:
             self.indent_stack[-1] = self.indent
-            self.indent = self.indent[:-len(indent)]
+            self.indent = self.indent[: -len(indent)]
         if self.debug:
             print("XXX indent less len %d" % len(self.indent))
 
@@ -357,12 +228,9 @@ class SourceWalker(GenericASTTraversal, object):
             self.indent_stack.append(indent)
         p = self.pending_newlines
         self.pending_newlines = 0
-        self.params = {
-            'f': StringIO(),
-            'indent': indent,
-            }
+        self.params = {"f": StringIO(), "indent": indent}
         self.preorder(node)
-        self.f.write(u'\n'*self.pending_newlines)
+        self.f.write(u"\n" * self.pending_newlines)
         result = self.f.getvalue()
         self.params = self.param_stack.pop()
         self.pending_newlines = p
@@ -373,9 +241,9 @@ class SourceWalker(GenericASTTraversal, object):
         self.prune()
 
     def n_dolist_macro(self, node):
-        assert node[0] == 'dolist_list'
+        assert node[0] == "dolist_list"
         dolist_init_var = node[1]
-        assert dolist_init_var == 'dolist_init_var'
+        assert dolist_init_var == "dolist_init_var"
         self.push1(self.traverse(dolist_init_var[0][1]))
         try:
             self.template_engine(("%(dolist%+%(%c %c)\n%_%|", 1, 0), node)
@@ -384,13 +252,13 @@ class SourceWalker(GenericASTTraversal, object):
         assert node[6] in ("body", "body_stacked")
         body = node[6]
         skipped_last = False
-        if body[0] == 'exprs' and body[0][0] == 'expr_stmt':
+        if body[0] == "exprs" and body[0][0] == "expr_stmt":
             # If we have a list of exprs and the last one is about --dolist-tail--
             # it is part of the iteration, so skip it.
             exprs = body[0]
             last_expr_stmt = exprs[-1]
             token = self.find_first_token(last_expr_stmt)
-            if token == 'VARREF' and token.attr == '--dolist-tail--':
+            if token == "VARREF" and token.attr == "--dolist-tail--":
                 for n in exprs[:-1]:
                     self.preorder(n)
                 skipped_last = True
@@ -407,36 +275,38 @@ class SourceWalker(GenericASTTraversal, object):
 
     def n_unary_expr_stacked(self, node):
         assert 1 <= len(node) <= 2
-        if node[0] == 'expr_stacked':
-            self.template_engine(TABLE_DIRECT['unary_expr'], node)
-        elif node[0] == 'unary_op':
-            self.template_engine(( '(%c %S)', 0), node[0])
+        if node[0] == "expr_stacked":
+            self.template_engine(TABLE_DIRECT["unary_expr"], node)
+        elif node[0] == "unary_op":
+            self.template_engine(("(%c %S)", 0), node[0])
         else:
-            self.template_engine(TABLE_DIRECT['unary_expr_stacked'], node)
+            self.template_engine(TABLE_DIRECT["unary_expr_stacked"], node)
         self.prune()
 
     def n_varlist_stacked(self, node):
         assert len(node) == 4
-        self.template_engine(( '(%c %c)', -1, 0 ), node)
+        self.template_engine(("(%c %c)", -1, 0), node)
         self.push1(node[0])
-        assert node[1] == 'varlist_stacked_inner'
+        assert node[1] == "varlist_stacked_inner"
         self.n_varlist_stacked_inner(node[1])
         self.prune()
 
     def n_CONSTANT(self, node):
-        if (not (re.match(r'^[0-9]+$', node.attr)
-                 or node.attr.startswith('"')
-                 or node.attr in ('t', 'nil')
-                 or self.noquote)):
+        if not (
+            re.match(r"^[0-9]+$", node.attr)
+            or node.attr.startswith('"')
+            or node.attr in ("t", "nil")
+            or self.noquote
+        ):
             # Not integer or string and not explicitly unquoted
             self.f.write(u"'")
         self.f.write(node.attr)
 
     def n_varlist_stacked_inner(self, node):
         if len(node) == 3:
-            self.template_engine( ('%(%c %c)', -1, 0 ), node)
+            self.template_engine(("%(%c %c)", -1, 0), node)
         elif len(node) == 1:
-            self.template_engine( ('\n(%c)', 0 ), node)
+            self.template_engine(("\n(%c)", 0), node)
         else:
             assert len(node) == 0
 
@@ -446,48 +316,47 @@ class SourceWalker(GenericASTTraversal, object):
         start_stacklen = self.stacklen()
         assert l == 2 or l == 3
         if l == 2:
-            self.template_engine( ('\n%|(t %.%c', 0), node)
+            self.template_engine(("\n%|(t %.%c", 0), node)
         # Check for first item in a (cond ..)
-        elif node[0] == 'opt_label' and node[2][-1] != "COME_FROM":
-            self.template_engine( ('\n%|(t %.%c', 1), node)
+        elif node[0] == "opt_label" and node[2][-1] != "COME_FROM":
+            self.template_engine(("\n%|(t %.%c", 1), node)
         else:
-            self.template_engine( ('\n%|(%c %.%c', 0, 1), node)
+            self.template_engine(("\n%|(%c %.%c", 0, 1), node)
         if self.stacklen() > start_stacklen:
             self.write("%s" % self.pop1())
 
         assert start_stacklen == self.stacklen()
-        self.write(')')
+        self.write(")")
         self.indent_less()
         self.prune()
 
     def n_varbind(self, node):
         if len(node) == 3:
-            self.template_engine( ('(%c %c)%c', 1, 0, 2), node)
+            self.template_engine(("(%c %c)%c", 1, 0, 2), node)
         else:
-            self.template_engine( ('%(%c %c)', 1, 0), node)
+            self.template_engine(("%(%c %c)", 1, 0), node)
         self.prune()
 
     def n_call_exprn(self, node):
         if node[-1] == "CALL_0":
-            self.template_engine( ('(%Q)', 0), node )
+            self.template_engine(("(%Q)", 0), node)
         else:
             args = node[-1].attr
-            self.template_engine( ("(%p%Q %l%P)", 0, 0, (1, args+1)), node )
+            self.template_engine(("(%p%Q %l%P)", 0, 0, (1, args + 1)), node)
         self.prune()
 
     def n_let_expr_star(self, node):
-        if node[0] == 'varlist' and len(node[0]) == 1:
+        if node[0] == "varlist" and len(node[0]) == 1:
             # If we have just one binding, use let rather than let*.
             # Also don't put the varbind on a new line as we would
             # do if there were more than one.
-            self.template_engine( ('%(let %.(%.', ), node )
+            self.template_engine(("%(let %.(%.",), node)
             varbind = node[0][0]
-            assert varbind == 'varbind'
-            self.template_engine( ('(%c %c)', 1, 0), varbind)
-            self.template_engine( ('%-%c%)', 1 ), node )
+            assert varbind == "varbind"
+            self.template_engine(("(%c %c)", 1, 0), varbind)
+            self.template_engine(("%-%c%)", 1), node)
         else:
-            self.template_engine( ('%(let* %.(%.%c)\n%|%c%)', 0, 1 ),
-                                  node )
+            self.template_engine(("%(let* %.(%.%c)\n%|%c%)", 0, 1), node)
         self.prune()
 
     # def n_binary_expr(self, node):
@@ -495,36 +364,36 @@ class SourceWalker(GenericASTTraversal, object):
     #     self.template_engine(( '(%c %c %c)', 2, 0, 1), node)
 
     def n_unary_expr(self, node):
-        self.template_engine( ('(%c %c)', 1, 0), node )
+        self.template_engine(("(%c %c)", 1, 0), node)
         self.replace1(node)
         self.prune()
 
     def n_expr_stmt(self, node):
         if len(node) == 1:
-            self.template_engine( ('%c', 0), node )
-        elif len(node) == 2 and node[1] == 'opt_discard':
-            if node[0] == 'expr' and node[0][0] == 'name_expr':
+            self.template_engine(("%c", 0), node)
+        elif len(node) == 2 and node[1] == "opt_discard":
+            if node[0] == "expr" and node[0][0] == "name_expr":
                 value = self.traverse(node[0][0])
                 self.push1(value)
             else:
-                self.template_engine( ('%c', 0), node )
+                self.template_engine(("%c", 0), node)
         else:
-            self.template_engine( ('%C', (0, 1000)), node )
+            self.template_engine(("%C", (0, 1000)), node)
         self.prune()
 
     def n_opt_discard(self, node):
         if len(node) == 1:
-            assert node[0] == 'DISCARD'
+            assert node[0] == "DISCARD"
             self.pop1()
         self.prune()
 
     def n_progn(self, node):
-        assert node[0] == 'body'
+        assert node[0] == "body"
         exprs = node[0][0]
         if len(exprs) == 1:
-            self.template_engine( ('%c', 0), exprs )
+            self.template_engine(("%c", 0), exprs)
         else:
-            self.template_engine( ( '%(progn\n%+%|%c%)', 0 ), node)
+            self.template_engine(("%(progn\n%+%|%c%)", 0), node)
         self.prune()
 
     def n_DUP(self, node):
@@ -552,29 +421,33 @@ class SourceWalker(GenericASTTraversal, object):
         m = escape.search(fmt)
         while m:
             i = m.end()
-            self.write(m.group('prefix'))
+            self.write(m.group("prefix"))
 
-            typ = m.group('type') or '{'
+            typ = m.group("type") or "{"
             node = startnode
             try:
-                if m.group('child'):
-                    node = node[int(m.group('child'))]
+                if m.group("child"):
+                    node = node[int(m.group("child"))]
             except:
                 print(node.__dict__)
                 raise
 
-            if   typ == '%':	self.write('%')
-            elif typ == '.':
+            if typ == "%":
+                self.write("%")
+            elif typ == ".":
                 count = len(self.f.getvalue().split("\n")[-1]) - len(self.indent)
                 if self.debug:
                     print("XXX . indent count", count)
-                self.indent_more(' ' * count)
-            elif typ == "+":	self.indent_more()
+                self.indent_more(" " * count)
+            elif typ == "+":
+                self.indent_more()
             elif typ == "-":
                 self.indent_less()
 
-            elif typ == "_":	self.indent_less('  ')  # For else part of if/else
-            elif typ == "|":	self.write(self.indent)
+            elif typ == "_":
+                self.indent_less("  ")  # For else part of if/else
+            elif typ == "|":
+                self.write(self.indent)
             elif typ == ")":
                 self.write(")")
                 self.indent_less()
@@ -582,13 +455,17 @@ class SourceWalker(GenericASTTraversal, object):
                 index = entry[arg]
                 if isinstance(index, tuple):
                     assert node[index[0]] == index[1], (
-                        "at %s[%d], expected %s node; got %s" % (
-                            node.kind, arg, node[index[0]].kind, index[1])
+                        "at %s[%d], expected %s node; got %s"
+                        % (node.kind, arg, node[index[0]].kind, index[1])
                     )
                     index = index[0]
-                assert isinstance(index, int), (
-                    "at %s[%d], %s should be int or tuple" % (
-                        node.kind, arg, type(index)))
+                assert isinstance(
+                    index, int
+                ), "at %s[%d], %s should be int or tuple" % (
+                    node.kind,
+                    arg,
+                    type(index),
+                )
                 self.preorder(node[index])
                 arg += 1
             elif typ == "Q":
@@ -597,13 +474,17 @@ class SourceWalker(GenericASTTraversal, object):
                 index = entry[arg]
                 if isinstance(index, tuple):
                     assert node[index[0]] == index[1], (
-                        "at %s[%d], expected %s node; got %s" % (
-                            node.kind, arg, node[index[0]].kind, index[1])
+                        "at %s[%d], expected %s node; got %s"
+                        % (node.kind, arg, node[index[0]].kind, index[1])
                     )
                     index = index[0]
-                assert isinstance(index, int), (
-                    "at %s[%d], %s should be int or tuple" % (
-                        node.kind, arg, type(index)))
+                assert isinstance(
+                    index, int
+                ), "at %s[%d], %s should be int or tuple" % (
+                    node.kind,
+                    arg,
+                    type(index),
+                )
                 self.preorder(node[index])
                 self.noquote = False
                 arg += 1
@@ -657,7 +538,7 @@ class SourceWalker(GenericASTTraversal, object):
                 arg += 1
             elif typ == "{":
                 d = node.__dict__
-                expr = m.group('expr')
+                expr = m.group("expr")
                 try:
                     self.write(eval(expr, d, d))
                 except:
@@ -671,21 +552,13 @@ class SourceWalker(GenericASTTraversal, object):
         self.write(fmt[i:])
 
     def default(self, node):
-        table = MAP_DIRECT[0]
         key = node
 
-        for i in MAP_DIRECT[1:]:
-            key = key[i]
-
-        if key.kind in table:
-            self.template_engine(table[key.kind], node)
+        if key.kind in TABLE_DIRECT:
+            self.template_engine(TABLE_DIRECT[key.kind], node)
             self.prune()
 
     def write(self, *data):
         udata = [d for d in data]
-        try:
-            self.f.write(*udata)
-        except:
-            from trepan.api import debug; debug()
-            pass
+        self.f.write(*udata)
         return
