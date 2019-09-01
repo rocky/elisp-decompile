@@ -73,6 +73,13 @@ class ElispParser(GenericASTBuilder):
         # expr_stmt is an expr where the value it produces
         # might not be needed. List-like things like
         # progn or let fall into this category.
+        # expr_stmt's are maximimal in that the instruction after
+        # the expr_stmt doesn't consume it unless it is consumed
+        # for control-flow decision.
+        # For example  "constant" is an "expr', but not an
+        # "expr-stmt" unless it is followed by something like "return" or
+        # "goto-if-nil", or "discard"
+        #
         expr_stmt  ::= expr opt_discard
 
         # By its very nature of being sequenced
@@ -81,12 +88,12 @@ class ElispParser(GenericASTBuilder):
         exprs     ::= expr_stmt+
         opt_exprs ::= expr_stmt*
 
-
         progn ::= body
 
         expr_stacked  ::= DUP
         expr  ::= DUP
         expr  ::= setq_expr
+        expr  ::= setq_expr_dup
         expr  ::= set_expr
         expr  ::= STACK-REF
         expr  ::= VARREF
@@ -140,13 +147,14 @@ class ElispParser(GenericASTBuilder):
 
 
         # We keep nonterminals at position 0 and 2
-        if_form ::= expr GOTO-IF-NIL expr opt_come_from opt_label
+        if_form ::= expr GOTO-IF-NIL expr_stmt opt_come_from opt_label
         filler  ::=
-        if_form ::= expr filler expr COME_FROM LABEL
+        if_form ::= expr filler expr_stmt COME_FROM LABEL
 
         # if_form ::= expr GOTO-IF-NIL-ELSE-POP expr LABEL
         # if_form ::= expr GOTO-IF-NIL-ELSE-POP progn LABEL
         if_form ::= expr GOTO-IF-NIL expr
+        if_form ::= expr GOTO-IF-NOT-NIL expr opt_come_from opt_label
 
         while_form1 ::= expr COME_FROM LABEL expr
                         GOTO-IF-NIL-ELSE-POP body
@@ -157,6 +165,7 @@ class ElispParser(GenericASTBuilder):
                         GOTO COME_FROM LABEL
 
         when_macro ::= expr GOTO-IF-NIL body COME_FROM LABEL
+        when_macro ::= expr GOTO-IF-NIL-ELSE-POP body COME_FROM LABEL
 
 
         unwind_protect_form ::= expr UNWIND-PROTECT opt_exprs
@@ -292,7 +301,7 @@ class ElispParser(GenericASTBuilder):
         pop_expr ::= VARREF DUP CDR VARSET CAR-SAFE
 
         setq_expr ::= expr VARSET
-        setq_expr ::= expr DUP VARSET
+        setq_expr_dup ::= expr DUP VARSET
         setq_expr_stacked ::= expr_stacked DUP VARSET
         setq_expr_stacking ::= expr DUP VARSET
 
@@ -474,7 +483,9 @@ class ElispParser(GenericASTBuilder):
                     # FIXME: There must be a better way to express this.
                     # The VARSET might be generalized as an instruction which
                     # reads the value of DUP for example.
-                    return last + 2 < len(tokens) and tokens[last+2] == "RETURN"
+                    return last + 2 < len(tokens) and not (
+                        tokens[last+2].kind  in ("RETURN", "GOTO-IF-NOT-NIL")
+                        )
                 return True
         elif rule == ('cond_form', ('clause', 'labeled_clauses')):
             # Since there are no come froms, each of the clauses
