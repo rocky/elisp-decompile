@@ -1,0 +1,18 @@
+byte code for test-defconst:
+  args: (font-info)
+0	constant  font-info
+1	constant  "DejaVu Sans Mono-10"
+2	call	  1
+3	goto-if-nil-else-pop 1
+6	constant  set-frame-font
+7	constant  "DejaVu Sans Mono-10"
+8	call	  1
+9	discard
+10	constant  (lambda (def-tmp-var) (defconst fixed-font def-tmp-var "Font to use as the fixed font"))
+11	constant  "DejaVu Sans Mono-11"
+12	call	  1
+13	discard
+14	constant  (lambda (def-tmp-var) (defconst variable-font def-tmp-var "Font to use as the proportional-space font"))
+15	constant  "DejaVu Sans 10"
+16	call	  1
+17:1	return
