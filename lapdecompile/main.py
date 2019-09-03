@@ -50,7 +50,7 @@ def control_flow(name, instructions, show_assembly, write_cfg):
         return instructions
 
 
-def deparse(path, show_assembly, write_cfg, show_grammar, show_tree):
+def deparse(path, outstream, show_assembly, write_cfg, show_grammar, show_tree):
     # Scan...
     with open(path, "r") as fp:
         fn_def, tokens, customize = fn_scanner(fp, show_assembly=show_assembly)
@@ -77,7 +77,7 @@ def deparse(path, show_assembly, write_cfg, show_grammar, show_tree):
         ast = p.parse(tokens, debug=parser_debug)
     except ParserError as e:
         print("file: %s\n\t %s\n" % (path, e))
-        sys.exit(1)
+        return 1
 
     # Before transformation
     if show_tree in ("full", "before"):
@@ -118,9 +118,10 @@ def deparse(path, show_assembly, write_cfg, show_grammar, show_tree):
             % (header, indent, fn_def.interactive, indent, result)
         )
     elif is_file:
-        print("%s%s" % (header, result))
+        outstream.write("%s%s\n" % (header, result))
     else:
-        print("%s%s%s)" % (header, indent, result))
+        outstream.write("%s%s%s)\n" % (header, indent, result))
+    return 0
 
 
 @click.command()
@@ -142,10 +143,9 @@ def main(assembly, graphs, grammar, tree, tree_alias, lap_filename):
     """Lisp Assembler Program (LAP) decompiler"""
     if tree_alias:
         tree = tree_alias
-    deparse(lap_filename, show_assembly=assembly,
-            write_cfg=graphs,
-            show_grammar=grammar, show_tree=tree)
-
+    sys.exit(deparse(lap_filename, sys.stdout, show_assembly=assembly,
+                     write_cfg=graphs,
+                     show_grammar=grammar, show_tree=tree))
 
 if __name__ == "__main__":
     main()
