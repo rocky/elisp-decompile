@@ -223,6 +223,17 @@ class TransformTree(GenericASTTraversal, object):
             )
         return node
 
+    def n_when_macro(self, node):
+        body = node[2]
+        assert body == "body"
+        if len(body[0]) == 1:
+            # A when with only one entry is better expressed as "if"
+            node = SyntaxTree(
+                "if_form", [node[0], node[1], node[2]], transformed_by="n_" + node.kind
+            )
+        return node
+
+
     def traverse(self, node):
         self.preorder(node)
 

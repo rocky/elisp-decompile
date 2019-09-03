@@ -462,19 +462,27 @@ class ElispParser(GenericASTBuilder):
             #   if we have a condition there is a COME_FROM in the end_clause or
             #   if we don't have a condition there is no COME_FROM in the end_clause
             end_clause = ast[2]
-            if ast[0].kind == 'condition' and len(end_clause) == 1:
-                if (end_clause[0] not in ('COME_FROM', 'RETURN')
-                    and last < len(tokens) and tokens[last] != 'RETURN'):
+            if ast[0].kind == "condition" and len(end_clause) == 1:
+                if (
+                        end_clause[0] not in ("COME_FROM", "RETURN")
+                        and last < len(tokens)
+                        and tokens[last] != "RETURN"
+                ):
                     return True
             if ast[0].kind != 'condition' and end_clause[-1] == 'COME_FROM':
                 return True
         elif lhs == "unary_expr_stacked":
             # Check that previous token doesn't push something on the stack
             return first > 1 and tokens[first-1] != "VARSET"
-        elif lhs == "if_form" and rule[1][1].startswith("GOTO"):
+        elif lhs == "if_form":
             # Check that GOTO goes to the right place
-            if last == len(tokens): return True
-            return ast[1].offset != str(tokens[last+1].attr)
+            if rule[1][1].startswith("GOTO"):
+                if last == len(tokens):
+                    return True
+                if ast[1].offset != str(tokens[last+1].attr):
+                    return True
+            # "name_expr" isn't a valid "expr" for the "then" part of an "if_form"
+            return ast[0] == "expr" and ast[0][0] == "name_expr"
         elif lhs == "while_form2":
             # Check that "expr" isn't a stacked expression.
             # Otherwise it should be handled by while_expr1
