@@ -350,11 +350,11 @@ class SourceWalker(GenericASTTraversal, object):
             # If we have just one binding, use let rather than let*.
             # Also don't put the varbind on a new line as we would
             # do if there were more than one.
-            self.template_engine(("%(let %.(%.",), node)
+            self.template_engine(("%(let %+(%.",), node)
             varbind = node[0][0]
             assert varbind == "varbind"
-            self.template_engine(("(%c %c)", 1, 0), varbind)
-            self.template_engine(("%-%c%)", 1), node)
+            self.template_engine(("(%c %c)%)", 1, 0), varbind)
+            self.template_engine(("\n%|%c%)", 1), node)
         else:
             self.template_engine(("%(let* %.(%.%c)\n%|%c%)", 0, 1), node)
         self.prune()
