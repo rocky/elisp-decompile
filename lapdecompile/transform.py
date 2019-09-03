@@ -9,9 +9,6 @@ from lapdecompile.tok import Token
 from lapdecompile.treenode import SyntaxTree
 
 
-TRANSFORM = {("call_exprn", 4): ("name_expr", 0), ("call_exprn", 5): ("name_expr", 0)}
-
-
 def emacs_key_translate(s):
     result = ""
     if s[0] == '"':
@@ -41,7 +38,12 @@ def emacs_key_translate(s):
                     result += " <%s>" % s
 
     if result != s:
-        return 'kbd("%s")' % result.lstrip(" ")
+        if result.startswith('"'):
+            return '(kbd %s)' % result.lstrip(" ")
+        else:
+            if result.endswith("\\"):
+                result += "\\"
+            return '(kbd "%s")' % result.lstrip(" ")
     return s
 
 

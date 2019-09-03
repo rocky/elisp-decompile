@@ -1,4 +1,4 @@
-"""Spark Earley Algorithm parser ELISP
+"""Spark Earley Algorithm parser for Emacs LISP
 """
 
 import re
@@ -96,8 +96,8 @@ class ElispParser(GenericASTBuilder):
         expr_stacked  ::= set_expr_stacked
 
         expr  ::= DUP
-        expr  ::= setq_expr
-        expr  ::= setq_expr_dup
+        expr  ::= setq_form
+        expr  ::= setq_form_dup
         expr  ::= set_expr
         expr  ::= STACK-REF
         expr  ::= VARREF
@@ -139,7 +139,7 @@ class ElispParser(GenericASTBuilder):
         body_stacked  ::= expr_stacked opt_discard exprs
         body_stacked  ::= expr_stacked
 
-        expr ::= setq_expr_stacked
+        expr ::= setq_form_stacked
 
         save_excursion_form      ::= SAVE-EXCURSION body UNBIND
         save_current_buffer_form ::= SAVE-CURRENT-BUFFER body UNBIND
@@ -237,7 +237,7 @@ class ElispParser(GenericASTBuilder):
 
         name_expr ::= CONSTANT
 
-        expr_stacking ::= setq_expr_stacking binary_op
+        expr_stacking ::= setq_form_stacking binary_op
 
         binary_expr ::= expr expr binary_op
         unary_expr  ::= STACK-ACCESS expr binary_op
@@ -310,10 +310,10 @@ class ElispParser(GenericASTBuilder):
         # We could have a checking rule that the VARREF and VARSET refer to the same thing
         pop_expr ::= VARREF DUP CDR VARSET CAR-SAFE
 
-        setq_expr ::= expr VARSET
-        setq_expr_dup ::= expr DUP VARSET
-        setq_expr_stacked ::= expr_stacked DUP VARSET
-        setq_expr_stacking ::= expr DUP VARSET
+        setq_form ::= expr VARSET
+        setq_form_dup ::= expr DUP VARSET
+        setq_form_stacked ::= expr_stacked DUP VARSET
+        setq_form_stacking ::= expr DUP VARSET
 
         set_expr  ::= expr expr SET
         set_expr  ::= expr expr STACK-SET SET
@@ -434,6 +434,7 @@ class ElispParser(GenericASTBuilder):
         # might not form. Also we see a lot of extra (spurious reductions)
         # from expr_stmt->stmt->stmts->body.
         self.check_reduce['expr_stmt'] = 'tokens'
+        self.check_reduce['setq_form'] = 'tokens'
         self.check_reduce['unary_expr_stacked'] = 'tokens'
         return
 
@@ -499,7 +500,7 @@ class ElispParser(GenericASTBuilder):
                 or (stack_change > 0 and last < len(tokens) and
                     tokens[last] in (
                         "RETURN", "STACK-ACCESS", "UNBIND",
-                        "COME_FROM", "GOTO", "LABEL",
+                        "COME_FROM", "GOTO", "LABEL", "DUP",
                         "GOTO-IF-NOT-NIL"
                     ))):
                 if last >= len(tokens) or stack_change < 0:
@@ -515,6 +516,13 @@ class ElispParser(GenericASTBuilder):
                         tokens[last+2].kind  in ("RETURN", "GOTO-IF-NOT-NIL")
                         )
                 return True
+        elif lhs == "setq_form":
+            if first == 0: return False
+            return not (
+                tokens[first-1] in
+                ("LABEL", "VARSET", "VARBIND", "DISCARD") or tokens[first-1].kind.startswith("GOTO")
+                )
+
         elif rule == ('cond_form', ('clause', 'labeled_clauses')):
             # Since there are no come froms, each of the clauses
             # must end in a return.
