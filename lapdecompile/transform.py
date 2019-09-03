@@ -159,8 +159,19 @@ class TransformTree(GenericASTTraversal, object):
             pass
         return node
 
-    def n_call_exprn_4_name_expr_0(self, call_node):
-        expr = call_node[0]
+    def n_call_exprn(self, call_expr):
+        expr = call_expr[0]
+        assert expr == "expr"
+        if expr[0] == "name_expr":
+            if len(call_expr) == 4:
+                call_expr = self.call_exprn_4_name_expr(call_expr, expr)
+            elif len(call_expr) == 5:
+                call_expr = self.call_exprn_5_name_expr(call_expr, expr[0])
+                pass
+            pass
+        return call_expr
+
+    def call_exprn_4_name_expr(self, call_expr, expr):
         if expr[0] == "name_expr":
             fn_name = expr[0][0]
         else:
@@ -170,24 +181,22 @@ class TransformTree(GenericASTTraversal, object):
         if fn_name == "CONSTANT" and fn_name.attr in frozenset(
             ["global-set-key", "local-set-key"]
         ):
-            key_expr = call_node[1][0]
+            key_expr = call_expr[1][0]
             if key_expr == "name_expr" and key_expr[0] == "CONSTANT":
                 emacs_key_normalize(key_expr)
                 pass
             pass
-        return node
+        return call_expr
 
-    def n_call_exprn_5_name_expr_0(self, call_node):
-        assert call_node[0][0] == "name_expr"
-        name_expr = call_node[0][0]
+    def call_exprn_5_name_expr(self, call_expr, name_expr):
         fn_name = name_expr[0]
         if fn_name == "CONSTANT" and fn_name.attr == "define-key":
-            key_expr = call_node[2][0]
+            key_expr = call_expr[2][0]
             if key_expr == "name_expr" and key_expr[0] == "CONSTANT":
                 emacs_key_normalize(key_expr)
                 pass
             pass
-        return node
+        return call_expr
 
     def n_clause(self, node):
         body = node[1]

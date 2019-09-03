@@ -113,7 +113,7 @@ def deparse(path, outstream, show_assembly, write_cfg, show_grammar, show_tree):
         header += "\n"
 
     if fn_def.interactive is not None:
-        print(
+        outstream.write(
             "%s%s(interactive %s)\n%s%s)"
             % (header, indent, fn_def.interactive, indent, result)
         )
