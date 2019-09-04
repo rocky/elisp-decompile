@@ -319,11 +319,17 @@ class SourceWalker(GenericASTTraversal, object):
             self.template_engine(("\n%|(t %.%c", 0), node)
         # Check for first item in a (cond ..)
         elif node[0] == "opt_label" and node[2][-1] != "COME_FROM":
-            self.template_engine(("\n%|(t %.%c", 1), node)
+            self.template_engine(("\n%|(t %+%c", 1), node)
+            first_clause = False
         else:
-            self.template_engine(("\n%|(%c %.%c", 0, 1), node)
+            self.template_engine(("\n%|(%c %+%c", 0, 1), node)
+            first_clause = True
         if self.stacklen() > start_stacklen:
-            self.write("%s" % self.pop1())
+            if self.access().kind != "VARSET":
+                self.write("%s" % self.access())
+            self.pop1()
+            if first_clause:
+                self.template_engine(("%-",), node)
 
         assert start_stacklen == self.stacklen()
         self.write(")")

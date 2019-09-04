@@ -5,7 +5,7 @@ string output.
 
 # Please don't blacken this file!
 # It has custom formatting that blacken messes up.
-TAB = ' ' *4   # is less spacy than "\t"
+TAB = ' ' *2   # is less spacy than "\t"
 INDENT_PER_LEVEL = ' ' # additional intent per pretty-print level
 
 TABLE_DIRECT = {
