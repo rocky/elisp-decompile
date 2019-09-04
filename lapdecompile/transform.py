@@ -234,6 +234,19 @@ class TransformTree(GenericASTTraversal, object):
             )
         return node
 
+    def n_expr_stmt(self, node):
+        expr = node[0]
+        assert expr == "expr"
+        expr_first = expr[0]
+        if expr_first == "and_form" and len(expr_first) == 5:
+            # An expr_stmt with an "and" form of two items is
+            # nore naturally expressed as an "if".
+            if_form = SyntaxTree("if_form", expr_first.data, transformed_by="n_" + node.kind)
+            expr = SyntaxTree("expr", [if_form], transformed_by="n_" + node.kind)
+            node = SyntaxTree("expr_stmt", expr, transformed_by="n_" + node.kind)
+            pass
+        return node
+
     def n_when_macro(self, node):
         body = node[2]
         assert body == "body"
