@@ -116,8 +116,8 @@ class ElispParser(GenericASTBuilder):
         # expr  ::= if_else_form
         expr  ::= when_macro
         expr  ::= cond_form
-        expr  ::= or_expr
-        expr  ::= and_expr
+        expr  ::= or_form
+        expr  ::= and_form
         expr  ::= not_expr
         expr  ::= dolist_macro
         expr  ::= dolist_macro_result
@@ -214,16 +214,16 @@ class ElispParser(GenericASTBuilder):
         # if_else_form ::= expr_stacked GOTO-IF-NIL progn RETURN LABEL
 
         # Keep nonterminals at positions  0 and 2
-        or_expr    ::= expr GOTO-IF-NOT-NIL-ELSE-POP expr opt_come_from opt_label
-        or_expr    ::= expr GOTO-IF-NOT-NIL          expr GOTO-IF-NIL-ELSE-POP COME_FROM LABEL
-        or_expr    ::= expr GOTO-IF-NOT-NIL expr
+        or_form    ::= expr GOTO-IF-NOT-NIL-ELSE-POP expr opt_come_from opt_label
+        or_form    ::= expr GOTO-IF-NOT-NIL          expr GOTO-IF-NIL-ELSE-POP COME_FROM LABEL
+        or_form    ::= expr GOTO-IF-NOT-NIL expr
 
         # "not_expr" is (not expr) or (null expr). We use
         # not_ instead of null_ to to avoid confusion with nil
         not_expr   ::= expr GOTO-IF-NOT-NIL
 
-        and_expr   ::= expr GOTO-IF-NIL-ELSE-POP expr opt_come_from opt_label
-        # and_expr ::= expr GOTO-IF-NIL expr opt_label
+        and_form   ::= expr GOTO-IF-NIL-ELSE-POP expr opt_come_from opt_label
+        # and_form ::= expr GOTO-IF-NIL expr opt_label
 
         expr       ::= call_exprn
         expr       ::= call_expr0

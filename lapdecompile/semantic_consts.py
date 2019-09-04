@@ -49,8 +49,8 @@ TABLE_DIRECT = {
     "unwind_protect_form":( "%(unwind-protect\n%+%|%c%_%Q)%_",
                             (2, "opt_exprs"), (0, "expr") ),
     "when_macro":	  ( "%(when %c\n%+%|%c%)", 0, 2 ),
-    "or_expr":		  ( "(or %+%c %c%)", 0, 2 ),
-    "and_expr":		  ( "(and %+%c %c%)", 0, 2 ),
+    "or_form":		  ( "(or %+%c %c%)", 0, 2 ),
+    "and_form":		  ( "(and %+%c %c%)", 0, 2 ),
     "not_expr":		  ( "(null %+%c%)", 0 ),
     "dolist_macro_result": ( "%(dolist%+%(%c %c %c)\n%_%|%c)%_", 1, 0, 16, 6),
 
