@@ -92,7 +92,7 @@ def fn_scanner_internal(lines, start, name, docstring, fn_type, show_assembly=Fa
         offset, opname = fields[:2]
         if opname == 'constant':
             attr = line[line.index('constant')+len('constant'):].strip()
-
+            attr = attr.replace("\?", "?")
             tokens.append(Token('CONSTANT', attr, offset.strip(),
                                 label = label))
         elif opname[:-1] in ('list', 'concat', 'cal'):

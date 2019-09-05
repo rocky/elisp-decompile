@@ -266,6 +266,26 @@ class TransformTree(GenericASTTraversal, object):
             pass
         return node
 
+    def n_save_current_buffer_form(self, node):
+        body = node[1]
+        assert body == "body"
+        exprs = body[0]
+        assert exprs == "exprs"
+        first_expr_stmt = exprs[0]
+        assert first_expr_stmt == "expr_stmt"
+        first_expr = first_expr_stmt[0]
+        assert first_expr == "expr"
+        set_buffer = first_expr[0]
+        if set_buffer == "set_buffer":
+            # Turn (save-buffer (set-buffer ...) (...)) into:
+            # (with-current-buffer ...)
+            exprs = SyntaxTree("exprs", exprs[1:],
+                              transformed_by="n_" + node.kind)
+            node = SyntaxTree("with_current_buffer_macro",
+                              [set_buffer[0][0], exprs],
+                              transformed_by="n_" + node.kind)
+        return node
+
     def n_when_macro(self, node):
         body = node[2]
         assert body == "body"

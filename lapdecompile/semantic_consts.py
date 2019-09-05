@@ -51,6 +51,8 @@ TABLE_DIRECT = {
                                   (1, "body") ),
     "save_current_buffer_form": ( "%(save-current-buffer\n%+%|%c%)",
                                   (1, "body") ),
+    "with_current_buffer_macro":( "%(with-current-buffer %c\n%+%|%C%)",
+                                  (0, "VARREF"), (1, 1000) ),
 
     "labeled_clause":	   ( "%c", 1 ),
     "labeled_final_clause": ("\n%|(%c %c)", 1, 2),

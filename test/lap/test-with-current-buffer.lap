@@ -1,0 +1,15 @@
+byte code for test-with-current-buffer:
+  args: (srcbuf)
+0	save-current-buffer
+1	varref	  srcbuf
+2	set-buffer
+3	discard
+4	constant  realgud-cmdbuf-info-in-debugger\?=
+5	constant  nil
+6	call	  1
+7	discard
+8	constant  realgud-cmdbuf-info-bp-list=
+9	constant  nil
+10	call	  1
+11	unbind	  1
+12	return

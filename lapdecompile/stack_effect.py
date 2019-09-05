@@ -78,6 +78,7 @@ STACK_EFFECTS = {
     'stack-ref':      (-0, +1),
     'stack-set':      (-1, +0),
     'stack-access':   (-0, +0), # A pseudo instruction
+    'stringp':        (-1, +1),
     'sub1':           (-1, +1),
     'unbind':         (-0, +0),
     'unwind-protect': (-1, +0),
