@@ -33,6 +33,10 @@ TABLE_DIRECT = {
                              (0, "CONSTANT"), (1, "expr"), (2, "CONSTANT") ),
     "defvar":              ( "(defvar %Q%+\n%|%c%)",
                              (0, "CONSTANT"), (1, "expr") ),
+    "defconst_doc":        ( "(defconst %Q%+\n%|%c\n%|%c%)",
+                             (0, "CONSTANT"), (1, "expr"), (2, "CONSTANT") ),
+    "defconst":            ( "(defconst %Q%+\n%|%c%)",
+                             (0, "CONSTANT"), (1, "expr") ),
 
     "list_exprn":	   ( "(list %l)", (0, 1000) ),
     "min_exprn":	   ( "(min %L)", (0, 1000) ),

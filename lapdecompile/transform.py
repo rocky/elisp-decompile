@@ -168,20 +168,21 @@ class TransformTree(GenericASTTraversal, object):
             call_expr = self.call_exprn_4_name_expr(call_expr, expr)
         elif expr[0] == "name_expr":
             name_expr = expr[0]
-            if len(call_expr) == 3 and name_expr[0].attr.startswith("(lambda (def-tmp-var) (defvar"):
-                match = re.match('\(lambda \(def-tmp-var\) \(defvar (.+) def-tmp-var( (".*"))?\)\)',
+            if len(call_expr) == 3 and name_expr[0].attr.startswith("(lambda (def-tmp-var) ("):
+                match = re.match('\(lambda \(def-tmp-var\) \((defvar|defconst) (.+) def-tmp-var( (".*"))?\)\)',
                                  name_expr[0].attr)
                 if match:
-                    if match.group(3):
-                        call_expr = SyntaxTree("defvar_doc",
-                                               [Token("CONSTANT", attr=match.group(1)),
+                    def_type = match.group(1)
+                    if match.group(4):
+                        call_expr = SyntaxTree(f"{def_type}_doc",
+                                               [Token("CONSTANT", attr=match.group(2)),
                                                 call_expr[1],
-                                                Token("CONSTANT", attr=match.group(3)),
+                                                Token("CONSTANT", attr=match.group(4)),
                                                ],
                                                transformed_by="n_call_exprn")
                     else:
-                        call_expr = SyntaxTree("defvar",
-                                               [Token("CONSTANT", attr=match.group(1)),
+                        call_expr = SyntaxTree(f"{def_type}",
+                                               [Token("CONSTANT", attr=match.group(2)),
                                                 call_expr[1]
                                                ],
                                                transformed_by="n_call_exprn")
