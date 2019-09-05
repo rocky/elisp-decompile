@@ -27,6 +27,13 @@ TABLE_DIRECT = {
     "binary_expr_stacked": ( "(%c %+%S %c%)", -1, 0),
 
     "concat_exprn":	   ( "(concat %l)", (0, 1000) ),
+
+    # Created via transform only
+    "defvar_doc":          ( "(defvar %Q%+\n%|%c\n%|%c%)",
+                             (0, "CONSTANT"), (1, "expr"), (2, "CONSTANT") ),
+    "defvar":              ( "(defvar %Q%+\n%|%c%)",
+                             (0, "CONSTANT"), (1, "expr") ),
+
     "list_exprn":	   ( "(list %l)", (0, 1000) ),
     "min_exprn":	   ( "(min %L)", (0, 1000) ),
     "max_exprn":	   ( "(max %L)", (0, 1000) ),

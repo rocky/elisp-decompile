@@ -164,11 +164,29 @@ class TransformTree(GenericASTTraversal, object):
     def n_call_exprn(self, call_expr):
         expr = call_expr[0]
         assert expr == "expr"
-        if expr[0] == "name_expr":
-            if len(call_expr) == 4:
-                call_expr = self.call_exprn_4_name_expr(call_expr, expr)
+        if len(call_expr) == 4:
+            call_expr = self.call_exprn_4_name_expr(call_expr, expr)
+        elif expr[0] == "name_expr":
+            name_expr = expr[0]
+            if len(call_expr) == 3 and name_expr[0].attr.startswith("(lambda (def-tmp-var) (defvar"):
+                match = re.match('\(lambda \(def-tmp-var\) \(defvar (.+) def-tmp-var( (".*"))?\)\)',
+                                 name_expr[0].attr)
+                if match:
+                    if match.group(3):
+                        call_expr = SyntaxTree("defvar_doc",
+                                               [Token("CONSTANT", attr=match.group(1)),
+                                                call_expr[1],
+                                                Token("CONSTANT", attr=match.group(3)),
+                                               ],
+                                               transformed_by="n_call_exprn")
+                    else:
+                        call_expr = SyntaxTree("defvar",
+                                               [Token("CONSTANT", attr=match.group(1)),
+                                                call_expr[1]
+                                               ],
+                                               transformed_by="n_call_exprn")
             elif len(call_expr) == 5:
-                call_expr = self.call_exprn_5_name_expr(call_expr, expr[0])
+                call_expr = self.call_exprn_5_name_expr(call_expr, name_expr)
                 pass
             pass
         return call_expr
