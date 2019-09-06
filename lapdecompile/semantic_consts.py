@@ -52,7 +52,7 @@ TABLE_DIRECT = {
     "save_current_buffer_form": ( "%(save-current-buffer\n%+%|%c%)",
                                   (1, "body") ),
     "with_current_buffer_macro":( "%(with-current-buffer %c\n%+%|%C%)",
-                                  (0, "VARREF"), (1, 1000) ),
+                                  (1, "VARREF"), (4, 1000) ),
 
     "labeled_clause":	   ( "%c", 1 ),
     "labeled_final_clause": ("\n%|(%c %c)", 1, 2),
@@ -62,7 +62,9 @@ TABLE_DIRECT = {
     "unwind_protect_form":( "%(unwind-protect\n%+%|%c%_%Q)%_",
                             (2, "opt_exprs"), (0, "expr") ),
     "when_macro":	  ( "%(when %c\n%+%|%c%)", 0, 2 ),
-    "or_form":		  ( "(or %+%c %c%)", 0, 2 ),
+
+    # "or_form":		  ( "(or %+%c %c%)", 0, 2 ),  # may need to push/pop values
+
     "and_form":		  ( "(and %+%c %c%)", 0, 2 ),
     "not_expr":		  ( "(null %+%c%)", 0 ),
     "dolist_macro_result": ( "%(dolist%+%(%c %c %c)\n%_%|%c)%_", 1, 0, 16, 6),
@@ -76,6 +78,7 @@ TABLE_DIRECT = {
     "let_form_stacked":	( "%(let %.(%.%c)%c%)", 0, 1 ),
     # "progn":		( "%(progn\n%+%|%c%)", 0 ),
     "body_stacked":	( "%c", 0 ),
+    "stacked_return":	( ("", ) ),
 
     "ADD1":	( "1+" ,   ),
     "CAR":	( "car" ,  ),
@@ -99,6 +102,7 @@ TABLE_DIRECT = {
     "VARBIND":	        ( "%{attr}", ),
     "VARREF":	        ( "%{attr}", ),
     "STACK-REF":	( "stack-ref%{attr}", ),
+    "STACK-ACCESS":	( "%S", ),
 }
 
 NULLARY_OPS = tuple("""

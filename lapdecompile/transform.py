@@ -147,18 +147,18 @@ class TransformTree(GenericASTTraversal, object):
         return node
 
     def n_unary_expr(self, node):
-        assert node[0] == "expr"
-        expr = node[0]
-        unary_op1 = self.unop_operator(node[1])
-        if expr[0] == "unary_expr":
-            unary_op2 = self.unop_operator(expr[0][1])
-            # Handle (cxr (xyr ... )) -> (cxyr ...)
-            # FIXME: We combine only two functions. subr.el has up to 4 levels
-            if re.match("C[AD]R", unary_op1) and re.match("C[AD]R", unary_op2):
-                c12r = f"C%s%sR" % (unary_op1[1:2], unary_op2[1:2])
-                expr[0][1][0].kind = c12r
-                node = SyntaxTree(node.kind, expr[0], transformed_by="n_" + node.kind)
-            pass
+        if node[0] == "expr":
+            expr = node[0]
+            unary_op1 = self.unop_operator(node[1])
+            if expr[0] == "unary_expr":
+                unary_op2 = self.unop_operator(expr[0][1])
+                # Handle (cxr (xyr ... )) -> (cxyr ...)
+                # FIXME: We combine only two functions. subr.el has up to 4 levels
+                if re.match("C[AD]R", unary_op1) and re.match("C[AD]R", unary_op2):
+                    c12r = f"C%s%sR" % (unary_op1[1:2], unary_op2[1:2])
+                    expr[0][1][0].kind = c12r
+                    node = SyntaxTree(node.kind, expr[0], transformed_by="n_" + node.kind)
+                pass
         return node
 
     def n_call_exprn(self, call_expr):
@@ -266,25 +266,25 @@ class TransformTree(GenericASTTraversal, object):
             pass
         return node
 
-    def n_save_current_buffer_form(self, node):
-        body = node[1]
-        assert body == "body"
-        exprs = body[0]
-        assert exprs == "exprs"
-        first_expr_stmt = exprs[0]
-        assert first_expr_stmt == "expr_stmt"
-        first_expr = first_expr_stmt[0]
-        assert first_expr == "expr"
-        set_buffer = first_expr[0]
-        if set_buffer == "set_buffer":
-            # Turn (save-buffer (set-buffer ...) (...)) into:
-            # (with-current-buffer ...)
-            exprs = SyntaxTree("exprs", exprs[1:],
-                              transformed_by="n_" + node.kind)
-            node = SyntaxTree("with_current_buffer_macro",
-                              [set_buffer[0][0], exprs],
-                              transformed_by="n_" + node.kind)
-        return node
+    # def n_save_current_buffer_form(self, node):
+    #     body = node[1]
+    #     assert body == "body"
+    #     exprs = body[0]
+    #     assert exprs == "exprs"
+    #     first_expr_stmt = exprs[0]
+    #     assert first_expr_stmt == "expr_stmt"
+    #     first_expr = first_expr_stmt[0]
+    #     assert first_expr == "expr"
+    #     set_buffer = first_expr[0]
+    #     if set_buffer == "set_buffer":
+    #         # Turn (save-buffer (set-buffer ...) (...)) into:
+    #         # (with-current-buffer ...)
+    #         exprs = SyntaxTree("exprs", exprs[1:],
+    #                           transformed_by="n_" + node.kind)
+    #         node = SyntaxTree("with_current_buffer_macro",
+    #                           [set_buffer[0][0], exprs],
+    #                           transformed_by="n_" + node.kind)
+    #     return node
 
     def n_when_macro(self, node):
         body = node[2]

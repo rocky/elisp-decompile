@@ -132,6 +132,8 @@ class ElispParser(GenericASTBuilder):
         # Buffer related
         expr  ::= save_excursion_form
         expr  ::= save_current_buffer_form
+        expr  ::= with_current_buffer_macro
+        expr  ::= with_current_buffer_safe_macro
         expr  ::= set_buffer
 
         body  ::= exprs
@@ -143,6 +145,13 @@ class ElispParser(GenericASTBuilder):
 
         save_excursion_form      ::= SAVE-EXCURSION body UNBIND
         save_current_buffer_form ::= SAVE-CURRENT-BUFFER body UNBIND
+        with_current_buffer_macro ::= SAVE-CURRENT-BUFFER VARREF SET-BUFFER DISCARD exprs UNBIND
+        with_current_buffer_safe_macro ::= VARREF NOT GOTO-IF-NOT-NIL-ELSE-POP
+                                           CONSTANT VARREF CALL_1
+                                           COME_FROM LABEL STACK-ACCESS
+                                           NOT GOTO-IF-NIL-ELSE-POP
+                                           with_current_buffer_macro
+                                           opt_come_from opt_label
 
         set_buffer          ::= expr SET-BUFFER
 
@@ -213,6 +222,9 @@ class ElispParser(GenericASTBuilder):
         # if_else_form ::= expr GOTO-IF-NIL expr RETURN LABEL
         # if_else_form ::= expr_stacked GOTO-IF-NIL progn RETURN LABEL
 
+        # FIXME: add something like this
+        if_else_form ::= expr GOTO-IF-NIL-ELSE-POP expr-stmt RETURN
+
         # Keep nonterminals at positions  0 and 2
         or_form    ::= expr GOTO-IF-NOT-NIL-ELSE-POP expr opt_come_from opt_label
         or_form    ::= expr GOTO-IF-NOT-NIL          expr GOTO-IF-NIL-ELSE-POP COME_FROM LABEL
@@ -240,7 +252,7 @@ class ElispParser(GenericASTBuilder):
         expr_stacking ::= setq_form_stacking binary_op
 
         binary_expr ::= expr expr binary_op
-        unary_expr  ::= STACK-ACCESS expr binary_op
+        binary_expr_stacked  ::= STACK-ACCESS expr binary_op
         binary_expr ::= expr_stacking binary_op
 
         binary_op ::= DIFF
@@ -434,6 +446,7 @@ class ElispParser(GenericASTBuilder):
         # might not form. Also we see a lot of extra (spurious reductions)
         # from expr_stmt->stmt->stmts->body.
         self.check_reduce['expr_stmt'] = 'tokens'
+        self.check_reduce['save_current_buffer_form'] = 'tokens'
         self.check_reduce['setq_form'] = 'tokens'
         self.check_reduce['unary_expr_stacked'] = 'tokens'
         return
@@ -516,6 +529,12 @@ class ElispParser(GenericASTBuilder):
                         tokens[last+2].kind  in ("RETURN", "GOTO-IF-NOT-NIL")
                         )
                 return True
+        elif lhs == "save_current_buffer_form":
+            # Invalidate rule if it matches with-current-buffer
+            # Note: that the grammar rule isn't invalid, just not optimal.
+            return ([tokens[i].kind for i in range(first+1, first+4)] ==
+                    ["VARREF", "SET-BUFFER", "DISCARD"])
+
         elif lhs == "setq_form":
             if first == 0: return False
             return not (

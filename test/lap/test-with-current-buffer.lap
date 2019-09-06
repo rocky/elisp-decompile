@@ -1,4 +1,5 @@
 byte code for test-with-current-buffer:
+  doc:  Test with-current-buffer and with-current-buffer-safe-macros
   args: (srcbuf)
 0	save-current-buffer
 1	varref	  srcbuf
@@ -11,5 +12,22 @@ byte code for test-with-current-buffer:
 8	constant  realgud-cmdbuf-info-bp-list=
 9	constant  nil
 10	call	  1
-11	unbind	  1
-12	return
+11	discard
+12	unbind	  1
+13	varref	  srcbuf
+14	not
+15	goto-if-not-nil-else-pop 1
+18	constant  buffer-killed\?
+19	varref	  srcbuf
+20	call	  1
+21:1	not
+22	goto-if-nil-else-pop 2
+25	save-current-buffer
+26	varref	  srcbuf
+27	set-buffer
+28	discard
+29	constant  1
+30	dup
+31	varset	  x
+32	unbind	  1
+33:2	return

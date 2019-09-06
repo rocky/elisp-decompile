@@ -393,6 +393,13 @@ class SourceWalker(GenericASTTraversal, object):
             self.pop1()
         self.prune()
 
+    def n_or_form(self, node):
+        if node[1] == "GOTO-IF-NOT-NIL-ELSE-POP":
+            self.template_engine(("(or %+%c%p %c%)", 0, 0, 2 ), node)
+        else:
+            self.template_engine(("(or %+%c %c%)", 0, 2 ), node)
+        self.prune()
+
     def n_progn(self, node):
         assert node[0] == "body"
         exprs = node[0][0]
@@ -409,6 +416,11 @@ class SourceWalker(GenericASTTraversal, object):
             val = self.eval_stack[0]
             s = val if isinstance(val, str) else self.traverse(val)
             self.write(s)
+
+    def n_with_current_buffer_safe_macro(self, node):
+        self.template_engine(("%(with-current-buffer-safe %c\n%+%|%C%)",
+                              (1, "VARREF"), (4, 1000) ), node[11])
+        self.prune()
 
     def template_engine(self, entry, startnode):
         """The format template engine.  See the comment at the beginning of
@@ -462,7 +474,7 @@ class SourceWalker(GenericASTTraversal, object):
                 if isinstance(index, tuple):
                     assert node[index[0]] == index[1], (
                         "at %s[%d], expected %s node; got %s"
-                        % (node.kind, arg, node[index[0]].kind, index[1])
+                        % (node.kind, arg, index[1], node[index[0]].kind)
                     )
                     index = index[0]
                 assert isinstance(
