@@ -1,5 +1,4 @@
 import sys
-from decompyle3.scanners.tok import NoneToken
 from spark_parser.ast import AST as spark_AST
 
 intern = sys.intern
@@ -9,11 +8,6 @@ class SyntaxTree(spark_AST):
     def __init__(self, *args, transformed_by=None, **kwargs):
         self.transformed_by = transformed_by
         super(SyntaxTree, self).__init__(*args, **kwargs)
-
-    def isNone(self):
-        """An SyntaxTree None token. We can't use regular list comparisons
-        because SyntaxTree token offsets might be different"""
-        return len(self.data) == 1 and NoneToken == self.data[0]
 
     def __repr__(self):
         return self.__repr1__("", None)
