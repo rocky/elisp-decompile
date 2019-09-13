@@ -9,6 +9,8 @@ from collections import namedtuple
 FuncDef = namedtuple('FuncDef', ['name', 'args', 'opt_args',
                                  'docstring', 'interactive', 'fn_type'])
 
+last_compiled_function=0
+
 def fn_scanner(fp, show_assembly=False):
     lines = fp.readlines()
     line = lines[0]
@@ -57,6 +59,7 @@ def fn_scanner(fp, show_assembly=False):
 # FIXME: docstring should probably not be passed.
 def fn_scanner_internal(lines, start, name, docstring, fn_type, show_assembly=False):
 
+    global last_compiled_function
     line = lines[start]
     m = re.match("^  args: (\([^)]*\))", line)
     if m:
@@ -79,7 +82,10 @@ def fn_scanner_internal(lines, start, name, docstring, fn_type, show_assembly=Fa
     customize = {}
 
     label = None
-    for i, line in enumerate(lines[start:]):
+    i = start
+    n = len(lines)
+    while i < n:
+        line = lines[i]
         fields = line.split()
         if len(fields) == 0:
             break
@@ -93,8 +99,11 @@ def fn_scanner_internal(lines, start, name, docstring, fn_type, show_assembly=Fa
         if opname == 'constant':
             attr = line[line.index('constant')+len('constant'):].strip()
             attr = attr.replace("\?", "?")
-            tokens.append(Token('CONSTANT', attr, offset.strip(),
-                                label = label))
+            if attr == "<compiled-function>":
+                name = "<compiled-function-%d>" % last_compiled_function
+                attr = fn_scanner_internal(lines, start+1, name, None, fn_type="internal",
+                                                        show_assembly=show_assembly)
+            tokens.append(Token('CONSTANT', attr, offset.strip(), label = label))
         elif opname[:-1] in ('list', 'concat', 'cal'):
             if opname.startswith('call'):
                 count = int(fields[2])
@@ -121,8 +130,16 @@ def fn_scanner_internal(lines, start, name, docstring, fn_type, show_assembly=Fa
         else:
             print("Can't handle line %d:\n\t%s" % (i, line))
         label = None
+        i += 1
         pass
 
     if show_assembly:
         print('\n'.join([str(t) for t in tokens]))
     return fn_def, tokens, customize, i
+
+if __name__ == '__main__':
+    import sys
+    lap_file = sys.argv[1]
+    with open(lap_file, 'r') as fp:
+        fn_def, tokens, customize = fn_scanner(fp, show_assembly=True)
+    pass
