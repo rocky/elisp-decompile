@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from spark_parser.ast import AST
 
-from lapdecompile.scanner import fn_scanner
+from lapdecompile.scanner import LapScanner
 from lapdecompile.parser import ElispParser, ParserError
 from lapdecompile.semantics import SourceWalker
 from lapdecompile.transform import TransformTree
@@ -53,7 +53,8 @@ def control_flow(name, instructions, show_assembly, write_cfg):
 def deparse(path, outstream, show_assembly, write_cfg, show_grammar, show_tree):
     # Scan...
     with open(path, "r") as fp:
-        fn_def, tokens, customize = fn_scanner(fp, show_assembly=show_assembly)
+        scanner = LapScanner(fp, show_assembly=show_assembly)
+        fn_def, tokens, customize = scanner.fn_def, scanner.tokens, scanner.customize
         pass
 
     import os.path as osp
