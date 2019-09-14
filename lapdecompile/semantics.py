@@ -112,10 +112,11 @@ Syntax-directed translation from (transformed) parse tree to Elisp source code.
 
 from __future__ import print_function
 
-import re, sys
+import re
 from spark_parser import GenericASTTraversal, GenericASTTraversalPruningException
+from lapdecompile.scanner import Func
 from lapdecompile.tok import Token
-from lapdecompile.semantic_consts import TAB, INDENT_PER_LEVEL, TABLE_DIRECT
+from lapdecompile.semantic_consts import TAB, TABLE_DIRECT
 
 from io import StringIO
 
@@ -292,7 +293,10 @@ class SourceWalker(GenericASTTraversal, object):
         self.prune()
 
     def n_CONSTANT(self, node):
-        if not (
+        if isinstance(node.attr, Func):
+            self.f.write(node.attr.name)
+            return
+        elif not (
             re.match(r"^[0-9]+$", node.attr)
             or node.attr.startswith('"')
             or node.attr in ("t", "nil")
@@ -395,9 +399,9 @@ class SourceWalker(GenericASTTraversal, object):
 
     def n_or_form(self, node):
         if node[1] == "GOTO-IF-NOT-NIL-ELSE-POP":
-            self.template_engine(("(or %+%c%p %c%)", 0, 0, 2 ), node)
+            self.template_engine(("(or %+%c%p %c%)", 0, 0, 2), node)
         else:
-            self.template_engine(("(or %+%c %c%)", 0, 2 ), node)
+            self.template_engine(("(or %+%c %c%)", 0, 2), node)
         self.prune()
 
     def n_progn(self, node):
@@ -418,8 +422,10 @@ class SourceWalker(GenericASTTraversal, object):
             self.write(s)
 
     def n_with_current_buffer_safe_macro(self, node):
-        self.template_engine(("%(with-current-buffer-safe %c\n%+%|%C%)",
-                              (1, "VARREF"), (4, 1000) ), node[11])
+        self.template_engine(
+            ("%(with-current-buffer-safe %c\n%+%|%C%)", (1, "VARREF"), (4, 1000)),
+            node[11],
+        )
         self.prune()
 
     def template_engine(self, entry, startnode):

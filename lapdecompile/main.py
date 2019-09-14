@@ -54,75 +54,78 @@ def deparse(path, outstream, show_assembly, write_cfg, show_grammar, show_tree):
     # Scan...
     with open(path, "r") as fp:
         scanner = LapScanner(fp, show_assembly=show_assembly)
-        fn_def, tokens, customize = scanner.fn_def, scanner.tokens, scanner.customize
         pass
 
     import os.path as osp
 
-    name = osp.basename(path)
-    tokens = control_flow(name, tokens, show_assembly, write_cfg)
+    for fn_name, fn in scanner.fns.items():
 
-    # Parse...
-    p = ElispParser(AST, tokens)
-    p.add_custom_rules(tokens, customize)
+        fn_name, tokens, customize = fn.name, fn.tokens, fn.customize
+        name = f"{osp.basename(path)}:{fn_name}"
+        tokens = control_flow(name, tokens, show_assembly, write_cfg)
 
-    parser_debug = {
-        "rules": False,
-        "transition": False,
-        "reduce": show_grammar,
-        "errorstack": "full",
-        "dups": False,
-    }
+        # Parse...
+        p = ElispParser(AST, tokens)
+        p.add_custom_rules(tokens, customize)
 
-    try:
-        ast = p.parse(tokens, debug=parser_debug)
-    except ParserError as e:
-        print("file: %s\n\t %s\n" % (path, e))
-        return 1
+        parser_debug = {
+            "rules": False,
+            "transition": False,
+            "reduce": show_grammar,
+            "errorstack": "full",
+            "dups": False,
+        }
 
-    # Before transformation
-    if show_tree in ("full", "before"):
-        print(ast)
+        try:
+            ast = p.parse(tokens, debug=parser_debug)
+        except ParserError as e:
+            print("file: %s\n\t %s\n" % (path, e))
+            return 1
 
-    # .. and Generate Elisp
-    transformed_ast = TransformTree(ast, debug=False).traverse(ast)
+        # Before transformation
+        if show_tree in ("full", "before"):
+            print(ast)
 
-    if show_tree == "full":
-        print("=" * 30)
+        # .. and Generate Elisp
+        transformed_ast = TransformTree(ast, debug=False).traverse(ast)
 
-    # After transformation
-    if show_tree in ("full", "after"):
-        print(ast)
+        if show_tree == "full":
+            print("=" * 30)
 
-    formatter = SourceWalker(transformed_ast)
-    is_file = fn_def.fn_type == "file"
-    if is_file:
-        indent = header = ""
-    else:
-        indent = "  "
-        header = "(%s %s%s%s" % (
-            fn_def.fn_type,
-            fn_def.name,
-            fn_def.args,
-            fn_def.docstring,
-        )
+        # After transformation
+        if show_tree in ("full", "after"):
+            print(ast)
 
-    result = formatter.traverse(ast, indent)
-    result = result.rstrip()
+        formatter = SourceWalker(transformed_ast)
+        is_file = fn.fn_type == "file"
+        if is_file:
+            indent = header = ""
+        else:
+            indent = "  "
+            header = "(%s %s%s%s" % (
+                fn.fn_type,
+                fn.name,
+                fn.args,
+                fn.docstring,
+            )
 
-    if not header.endswith("\n") and not result.startswith("\n") or fn_def.interactive:
-        header += "\n"
+        # from trepan.api import debug; debug()
+        result = formatter.traverse(ast, indent)
+        result = result.rstrip()
 
-    if fn_def.interactive is not None:
-        outstream.write(
-            "%s%s(interactive %s)\n%s%s)"
-            % (header, indent, fn_def.interactive, indent, result)
-        )
-    elif is_file:
-        outstream.write("%s%s\n" % (header, result))
-    else:
-        outstream.write("%s%s%s)\n" % (header, indent, result))
-    return 0
+        if not header.endswith("\n") and not result.startswith("\n") or fn.interactive:
+            header += "\n"
+
+        if fn.interactive is not None:
+            outstream.write(
+                "%s%s(interactive %s)\n%s%s)"
+                % (header, indent, fn.interactive, indent, result)
+            )
+        elif is_file:
+            outstream.write("%s%s\n" % (header, result))
+        else:
+            outstream.write("%s%s%s)\n" % (header, indent, result))
+        return 0
 
 
 @click.command()

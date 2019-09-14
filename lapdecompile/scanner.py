@@ -6,8 +6,9 @@ import re
 from lapdecompile.tok import Token
 from collections import namedtuple
 
-FuncDef = namedtuple(
-    "FuncDef", ["name", "args", "opt_args", "docstring", "interactive", "fn_type"]
+Func = namedtuple(
+    "Func", ["name", "args", "opt_args", "docstring", "interactive", "fn_type",
+             "tokens", "customize"]
 )
 
 
@@ -19,9 +20,7 @@ class LapScanner:
         self.cur_index = 0
         self.show_assembly = show_assembly
         self.fp = fp
-        self.tokens = []
-        self.fn_def = None
-        self.customize = {}
+        self.fns = {}
 
         self.fn_scanner()
 
@@ -42,29 +41,30 @@ class LapScanner:
             else:
                 name = "unknown"
 
+        self.name = name
+
         self.cur_index = 1
         line = self.lines[self.cur_index]
         if line.startswith("  doc:  "):
             docstring = '\n  "%s"\n' % line[len("  doc:  "):].rstrip("\n")
-            self.cur_index += 1
         elif line.startswith("  doc-start "):
             m = re.match("^  doc-start (\d+):  (.*)$", line)
             if m:
                 tot_len = int(m.group(1))
                 docstring = '\n  "' + m.group(2) + "\n"
                 l = len(m.group(2))
-                self.cur_index += 1
                 while l < tot_len - 1:
+                    self.cur_index += 1
                     line = self.lines[self.cur_index]
                     l += len(line)
                     docstring += line
-                    self.cur_index += 1
                     pass
                 docstring = docstring.rstrip("\n")
                 docstring += '"'
                 pass
         else:
             docstring = ""
+            self.cur_index = 0
 
         self.fn_scanner_internal(name, docstring, fn_type)
         return
@@ -72,23 +72,25 @@ class LapScanner:
     # FIXME: docstring should probably not be passed.
     def fn_scanner_internal(self, name, docstring, fn_type):
 
+        tokens = []
+        customize = {}
+        self.cur_index += 1
         line = self.lines[self.cur_index]
-        m = re.match("^  args: (\([^)]*\))", line)
+        m = re.match("^\s+args: (\([^)]*\))", line)
         if m:
             args = m.group(1)
-        elif re.match("^  args: nil", line):
+            self.cur_index += 1
+        elif re.match("^\s+args: nil", line):
             args = "()"
+            self.cur_index += 1
         else:
             args = "(?)"
 
-        self.cur_index += 1
         line = self.lines[self.cur_index]
         interactive = None
         if line.startswith(" interactive: "):
-            interactive = line[len(" interactive: ") :].rstrip("\n")
+            interactive = line[len(" interactive: "):].rstrip("\n")
             self.cur_index += 1
-
-        self.fn_def = FuncDef(name, args, None, docstring, interactive, fn_type)
 
         label = None
         while self.cur_index < self.line_count:
@@ -101,16 +103,17 @@ class LapScanner:
             if colon_point >= 0:
                 label = offset[colon_point:]
                 offset = offset[:colon_point]
-                self.tokens.append(Token("LABEL", label, offset))
+                tokens.append(Token("LABEL", label, offset))
             offset, opname = fields[:2]
             if opname == "constant":
-                attr = line[line.index("constant") + len("constant") :].strip()
+                attr = line[line.index("constant") + len("constant"):].strip()
                 attr = attr.replace("\?", "?")
                 if attr == "<compiled-function>":
-                    name = "<compiled-function-%d>" % self.last_compiled_function
+                    name = "compiled-function-%d" % self.last_compiled_function
                     self.last_compiled_function += 1
-                    attr = self.fn_scanner_internal(name, None, fn_type="internal")
-                self.tokens.append(Token("CONSTANT", attr, offset.strip(), label=label))
+                    self.fn_scanner_internal(name, None, fn_type="internal")
+                    attr = self.fns[name]
+                tokens.append(Token("CONSTANT", attr, offset.strip(), label=label))
             elif opname[:-1] in ("list", "concat", "cal"):
                 if opname.startswith("call"):
                     count = int(fields[2])
@@ -122,11 +125,11 @@ class LapScanner:
                     count = int(opname[-1])
                     opname = "%s_%d" % (opname[:-1], count)
                 opname = opname.upper().strip()
-                self.tokens.append(Token(opname, count, offset.strip(), label=label))
-                self.customize[opname] = int(count)
+                tokens.append(Token(opname, count, offset.strip(), label=label))
+                customize[opname] = int(count)
             elif len(fields) == 3:
                 offset, opname, attr = fields
-                self.tokens.append(
+                tokens.append(
                     Token(
                         opname.upper().strip(),
                         attr.strip(),
@@ -136,7 +139,7 @@ class LapScanner:
                 )
             elif len(fields) == 2:
                 offset, opname = fields
-                self.tokens.append(Token(opname.upper().strip(), None, offset.strip()))
+                tokens.append(Token(opname.upper().strip(), None, offset.strip()))
                 pass
             else:
                 print("Can't handle line %d:\n\t%s" % (self.cur_index, line))
@@ -145,8 +148,10 @@ class LapScanner:
             pass
 
         if self.show_assembly:
-            print("\n".join([str(t) for t in self.tokens]))
-        return
+            print("\n".join([str(t) for t in tokens]))
+
+        self.fns[name] = Func(name, args, None, docstring, interactive,
+                              fn_type, tokens, customize)
 
 
 if __name__ == "__main__":
