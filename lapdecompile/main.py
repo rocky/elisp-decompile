@@ -58,9 +58,10 @@ def deparse(path, outstream, show_assembly, write_cfg, show_grammar, show_tree):
 
     import os.path as osp
 
+    rc = 0
     for fn_name, fn in scanner.fns.items():
 
-        fn_name, tokens, customize = fn.name, fn.tokens, fn.customize
+        tokens, customize = fn.tokens, fn.customize
         name = f"{osp.basename(path)}:{fn_name}"
         tokens = control_flow(name, tokens, show_assembly, write_cfg)
 
@@ -80,7 +81,8 @@ def deparse(path, outstream, show_assembly, write_cfg, show_grammar, show_tree):
             ast = p.parse(tokens, debug=parser_debug)
         except ParserError as e:
             print("file: %s\n\t %s\n" % (path, e))
-            return 1
+            rc = 1
+            continue
 
         # Before transformation
         if show_tree in ("full", "before"):
@@ -125,7 +127,9 @@ def deparse(path, outstream, show_assembly, write_cfg, show_grammar, show_tree):
             outstream.write("%s%s\n" % (header, result))
         else:
             outstream.write("%s%s%s)\n" % (header, indent, result))
-        return 0
+            pass
+        pass
+    return rc
 
 
 @click.command()

@@ -109,10 +109,10 @@ class LapScanner:
                 attr = line[line.index("constant") + len("constant"):].strip()
                 attr = attr.replace("\?", "?")
                 if attr == "<compiled-function>":
-                    name = "compiled-function-%d" % self.last_compiled_function
+                    fn_name = "compiled-function-%d" % self.last_compiled_function
                     self.last_compiled_function += 1
-                    self.fn_scanner_internal(name, None, fn_type="internal")
-                    attr = self.fns[name]
+                    self.fn_scanner_internal(fn_name, "", fn_type="defun")
+                    attr = self.fns[fn_name]
                 tokens.append(Token("CONSTANT", attr, offset.strip(), label=label))
             elif opname[:-1] in ("list", "concat", "cal"):
                 if opname.startswith("call"):
