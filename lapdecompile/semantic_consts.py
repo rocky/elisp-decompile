@@ -126,7 +126,7 @@ widen
 
 UNARY_OPS = tuple("""
 car cdr cdr-safe consp
-insert integerp
+goto-char insert integerp
 keywordp listp
 markerp mutexp
 multibyte-string-p

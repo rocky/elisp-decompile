@@ -281,6 +281,7 @@ class ElispParser(GenericASTBuilder):
         unary_op ::= CDR
         unary_op ::= CDR-SAFE
         unary_op ::= CONSP
+        unary_op ::= GOTO-CHAR
         unary_op ::= INSERT
         unary_op ::= INTEGERP
         unary_op ::= KEYWORDP

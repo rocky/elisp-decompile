@@ -43,6 +43,7 @@ STACK_EFFECTS = {
     'following-char': (-0, +1),
     'geq':            (-2, +1),
     'goto':           (-0, +0),
+    'goto-char':      (-1, +1),
     'goto-if-nil':    (-1, +0),
     'goto-if-nil-else-pop': ((-1, -1), (0, 1)),
     'goto-if-not-nil-else-pop': ((-1, -1), (1, 0)),
