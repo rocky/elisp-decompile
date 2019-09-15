@@ -20,7 +20,7 @@ class ElispParser(GenericASTBuilder):
     def __init__(self, AST, tokens, start='fn_body', debug=PARSER_DEFAULT_DEBUG):
         self.tokens = tokens
         super(ElispParser, self).__init__(AST, start, debug)
-        self.collect = frozenset(['exprs', 'varlist' 'labeled_clauses'])
+        self.collect = frozenset(["exprs", "varlist", "opt_exprs", "labeled_clauses"])
         self.new_rules = set()
 
     def error(self, tokens, index):

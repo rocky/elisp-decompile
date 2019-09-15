@@ -1,0 +1,35 @@
+byte code for test-with-temp-buffer:
+  args: nil
+0	constant  generate-new-buffer
+1	constant  " *temp*"
+2	call	  1
+3	varbind	  temp-buffer
+4	save-current-buffer 
+5	varref	  temp-buffer
+6	set-buffer 
+7	discard	  
+8	constant  <compiled-function>
+      args: nil
+    0	    constant  buffer-name
+    1	    varref    temp-buffer
+    2	    call      1
+    3	    goto-if-nil-else-pop 1
+    6	    constant  kill-buffer
+    7	    varref    temp-buffer
+    8	    call      1
+    9:1	    return    
+
+9	unwind-protect 
+10	constant  insert-file-contents
+11	varref	  file
+12	call	  1
+13	discard	  
+14	constant  intern
+15	constant  file-name-base
+16	varref	  file
+17	call	  1
+18	call	  1
+19	discard	  
+20	varref	  sub-pkgs
+21	unbind	  3
+22	return	  

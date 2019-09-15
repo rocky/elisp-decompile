@@ -54,13 +54,18 @@ TABLE_DIRECT = {
     "with_current_buffer_macro":( "%(with-current-buffer %c\n%+%|%C%)",
                                   (1, "VARREF"), (4, 1000) ),
 
+    "with_temp_buffer_macro":( "%(with-temp-buffer\n%+%|%c%)", 0),
+
     "labeled_clause":	   ( "%c", 1 ),
     "labeled_final_clause": ("\n%|(%c %c)", 1, 2),
 
     "while_form1":	  ( "%(while %p%c\n%+%|%c%)", 0, 3, 5 ),
     "while_form2":	  ( "%(while %c\n%+%|%c%)", 2, 4 ),
-    "unwind_protect_form":( "%(unwind-protect\n%+%|%c%_%Q)%_",
-                            (2, "opt_exprs"), (0, "expr") ),
+
+    # Need to handle multimple opt_exprs
+    # "unwind_protect_form":( "%(unwind-protect\n%+%|%c%_%Q%)",
+    #                             (2, "opt_exprs"), (0, "expr") ),
+
     "when_macro":	  ( "%(when %c\n%+%|%c%)", 0, 2 ),
 
     # "or_form":		  ( "(or %+%c %c%)", 0, 2 ),  # may need to push/pop values

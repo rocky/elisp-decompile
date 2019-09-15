@@ -148,6 +148,7 @@ class LapScanner:
             pass
 
         if self.show_assembly:
+            print(f"\n{name}{args}")
             print("\n".join([str(t) for t in tokens]))
 
         self.fns[name] = Func(name, args, None, docstring, interactive,

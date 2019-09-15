@@ -266,6 +266,24 @@ class TransformTree(GenericASTTraversal, object):
             pass
         return node
 
+    # def n_let_form_star(self, let_form_star):
+    #     assert len(let_form_star) >= 2
+    #     varlist, body = let_form_star
+    #     assert varlist == "varlist"
+    #     assert body == "body"
+    #     varbind =  varlist[0]
+    #     body_exprs = body[0]
+    #     if (varbind == "varbind" and body_exprs == "exprs" and varbind[1].attr.startswith("temp-buffer")):
+    #         if body_exprs[0][0][0] == "with_current_buffer_macro":
+    #             # transform into "with-temp-buffer"
+    #             body_exprs = SyntaxTree("exprs", [*body_exprs[1:]],
+    #                                     transformed_by="n_let_form_star")
+    #             with_temp_buffer_macro = SyntaxTree(
+    #                 "with_temp_buffer_macro", [body_exprs], transformed_by="n_let_form_star")
+    #             return with_temp_buffer_macro
+    #         pass
+    #     return let_form_star
+
     # def n_save_current_buffer_form(self, node):
     #     body = node[1]
     #     assert body == "body"

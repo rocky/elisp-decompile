@@ -284,6 +284,17 @@ class SourceWalker(GenericASTTraversal, object):
             self.template_engine(TABLE_DIRECT["unary_expr_stacked"], node)
         self.prune()
 
+    def n_unwind_protect_form(self, node):
+        expr = node[0]
+        opt_exprs = node[2]
+        assert expr == "expr"
+        assert opt_exprs == "opt_exprs"
+        self.template_engine(("%(unwind-protect\n%+%|%c", 0), node)
+        for e in opt_exprs:
+            self.template_engine(("\n%|%Q", 0), e)
+        self.template_engine(")", node)
+        self.prune()
+
     def n_varlist_stacked(self, node):
         assert len(node) == 4
         self.template_engine(("(%c %c)", -1, 0), node)
