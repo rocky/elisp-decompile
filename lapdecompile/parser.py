@@ -266,6 +266,7 @@ class ElispParser(GenericASTBuilder):
         binary_op ::= MAX
         binary_op ::= MIN
         binary_op ::= MULT
+        binary_op ::= NCONC
         binary_op ::= PLUS
         binary_op ::= QUO
         binary_op ::= REM

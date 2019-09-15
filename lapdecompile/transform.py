@@ -127,23 +127,33 @@ class TransformTree(GenericASTTraversal, object):
 
     def n_binary_expr(self, node):
         # Flatten f(a (f b))
-        expr = node[0]
         fn_name = node[2][0].kind
-        if fn_name not in ("MIN", "MAX"):
+        if fn_name not in ("MIN", "MAX", "NCONC"):
             return node
-        if expr[0] and expr[0] == "binary_expr":
-            fn_name2 = expr[0][2][0].kind
-        else:
-            node.transformed_by = "n_" + node.kind
+        first_expr = node[0]
+        if not (first_expr and first_expr[0] == "binary_expr"):
             return node
 
-        if fn_name == fn_name2:
-            args = [expr[0][0], expr[0][1], node[1]]
-            nt_name = fn_name.lower() + "_exprn"
-            node.kind = nt_name
-            node.transformed_by = "n_" + node.kind
-            node[: len(args)] = args
-            pass
+        arg_list = node[1]
+        first_expr = first_expr[0]
+        fn_name2 = first_expr[2][0].kind
+        while fn_name == fn_name2:
+            arg_list.append(first_expr[1])
+            first_expr = first_expr[0]
+            if first_expr != "expr":
+                break
+            first_expr = first_expr[0]
+            if first_expr != "binary_expr":
+                break
+            fn_name2 = first_expr[2][0].kind
+
+        arg_list.append(first_expr)
+        arg_list.reverse()
+        node = SyntaxTree(
+            fn_name.lower() + "_exprn",
+            arg_list,
+            transformed_by = "n_binary_expr"
+        )
         return node
 
     def n_unary_expr(self, node):

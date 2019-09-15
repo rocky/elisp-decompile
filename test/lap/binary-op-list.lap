@@ -1,0 +1,27 @@
+byte code for test-binary-op-list:
+  doc:  Test that we handle and transform list-like binary ops
+  args: (a b c d e l1 l2 l3)
+0	constant  +
+1	varref	  b
+2	varref	  c
+3	min	  
+4	varref	  d
+5	min	  
+6	varref	  e
+7	min	  
+8	varref	  a
+9	varref	  b
+10	max	  
+11	varref	  c
+12	max	  
+13	varref	  a
+14	varref	  b
+15	max	  
+16	call	  3
+17	discard	  
+18	varref	  l1
+19	varref	  l2
+21	nconc	  
+22	varref	  l3
+24	nconc	  
+25	return	  

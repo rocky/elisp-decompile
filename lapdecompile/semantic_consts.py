@@ -41,6 +41,7 @@ TABLE_DIRECT = {
     "list_exprn":	   ( "(list %l)", (0, 1000) ),
     "min_exprn":	   ( "(min %L)", (0, 1000) ),
     "max_exprn":	   ( "(max %L)", (0, 1000) ),
+    "nconc_exprn":	   ( "(nconc %L)", (0, 1000) ),
     "set_buffer":          ( "(set-buffer %c)",
                              (0, "expr") ),
 
@@ -143,7 +144,7 @@ vector-or-char-tablep vectorp
 """.split())
 
 BINARY_OPS = tuple("""
-aref eq equal fset max min
+aref eq equal fset max min nconc
 remove-variable-watcher
 setcar setcdr setplist
 """.split())
