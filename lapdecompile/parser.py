@@ -518,22 +518,20 @@ class ElispParser(GenericASTBuilder):
                     ))):
                 if last >= len(tokens) or stack_change < 0:
                     return False
-                if (tokens[last] == "DUP"
-                    and tokens[last+1] == "VARSET"):
+                if (tokens[last] == "DUP" and tokens[last+1] == "VARSET"):
                     # If dup is followed by "VARSET" it isn't an expr_stmt
                     # unless it is at the end and we are returning that value.
                     # FIXME: There must be a better way to express this.
                     # The VARSET might be generalized as an instruction which
                     # reads the value of DUP for example.
                     return last + 2 < len(tokens) and not (
-                        tokens[last+2].kind  in ("RETURN", "GOTO-IF-NOT-NIL")
-                        )
+                        tokens[last+2].kind in ("RETURN", "GOTO-IF-NOT-NIL")
+                    )
                 return True
         elif lhs == "save_current_buffer_form":
             # Invalidate rule if it matches with-current-buffer
             # Note: that the grammar rule isn't invalid, just not optimal.
-            return ([tokens[i].kind for i in range(first+1, first+4)] ==
-                    ["VARREF", "SET-BUFFER", "DISCARD"])
+            return ([tokens[i].kind for i in range(first+1, first+4)] == ["VARREF", "SET-BUFFER", "DISCARD"])
 
         elif lhs == "setq_form":
             if first == 0: return False

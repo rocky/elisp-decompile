@@ -273,7 +273,7 @@ class TransformTree(GenericASTTraversal, object):
     #     assert body == "body"
     #     varbind =  varlist[0]
     #     body_exprs = body[0]
-    #     if (varbind == "varbind" and body_exprs == "exprs" and varbind[1].attr.startswith("temp-buffer")):
+    #     if (varbind == "varbind" and body_exprs == "exprs" and varbind[1].attr == "temp-buffer"):
     #         if body_exprs[0][0][0] == "with_current_buffer_macro":
     #             # transform into "with-temp-buffer"
     #             body_exprs = SyntaxTree("exprs", [*body_exprs[1:]],
