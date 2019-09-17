@@ -566,7 +566,7 @@ class SourceWalker(GenericASTTraversal, object):
                 for subnode in node[low:high]:
                     self.preorder(subnode)
                     remaining -= 1
-                    if remaining > 0:
+                    if remaining > 1:
                         self.write("\n" + self.indent)
                         pass
                     pass

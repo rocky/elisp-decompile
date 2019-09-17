@@ -1,9 +1,8 @@
 byte code for test-disassemble:
-  doc-start 71:  Print disassembled code for OBJECT in (optional) BUFFER.
-BLAH BLAH BLAH
+  doc:  Print disassembled code for OBJECT in (optional) BUFFER. ...
   args: (object buffer)
 0	varref	  object
-1	consp
+1	consp	  
 2	goto-if-nil 1
 5	constant  functionp
 6	varref	  object
@@ -12,24 +11,11 @@ BLAH BLAH BLAH
 11	constant  lambda
 12	constant  nil
 13	varref	  object
-14	list3
+14	list3	  
 15	varset	  object
 16:1	varref	  indent
-17	goto-if-not-nil 2
+17	goto-if-not-nil-else-pop 2
 20	constant  0
-21	varset	  indent
-22:2	save-excursion
-23	varref	  interactive-p
-24	goto-if-not-nil 3
-27	varref	  buffer
-28	not
-29	goto-if-nil-else-pop 4
-32:3	save-current-buffer
-33	constant  "*Disassemble*"
-34	set-buffer
-35	discard
-36	constant  "foo"
-37	insert
-38	unbind	  1
-39:4	unbind	  1
-40	return
+21	dup	  
+22	varset	  indent
+23:2	return	  

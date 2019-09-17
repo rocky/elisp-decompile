@@ -67,8 +67,8 @@ class ElispParser(GenericASTBuilder):
     def p_elisp_grammar(self, args):
         '''# The start or goal symbol
         fn_body ::= body opt_label opt_return
-        fn_body ::= body opt_label stacked_return
-        fn_body ::= body COME_FROM opt_label expr_return
+        fn_body ::= body opt_come_from opt_label stacked_return
+        fn_body ::= body opt_come_from opt_label expr_return
 
         # expr_stmt is an expr where the value it produces
         # might not be needed. List-like things like
