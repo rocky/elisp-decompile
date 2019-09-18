@@ -434,7 +434,7 @@ class SourceWalker(GenericASTTraversal, object):
 
     def n_with_current_buffer_safe_macro(self, node):
         self.template_engine(
-            ("%(with-current-buffer-safe %c\n%+%|%C%)", (1, "VARREF"), (4, 1000)),
+            ("%(with-current-buffer-safe %c\n%+%|%D%)", (1, "VARREF"), (4, 1000)),
             node[11],
         )
         self.prune()
@@ -566,7 +566,19 @@ class SourceWalker(GenericASTTraversal, object):
                 for subnode in node[low:high]:
                     self.preorder(subnode)
                     remaining -= 1
-                    if remaining > 1:
+                    if remaining > 0:
+                        self.write("\n" + self.indent)
+                        pass
+                    pass
+                arg += 1
+            elif typ == "D":
+                # See if we can parameterize "C" better to DRY this
+                low, high = entry[arg]
+                remaining = len(node[low:high])
+                for subnode in node[low:high]:
+                    self.preorder(subnode)
+                    remaining -= 1
+                    if remaining > 1:  # %C we use 0
                         self.write("\n" + self.indent)
                         pass
                     pass

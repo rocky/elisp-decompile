@@ -305,13 +305,16 @@ class TransformTree(GenericASTTraversal, object):
         assert first_expr == "expr"
         set_buffer = first_expr[0]
         if set_buffer == "set_buffer":
-            # Turn (save-buffer (set-buffer ...) (...)) into:
-            # (with-current-buffer ...)
-            exprs = SyntaxTree("exprs", exprs[1:],
-                              transformed_by="n_" + node.kind)
-            node = SyntaxTree("with_current_buffer_macro",
-                              [set_buffer[0][0], exprs],
-                              transformed_by="n_" + node.kind)
+            name_expr = set_buffer[0][0]
+            if name_expr == "name_expr" and name_expr[0] == "VARREF":
+                # Turn (save-buffer (set-buffer ...) (...)) into:
+                # (with-current-buffer ...)
+                exprs = SyntaxTree("exprs", exprs[1:],
+                                   transformed_by="n_" + node.kind)
+                node = SyntaxTree("with_current_buffer_macro",
+                                  [set_buffer[0][0], exprs],
+                                  transformed_by="n_" + node.kind)
+                pass
         return node
 
     def n_when_macro(self, node):
