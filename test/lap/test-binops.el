@@ -26,4 +26,5 @@
   (setq l (+ e 2))
   (setq m (/ e 2))
   (setq n (* e 2))
+  (setq o (equal a b))
   )

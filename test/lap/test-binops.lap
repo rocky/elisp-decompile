@@ -63,6 +63,10 @@ byte code for binops:
 67	varref	  e
 68	constant  2
 69	mult
-70	dup
-71	varset	  n
-73	return
+70	varset	  n
+72	varref	  a
+73	varref	  b
+74	equal
+75	dup
+76	varset	  o
+78	return

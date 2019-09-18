@@ -39,6 +39,7 @@ STACK_EFFECTS = {
     'eobp':           (-0, +1),
     'eolp':           (-0, +1),
     'eq':             (-2, +1),
+    'equal':          (-2, +1),
     'eqlsign':        (-2, +1),
     'following-char': (-0, +1),
     'geq':            (-2, +1),
