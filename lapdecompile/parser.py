@@ -397,6 +397,7 @@ class ElispParser(GenericASTBuilder):
         varlist  ::= varbind varlist
         varlist  ::= varbind
         varbind  ::= expr VARBIND
+        varbind  ::= expr STACK-ACCESS VARBIND
 
         opt_discard     ::= DISCARD?
         opt_return      ::= RETURN?

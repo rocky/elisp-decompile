@@ -374,8 +374,8 @@ class SourceWalker(GenericASTTraversal, object):
             self.template_engine(("%(let %+(%.",), node)
             varbind = node[0][0]
             assert varbind == "varbind"
-            self.template_engine(("(%c %c)%)", 1, 0), varbind)
-            self.template_engine(("\n%|%c%)", 1), node)
+            self.template_engine(("(%c %c)%)", -1, 0), varbind)
+            self.template_engine(("\n%|%c%)", -1), node)
         else:
             self.template_engine(("%(let* %.(%.%c)\n%|%c%)", 0, 1), node)
         self.prune()

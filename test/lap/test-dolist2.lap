@@ -1,0 +1,33 @@
+byte code for test-dolist2:
+  args: (a b)
+0	varref	  args
+1	dup	  
+2	cdr	  
+3	varset	  args
+4	car-safe  
+5	goto-if-not-nil-else-pop 1
+8	constant  0
+9:1	varbind	  a
+10	varref	  args
+11	constant  nil
+12	varbind	  b
+13	dup	  
+14	varbind	  --dolist-tail--
+15	goto-if-nil-else-pop 3
+18:2	varref	  --dolist-tail--
+19	car	  
+20	varset	  b
+21	varref	  a
+22	varref	  b
+23	dup	  
+24	varset	  a
+25	rem	  
+26	varset	  b
+27	varref	  --dolist-tail--
+28	cdr	  
+29	dup	  
+30	varset	  --dolist-tail--
+31	goto-if-not-nil 2
+34	constant  nil
+35:3	unbind	  3
+36	return	  
