@@ -1,0 +1,44 @@
+byte code for test-dotemacs2:
+  args: nil
+0	constant  expand-file-name
+1	constant  "~/elisp"
+2	call	  1
+3	constant  expand-file-name
+4	constant  "~/.emacs.d/lisp"
+5	call	  1
+6	constant  "/usr/local/share/emacs/site-lisp"
+7	constant  "/usr/share/emacs/site-lisp/git"
+8	list4	  
+9	constant  nil
+10	varbind	  dir
+11	dup	  
+12	varbind	  --dolist-tail--
+13	goto-if-nil 3
+16:1	varref	  --dolist-tail--
+17	car	  
+18	varset	  dir
+19	constant  file-directory-p
+20	constant  expand-file-name
+21	varref	  dir
+22	call	  1
+23	call	  1
+24	goto-if-nil 2
+27	constant  add-to-list
+28	constant  load-path
+29	constant  expand-file-name
+30	varref	  dir
+31	call	  1
+32	call	  2
+33	discard	  
+34:2	varref	  --dolist-tail--
+35	cdr	  
+36	dup	  
+37	varset	  --dolist-tail--
+38	goto-if-not-nil 1
+41:3	unbind	  2
+42	constant  put
+43	constant  set-goal-column
+44	constant  disabled
+45	constant  nil
+46	call	  3
+47	return	  

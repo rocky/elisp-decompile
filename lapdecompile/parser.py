@@ -199,6 +199,13 @@ class ElispParser(GenericASTBuilder):
                         UNBIND
 
         dolist_macro ::= dolist_list dolist_init_var
+                        GOTO-IF-NIL COME_FROM LABEL
+                        dolist_loop_iter_set body
+                        DUP VARSET GOTO-IF-NOT-NIL
+                        COME_FROM LABEL
+                        UNBIND
+
+        dolist_macro ::= dolist_list dolist_init_var
                         GOTO-IF-NIL-ELSE-POP COME_FROM LABEL
                         dolist_loop_iter_set_stacking body_stacked
                         DUP VARSET GOTO-IF-NOT-NIL
