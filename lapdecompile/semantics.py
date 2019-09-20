@@ -247,7 +247,7 @@ class SourceWalker(GenericASTTraversal, object):
         assert dolist_init_var == "dolist_init_var"
         self.push1(self.traverse(dolist_init_var[0][1]))
         try:
-            self.template_engine(("%(dolist%+%(%c %c)\n%_%|", 1, 0), node)
+            self.template_engine(("%(dolist%+%(%c %c)\n%|", 1, 0), node)
         except GenericASTTraversalPruningException:
             pass
         assert node[6] in ("body", "body_stacked")
@@ -266,7 +266,7 @@ class SourceWalker(GenericASTTraversal, object):
         if not skipped_last:
             self.preorder(body)
         try:
-            self.template_engine(")%_", node)
+            self.template_engine(("%)",), node)
         except GenericASTTraversalPruningException:
             pass
         self.prune()

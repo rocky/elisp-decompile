@@ -1,4 +1,4 @@
-byte code for test-dotemacs2:
+byte code for test-dolist3:
   args: nil
 0	constant  expand-file-name
 1	constant  "~/elisp"
@@ -8,14 +8,14 @@ byte code for test-dotemacs2:
 5	call	  1
 6	constant  "/usr/local/share/emacs/site-lisp"
 7	constant  "/usr/share/emacs/site-lisp/git"
-8	list4	  
+8	list4
 9	constant  nil
 10	varbind	  dir
-11	dup	  
+11	dup
 12	varbind	  --dolist-tail--
 13	goto-if-nil 3
 16:1	varref	  --dolist-tail--
-17	car	  
+17	car
 18	varset	  dir
 19	constant  file-directory-p
 20	constant  expand-file-name
@@ -29,10 +29,10 @@ byte code for test-dotemacs2:
 30	varref	  dir
 31	call	  1
 32	call	  2
-33	discard	  
+33	discard
 34:2	varref	  --dolist-tail--
-35	cdr	  
-36	dup	  
+35	cdr
+36	dup
 37	varset	  --dolist-tail--
 38	goto-if-not-nil 1
 41:3	unbind	  2
@@ -41,4 +41,4 @@ byte code for test-dotemacs2:
 44	constant  disabled
 45	constant  nil
 46	call	  3
-47	return	  
+47	return

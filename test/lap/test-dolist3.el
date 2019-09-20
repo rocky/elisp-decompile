@@ -1,4 +1,4 @@
-(defun test-dotemacs2()
+(defun test-dolist3()
   (dolist
       (dir
        (list (expand-file-name "~/elisp")
