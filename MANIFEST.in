@@ -1,0 +1,5 @@
+include README.md
+include COPYING
+include Makefile
+recursive-include lapdecompile *.py
+recursive-include test *

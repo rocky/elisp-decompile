@@ -1,6 +1,7 @@
 *.pyc
 *~
 /.python-version
+/dist
 /eldecompile.egg-info
 /lapdecompile.egg-info
 /tmp
