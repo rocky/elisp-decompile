@@ -5,6 +5,10 @@ spark-parser](https://pypi.python.org/pypi/spark_parser/) for its Earley algorit
 Lisp](https://github.com/rocky/elisp-earley). It needs _a lot_ more work though to replace the Python code.
 
 This is in a very early stage, but amazingly the code seems sound so far.
+A list of the kinds of things we can decompiler are in the [test/lap](https://github.com/rocky/elisp-decompile/tree/master/test/lap) directory. Two of the longer examples are:
+
+* [test-nested-when.el](https://github.com/rocky/elisp-decompile/blob/master/test/lap/test-when-nested.el) which demonstrates detecting forms like `defvar`, and `defconst`, as well as inverting macros like `when` and
+* [my-gcd.el](https://github.com/rocky/elisp-decompile/blob/master/test/lap/gcd.el) which is a recursive gcd program that really works.
 
 Until docs are better organized, see
 [Writing Semantic-action Rules](https://github.com/rocky/python-spark/wiki/Writing-Semantic-action-rules)
