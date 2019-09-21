@@ -276,23 +276,31 @@ class TransformTree(GenericASTTraversal, object):
             pass
         return node
 
-    # def n_let_form_star(self, let_form_star):
-    #     assert len(let_form_star) >= 2
-    #     varlist, body = let_form_star
-    #     assert varlist == "varlist"
-    #     assert body == "body"
-    #     varbind =  varlist[0]
-    #     body_exprs = body[0]
-    #     if (varbind == "varbind" and body_exprs == "exprs" and varbind[1].attr == "temp-buffer"):
-    #         if body_exprs[0][0][0] == "with_current_buffer_macro":
-    #             # transform into "with-temp-buffer"
-    #             body_exprs = SyntaxTree("exprs", [*body_exprs[1:]],
-    #                                     transformed_by="n_let_form_star")
-    #             with_temp_buffer_macro = SyntaxTree(
-    #                 "with_temp_buffer_macro", [body_exprs], transformed_by="n_let_form_star")
-    #             return with_temp_buffer_macro
-    #         pass
-    #     return let_form_star
+    def n_let_form_star(self, let_form_star):
+        assert len(let_form_star) >= 2
+        varlist, body = let_form_star[:2]
+        assert varlist == "varlist"
+        assert body == "body"
+        varbind =  varlist[0]
+        body_exprs = body[0]
+        if (varbind == "varbind" and body_exprs == "exprs" and varbind[1].attr == "temp-buffer"):
+            if body_exprs[0][0][0] == "with_current_buffer_macro":
+                with_current_buffer = body_exprs[0][0][0]
+                body = body_exprs[1:]
+                if len(body_exprs) == 1 and with_current_buffer[4] == "exprs":
+                    unwind_protect_form = with_current_buffer[4][0][0][0]
+                    if unwind_protect_form == "unwind_protect_form":
+                        body = unwind_protect_form[2]
+                        assert body == "opt_exprs"
+                    pass
+                # transform into "with-temp-buffer"
+                body_exprs = SyntaxTree("exprs", body,
+                                        transformed_by="n_let_form_star")
+                with_temp_buffer_macro = SyntaxTree(
+                    "with_temp_buffer_macro", [body_exprs], transformed_by="n_let_form_star")
+                return with_temp_buffer_macro
+            pass
+        return let_form_star
 
     def n_save_current_buffer_form(self, node):
         body = node[1]

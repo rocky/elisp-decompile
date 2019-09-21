@@ -1,4 +1,4 @@
-(defun test-dotemacs()
+(defun test-when()
   (when (font-info "DejaVu Sans Mono-11")
     (set-frame-font "DejaVu Sans Mono-11")
     (defconst variable-font "DejaVu Sans 10"

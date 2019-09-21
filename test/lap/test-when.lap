@@ -1,4 +1,4 @@
-byte code for test-dotemacs:
+byte code for test-when:
   args: nil
 0	constant  font-info
 1	constant  "DejaVu Sans Mono-11"

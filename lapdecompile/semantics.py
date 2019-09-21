@@ -396,6 +396,7 @@ class SourceWalker(GenericASTTraversal, object):
             if node[0] == "expr" and node[0][0] == "name_expr":
                 value = self.traverse(node[0][0])
                 self.push1(value)
+                self.write(value)
             else:
                 self.template_engine(("%c", 0), node)
         else:
