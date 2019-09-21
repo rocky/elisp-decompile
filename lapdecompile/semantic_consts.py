@@ -26,6 +26,10 @@ TABLE_DIRECT = {
                              (0, "expr"), (1, "expr") ),
     "binary_expr_stacked": ( "(%c %+%S %c%)", -1, 0),
 
+    "ternary_expr":	   ( "(%c %+%c %c %c%)",
+                             (-1, "ternary_op"),
+                             (0, "expr"), (1, "expr"), (2, "expr") ),
+
     "concat_exprn":	   ( "(concat %l)", (0, 1000) ),
 
     # Created via transform only
@@ -127,7 +131,7 @@ widen
 UNARY_OPS = tuple("""
 car cdr cdr-safe consp
 goto-char insert integerp
-keywordp listp
+keywordp length listp
 markerp mutexp
 multibyte-string-p
 natnump
@@ -144,10 +148,14 @@ vector-or-char-tablep vectorp
 """.split())
 
 BINARY_OPS = tuple("""
-aref eq equal fset max min nconc
+aref elt eq equal fset max min nconc
 remove-variable-watcher
-setcar setcdr setplist
+setcar setcdr setplist string=
 """.split())
 
-for op in BINARY_OPS + UNARY_OPS + NULLARY_OPS:
+TERNARY_OPS = tuple("""
+substring
+""".split())
+
+for op in BINARY_OPS + TERNARY_OPS + UNARY_OPS + NULLARY_OPS:
     TABLE_DIRECT[op.upper()] = ( op, )

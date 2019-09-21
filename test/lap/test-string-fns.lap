@@ -1,0 +1,16 @@
+byte code for test-string-fns:
+  args: (s)
+0	constant  (1560 1561 1562)
+1	varref	  s
+2	length	  
+3	elt	  
+4	discard	  
+5	varref	  s
+6	constant  "one two three"
+7	string=	  
+8	discard	  
+9	varref	  s
+10	constant  0
+11	constant  2
+12	substring 
+13	return	  

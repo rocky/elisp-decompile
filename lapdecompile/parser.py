@@ -93,6 +93,7 @@ class ElispParser(GenericASTBuilder):
         expr_stacked  ::= DUP
         expr_stacked  ::= unary_expr_stacked
         expr_stacked  ::= binary_expr_stacked
+        expr_stacked  ::= ternary_expr_stacked
         expr_stacked  ::= set_expr_stacked
 
         expr  ::= DUP
@@ -105,6 +106,7 @@ class ElispParser(GenericASTBuilder):
         # Function related
         expr  ::= binary_expr
         expr  ::= binary_expr_stacked
+        expr  ::= ternary_expr
         expr  ::= unary_expr
         expr  ::= unary_expr_stacked
         expr  ::= nullary_expr
@@ -183,8 +185,8 @@ class ElispParser(GenericASTBuilder):
                         GOTO-IF-NIL-ELSE-POP body
                         GOTO COME_FROM LABEL
 
-        when_macro ::= expr GOTO-IF-NIL body COME_FROM LABEL
-        when_macro ::= expr GOTO-IF-NIL-ELSE-POP body COME_FROM LABEL
+        when_macro ::= expr GOTO-IF-NIL body come_froms LABEL
+        when_macro ::= expr GOTO-IF-NIL-ELSE-POP body come_froms LABEL
 
 
         unwind_protect_form ::= expr UNWIND-PROTECT opt_exprs
@@ -263,6 +265,7 @@ class ElispParser(GenericASTBuilder):
         binary_expr ::= expr_stacking binary_op
 
         binary_op ::= DIFF
+        binary_op ::= ELT
         binary_op ::= EQLSIGN
         binary_op ::= EQ
         binary_op ::= EQUAL
@@ -277,7 +280,12 @@ class ElispParser(GenericASTBuilder):
         binary_op ::= PLUS
         binary_op ::= QUO
         binary_op ::= REM
+        binary_op ::= STRING=
         binary_op ::= TIMES
+
+        ternary_expr ::= expr expr expr ternary_op
+        ternary_expr_stacked  ::= STACK-ACCESS expr expr ternary_op
+        ternary_op   ::= SUBSTRING
 
         unary_expr ::= expr unary_op
         unary_expr ::= STACK-ACCESS unary_op
@@ -292,6 +300,7 @@ class ElispParser(GenericASTBuilder):
         unary_op ::= INSERT
         unary_op ::= INTEGERP
         unary_op ::= KEYWORDP
+        unary_op ::= LENGTH
         unary_op ::= LISTP
         unary_op ::= NATNUMP
         unary_op ::= NLISTP

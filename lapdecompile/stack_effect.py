@@ -35,6 +35,7 @@ STACK_EFFECTS = {
     'diff':           (-2, +1),
     'discard':        (-1, +0),
     'dup':            (-0, +1),
+    'elt':            (-2, +1),
     'end-of-line':    (-1, +0),
     'eobp':           (-0, +1),
     'eolp':           (-0, +1),
@@ -53,6 +54,7 @@ STACK_EFFECTS = {
     'insert':         (-1, +1),
     'integerp':       (-1, +1),
     'label':          (-0, +0), # A pseudo instruction
+    'length':         (-1, +1),
     'leq':            (-2, +1),
     'list_1':         (-1, +1), # Generalize by preprocessing
     'list_2':         (-2, +1),
@@ -81,8 +83,10 @@ STACK_EFFECTS = {
     'stack-ref':      (-0, +1),
     'stack-set':      (-1, +0),
     'stack-access':   (-0, +0), # A pseudo instruction
+    'string=':        (-2, +1),
     'stringp':        (-1, +1),
     'sub1':           (-1, +1),
+    'substring':      (-3, +1),
     'unbind':         (-0, +0),
     'unwind-protect': (-1, +0),
     'varbind':        (-1, +0),
