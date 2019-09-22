@@ -44,11 +44,20 @@ class LapScanner:
         self.name = name
 
         self.cur_index = 1
+        self.fn_scanner_internal(name, fn_type)
+        return
+
+    def fn_scanner_internal(self, name, fn_type):
+
+        tokens = []
+        customize = {}
+
         line = self.lines[self.cur_index]
-        if line.startswith("  doc:  "):
-            docstring = '\n  "%s"\n' % line[len("  doc:  "):].rstrip("\n")
-        elif line.startswith("  doc-start "):
-            m = re.match("^  doc-start (\d+):  (.*)$", line)
+        m = re.match("\s+doc:(.*)", line)
+        if m:
+            docstring = '\n"%s"\n' % m.group(1).rstrip("\n")
+        elif re.match("\s+doc-start ", line):
+            m = re.match("^\s+doc-start (\d+):  (.*)$", line)
             if m:
                 tot_len = int(m.group(1))
                 docstring = '\n  "' + m.group(2) + "\n"
@@ -64,16 +73,8 @@ class LapScanner:
                 pass
         else:
             docstring = ""
-            self.cur_index = 0
+            self.cur_index -= 1
 
-        self.fn_scanner_internal(name, docstring, fn_type)
-        return
-
-    # FIXME: docstring should probably not be passed.
-    def fn_scanner_internal(self, name, docstring, fn_type):
-
-        tokens = []
-        customize = {}
         self.cur_index += 1
         line = self.lines[self.cur_index]
         m = re.match("^\s+args: (\([^)]*\))", line)
@@ -88,7 +89,7 @@ class LapScanner:
 
         line = self.lines[self.cur_index]
         interactive = None
-        if line.startswith(" interactive: "):
+        if re.match("^\s+interactive: ", line):
             interactive = line[len(" interactive: "):].rstrip("\n")
             self.cur_index += 1
 
@@ -111,7 +112,8 @@ class LapScanner:
                 if attr == "<compiled-function>":
                     fn_name = "compiled-function-%d" % self.last_compiled_function
                     self.last_compiled_function += 1
-                    self.fn_scanner_internal(fn_name, "", fn_type="defun")
+                    self.cur_index += 1
+                    self.fn_scanner_internal(fn_name, fn_type="defun")
                     attr = self.fns[fn_name]
                 tokens.append(Token("CONSTANT", attr, offset.strip(), label=label))
             elif opname[:-1] in ("list", "concat", "cal"):
