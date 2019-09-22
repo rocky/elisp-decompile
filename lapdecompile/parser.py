@@ -115,7 +115,7 @@ class ElispParser(GenericASTBuilder):
 
         # Control-flow related
         expr  ::= if_form
-        # expr  ::= if_else_form
+        expr  ::= if_else_form
         expr  ::= when_macro
         expr  ::= cond_form
         expr  ::= or_form
@@ -233,6 +233,7 @@ class ElispParser(GenericASTBuilder):
 
         # FIXME: add something like this
         if_else_form ::= expr GOTO-IF-NIL-ELSE-POP expr-stmt RETURN
+        # if_else_form ::= expr GOTO-IF-NIL-ELSE-POP expr-stmt GOTO-IF-NIL
 
         # Keep nonterminals at positions  0 and 2
         or_form    ::= expr GOTO-IF-NOT-NIL-ELSE-POP expr opt_come_from opt_label
@@ -533,7 +534,7 @@ class ElispParser(GenericASTBuilder):
                     tokens[last] in (
                         "RETURN", "STACK-ACCESS", "UNBIND",
                         "COME_FROM", "GOTO", "LABEL", "DUP",
-                        "GOTO-IF-NOT-NIL"
+                        "GOTO-IF-NIL", "GOTO-IF-NOT-NIL"
                     ))):
                 if last >= len(tokens) or stack_change < 0:
                     return False
@@ -556,7 +557,7 @@ class ElispParser(GenericASTBuilder):
             if first == 0: return False
             return not (
                 tokens[first-1] in
-                ("LABEL", "VARSET", "VARBIND", "DISCARD") or tokens[first-1].kind.startswith("GOTO")
+                ("LABEL", "VARSET", "VARBIND", "DISCARD", "STRING=") or tokens[first-1].kind.startswith("GOTO")
                 )
 
         elif rule == ('cond_form', ('clause', 'labeled_clauses')):

@@ -340,8 +340,11 @@ class SourceWalker(GenericASTTraversal, object):
             self.template_engine(("\n%|(%c %+%c", 0, 1), node)
             first_clause = True
         if self.stacklen() > start_stacklen:
-            if self.access().kind != "VARSET":
-                self.write("%s" % self.access())
+            val = self.access()
+            if isinstance(val, str):
+                self.write("%s" % val[1:-1])
+            elif val.kind != "VARSET":
+                self.write("%s" % val)
             self.pop1()
             if first_clause:
                 self.template_engine(("%-",), node)
