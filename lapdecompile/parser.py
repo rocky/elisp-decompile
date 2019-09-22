@@ -265,6 +265,7 @@ class ElispParser(GenericASTBuilder):
         binary_expr_stacked  ::= STACK-ACCESS expr binary_op
         binary_expr ::= expr_stacking binary_op
 
+        binary_op ::= CONS
         binary_op ::= DIFF
         binary_op ::= ELT
         binary_op ::= EQLSIGN

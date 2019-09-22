@@ -148,7 +148,7 @@ vector-or-char-tablep vectorp
 """.split())
 
 BINARY_OPS = tuple("""
-aref elt eq equal fset max min nconc
+aref cons elt eq equal fset max min nconc
 remove-variable-watcher
 setcar setcdr setplist string=
 """.split())

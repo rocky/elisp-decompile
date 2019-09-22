@@ -1,0 +1,33 @@
+byte code for test-setq-default:
+  args: nil
+0	constant  set-default
+1	constant  cygwin-root
+2	constant  getenv
+3	constant  "CYGWIN_ROOT"
+4	call	  1
+5	call	  2
+6	discard	  
+7	constant  set-default
+8	constant  exec-path
+9	varref	  cygwin-root
+10	constant  "/bin"
+11	concat2	  
+12	varref	  exec-path
+13	cons	  
+14	call	  2
+15	discard	  
+16	constant  set-default
+17	constant  process-coding-system-alist
+18	constant  (("bash" . undecided-unix))
+19	call	  2
+20	discard	  
+21	constant  set-default
+22	constant  shell-file-name
+23	constant  "bash"
+24	call	  2
+25	discard	  
+26	constant  set-default
+27	constant  explicit-shell-file-name
+28	varref	  shell-file-name
+29	call	  2
+30	return	  
