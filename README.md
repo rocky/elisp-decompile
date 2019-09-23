@@ -157,3 +157,83 @@ See how fast you can come up with the key names for:
 ```
 
 Again this is done in hundredths of a second by a computer.
+
+#### Pedagogy
+
+Another aspect about a decompiler, especially this one, is that it can help you learn LAP and Emacs bytecode, and how the existing compiler and optimizer work.
+
+The program creates a parse tree from (abstracted) LAP instructions, where the the higher levels of the tree consist of grammar nodes that should be familiar in higher-level Emacs Lisp terms.
+
+With this it is possible to see how the individual instructions combine to form the higher-level constructs.
+
+Here is a decompilation using of the LAP instructions listed earlier
+
+```
+$ lap-decompile --tree=after tmp/foo.lap
+fn_body (3)
+  0. body
+    exprs
+      expr_stmt (2)
+        0. expr
+          call_exprn (3)
+            0. expr
+              name_expr
+                    0 CONSTANT   fn
+            1. expr
+              binary_expr (3)
+                0. expr
+                  call_exprn (3)
+                    0. expr
+                          1 DUP
+                    1. expr
+                      unary_expr (2)
+                        0. expr
+                              2 VARREF     n
+                        1. unary_op
+                              3 SUB1
+                    2.    4 CALL_1     1
+                1. expr
+                  call_exprn (3)
+                    0. expr
+                      name_expr
+                            5 CONSTANT   fn
+                    1. expr
+                      binary_expr (3)
+                        0. expr
+                              6 VARREF     n
+                        1. expr
+                          name_expr
+                                7 CONSTANT   2
+                        2. binary_op
+                              8 DIFF
+                    2.    9 CALL_1     1
+                2. binary_op
+                     10 PLUS
+            2.   11 CALL_1     1
+        1. opt_discard
+  1. opt_label
+  2. opt_return
+(defun foo(n)
+  (fn (+ (fn (1- n)) (fn (- n 2)))))
+```
+
+Looking at the above we see that:
+
+```
+1 DUP
+2 VARREF     n
+3 SUB1
+4 CALL_1     1
+```
+
+is a function call which contains the unary expression
+
+```
+2 VARREF     n
+3 SUB1
+```
+
+And if you want to know which operation the stack value of first instruction `CONSTANT fn`
+is used in, the nesting makes it easy to see it is the very last instruction `CALL_1`.
+
+As I mentioned before, personally, I find matching this stuff up a bit tedious.
