@@ -3,6 +3,7 @@
 
 STACK_EFFECTS = {
     'add1':           (-1, +1),
+    'aset':           (-3, +1),
     'bobp':           (-2, +1),
     'bolp':           ( 0, +1),
 
@@ -44,6 +45,7 @@ STACK_EFFECTS = {
     'eqlsign':        (-2, +1),
     'following-char': (-0, +1),
     'geq':            (-2, +1),
+    'get':            (-2, +1),
     'goto':           (-0, +0),
     'goto-char':      (-1, +1),
     'goto-if-nil':    (-1, +0),

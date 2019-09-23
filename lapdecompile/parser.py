@@ -272,6 +272,7 @@ class ElispParser(GenericASTBuilder):
         binary_op ::= EQ
         binary_op ::= EQUAL
         binary_op ::= GEQ
+        binary_op ::= GET
         binary_op ::= GTR
         binary_op ::= LEQ
         binary_op ::= LSS
@@ -287,6 +288,7 @@ class ElispParser(GenericASTBuilder):
 
         ternary_expr ::= expr expr expr ternary_op
         ternary_expr_stacked  ::= STACK-ACCESS expr expr ternary_op
+        ternary_op   ::= ASET
         ternary_op   ::= SUBSTRING
 
         unary_expr ::= expr unary_op

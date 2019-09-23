@@ -148,13 +148,13 @@ vector-or-char-tablep vectorp
 """.split())
 
 BINARY_OPS = tuple("""
-aref cons elt eq equal fset max min nconc
+aref cons elt eq equal fset get max min nconc
 remove-variable-watcher
 setcar setcdr setplist string=
 """.split())
 
 TERNARY_OPS = tuple("""
-substring
+aset substring
 """.split())
 
 for op in BINARY_OPS + TERNARY_OPS + UNARY_OPS + NULLARY_OPS:
