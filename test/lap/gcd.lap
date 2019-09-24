@@ -1,9 +1,9 @@
 byte code for my-gcd:
-  doc-start 34:  Greatest Common Divisor of A and B
+  doc:  Greatest Common Divisor of A and B
   args: (a b)
 0	varref	  a
 1	varref	  b
-2	gtr
+2	gtr	  
 3	goto-if-nil 1
 6	varref	  a
 7	varbind	  c
@@ -14,26 +14,26 @@ byte code for my-gcd:
 12	unbind	  1
 13:1	varref	  a
 14	constant  0
-15	lss
+15	lss	  
 16	goto-if-nil 2
 19	constant  nil
-20	return
+20	return	  
 21:2	varref	  b
 22	varref	  a
-23	diff
+23	diff	  
 24	constant  0
-25	eqlsign
+25	eqlsign	  
 26	goto-if-not-nil 3
 29	varref	  a
 30	constant  1
-31	eqlsign
+31	eqlsign	  
 32	goto-if-nil 4
 35:3	varref	  a
-36	return
+36	return	  
 37:4	constant  my-gcd
 38	varref	  b
 39	varref	  a
-40	diff
+40	diff	  
 41	varref	  a
 42	call	  2
-43	return
+43	return	  

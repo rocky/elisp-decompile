@@ -1,5 +1,5 @@
-byte code for unary-ops:
-  doc:  Test some nulary operators
+byte code for test-nullary-ops:
+  doc:  Test some nullary operators
   args: (e)
 0	constant  add
 1	point

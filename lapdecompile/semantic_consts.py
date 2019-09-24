@@ -19,12 +19,12 @@ TABLE_DIRECT = {
     "setq_form_dup":       ( "%(setq %+%c %c%p)",
                              -1, (0, "expr"), -1 ),
     "nullary_expr":	   ( "(%c)", 0 ),
-    "unary_expr":	   ( "(%c %+%c%)", 1, 0 ),
+    "unary_expr":	   ( "(%c %+%c%P%)", 1, 0, 1),
     "unary_expr_stacked":  ( "(%c %+%S%)", 0 ),
-    "binary_expr":	   ( "(%c %+%c %c%)",
+    "binary_expr":	   ( "(%c %+%d %c%P%)",
                              (-1, "binary_op"),
-                             (0, "expr"), (1, "expr") ),
-    "binary_expr_stacked": ( "(%c %+%S %c%)", -1, 0),
+                             (0, "expr"), (1, "expr"), 2 ),
+    "binary_expr_stacked": ( "(%c %+%S %c%P%)", -1, 0, 2),
 
     "ternary_expr":	   ( "(%c %+%c %c %c%)",
                              (-1, "ternary_op"),
@@ -61,8 +61,8 @@ TABLE_DIRECT = {
 
     "with_temp_buffer_macro":( "%(with-temp-buffer\n%+%|%c%)", 0),
 
-    "labeled_clause":	   ( "%c", 1 ),
-    "labeled_final_clause": ("\n%|(%c %c)", 1, 2),
+    "labeled_clause":	   ( "%C", (1, 1000) ),
+    "labeled_final_clause": ("(%c %c)", 1, 2),
 
     "while_form1":	  ( "%(while %p%c\n%+%|%c%)", 0, 3, 5 ),
     "while_form2":	  ( "%(while %c\n%+%|%c%)", 2, 4 ),
@@ -109,8 +109,6 @@ TABLE_DIRECT = {
 
     "TSTRING":	        ( "%{attr}", ),
     "VARSET":	        ( "%{attr}", ),
-    "VARBIND":	        ( "%{attr}", ),
-    "VARREF":	        ( "%{attr}", ),
     "STACK-REF":	( "stack-ref%{attr}", ),
     "STACK-ACCESS":	( "%S", ),
 }
@@ -157,5 +155,8 @@ TERNARY_OPS = tuple("""
 aset substring
 """.split())
 
-for op in BINARY_OPS + TERNARY_OPS + UNARY_OPS + NULLARY_OPS:
+for op in BINARY_OPS + TERNARY_OPS + UNARY_OPS:
     TABLE_DIRECT[op.upper()] = ( op, )
+
+for op in NULLARY_OPS:
+    TABLE_DIRECT[op.upper()] = ( "%o", op )

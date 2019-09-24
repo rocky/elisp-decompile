@@ -247,15 +247,24 @@ class ElispParser(GenericASTBuilder):
         and_form   ::= expr GOTO-IF-NIL-ELSE-POP expr opt_come_from opt_label
         # and_form ::= expr GOTO-IF-NIL expr opt_label
 
+        expr_or_stacked ::= expr
+        expr_or_stacked ::= STACK-ACCESS
+
         expr       ::= call_exprn
         expr       ::= call_expr0
         expr       ::= call_expr1
         expr       ::= call_expr2
         expr       ::= call_expr3
+        expr       ::= call_expr4
+        expr       ::= call_expr5
         call_expr0 ::= name_expr CALL_0
-        call_expr1 ::= name_expr expr CALL_1
-        call_expr2 ::= name_expr expr exp_stacked CALL_2
-        call_expr3 ::= name_expr expr expr expr CALL_3
+        call_expr1 ::= name_expr expr_or_stacked CALL_1
+        call_expr2 ::= name_expr expr_or_stacked expr_or_stacked CALL_2
+        call_expr3 ::= name_expr expr_or_stacked expr_or_stacked expr_or_stacked CALL_3
+        call_expr4 ::= name_expr expr_or_stacked expr_or_stacked expr_or_stacked
+                        expr_or_stacked CALL_4
+        call_expr5 ::= name_expr expr_or_stacked expr_or_stacked expr_or_stacked
+                       expr_or_stacked expr_or_stacked CALL_5
 
         name_expr ::= CONSTANT
 
@@ -519,7 +528,7 @@ class ElispParser(GenericASTBuilder):
                 if ast[1].offset != str(tokens[last+1].attr):
                     return True
             # "name_expr" isn't a valid "expr" for the "then" part of an "if_form"
-            return ast[0] == "expr" and ast[0][0] == "name_expr"
+            return False  # ast[0] == "expr" and ast[0][0] == "name_expr"
         elif lhs == "while_form2":
             # Check that "expr" isn't a stacked expression.
             # Otherwise it should be handled by while_expr1

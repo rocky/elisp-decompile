@@ -1,6 +1,6 @@
 (defun my-gcd(a b)
   "Greatest Common Divisor of A and B"
-  ;; Make a < b
+  ;; Make a <= b
   (if (> a b)
       (let ((c a))
 	(setq a b)
