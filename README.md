@@ -227,7 +227,7 @@ Looking at the above we see that:
 4 CALL_1     1
 ```
 
-is a function call which contains the unary expression
+contains a function call and its parameters; One of the parameters is the unary expression:
 
 ```
 2 VARREF     n
