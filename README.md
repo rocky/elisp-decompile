@@ -48,31 +48,32 @@ sample LAP files in `testdata` in case you want to try a canned example.
 
 The specific functions in `dedis.el` are `disassemble-file` and `disassemble-full`.
 
-So inside Emacs find a function you want to disassemble and run `M-x disassemble-full`.
-Or find a bytecode file you want and run or `M-x disassembe-file`
+So inside Emacs find a function you want to disassemble and run `M-x disassemble-full`. Or find a bytecode file you want and run or `M-x disassembe-file`
 
-The first is like `disassemble`, but we don't truncate the
-output of docstrings or other things that `disassemble` generally does. The second is
-like `disassemble-full` but we start out with a bytecode file instead of a lisp function.
+The first is like `disassemble`, but we don't truncate the output of docstrings or other things that `disassemble` generally does. The second is like `disassemble-full` but we start out with a bytecode file instead of a lisp function.
 
 ## Disassemble LAP file
 
-After you have written the results of the last section to LAP file,
-the file should end in `.lap`, and have set up the Python code, you
-can try to disassemble:
+After you have written the results of the last section to LAP file, the file should end in `.lap`, and have set up the Python code, you can try to disassemble:
 
 ```
 $ lapdecompile <name-of-lap-file> [options]
 ```
 
-There is perhaps a *lot* of debug output. There is even some flow
-control that isn't really used at the moment. You can probably go into
-the Python and comment this stuff out.
+There is perhaps a *lot* of debug output. There is even some flow control that isn't really used at the moment. You can probably go into the Python and comment this stuff out.
 
-Also, what we can decompile right now is a bit limited. I see no
-technical difficulties other than lots of work. So please help out.
+Also, what we can decompile right now is a bit limited. I see no technical difficulties other than lots of work. So please help out.
 
 # But is it worth it?
+
+A number of people have opined that you really don't need a decompiler.
+
+__Aside:__
+
+_Whenever something new or novel comes along, in addition to the group that says "Why not?!" there is the "Why bother?"" group.  In my lifetime, I have experienced this attitude when undo and regular expressions were added to GNU Emacs, adding a debugger to languages where debugging support didn't exist or was weak, using decomplation to give more precise error location information, and here. Convincing the crowd that is happy with the status quo is hard, and quite frankly this project isn't mature. The next section is more for those who have an open mind and want to see a better world._
+
+Below are the arguments offered and why I think they are inadequate.
+
 
 ### It's GNU Emacs, so of course I have the source code!
 
@@ -87,8 +88,8 @@ But, I know, you always use version control and emacs provides it's tilde backup
 So that leads us to the situation where there are _several_ possible source-code versions around, e.g. a development version and a stable version, or one of the various versions that correspond to version in your version-control system, and you'd like to know which one of those corresponds to the bytecode that is stored in a bytecode file, or that you have loaded.
 
 
-And then we come to situation where there _is_ no source-code file. One can create functions on the fly and change them on the fly. Similarly, functions can create functions when run
-interactively. Perhaps you'd like to reconstruct the source code for a function that you worked on interactively.
+And then we come to situation where there _is_ no source-code file. One can create functions on the fly and change them on the fly.  Lisp is known for its culture in having programs create programs; it is possible such a program doesn't have a ``debug'' switch (that you know
+about) to either save or show the result before it was byte-compiled.  Perhaps you'd like to reconstruct the source code for a function that you worked on interactively.
 
 ### Isn't it simpler to just disassemble?
 
@@ -116,7 +117,7 @@ The LAP instructions for:
 ```
 
 expand to 60 or so LAP instructions; a lot more when various parameters
-have been filled in.
+have been filled in. This decompiler has the ability to show both reconstructed show both before compressing into macros, should you want to see in high-level terms what is going on, and after.
 
 And then you have things like `dolist` which are just long and boring template kinds of things. Because it's long it is very easy to lose sight of what it is.
 
