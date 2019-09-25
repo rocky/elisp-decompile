@@ -19,6 +19,7 @@ for filename in os.listdir("."):
                 fp.close()
                 exit_rc = os.system(f"emacs --no-init-file --batch --load={target_file}")
                 if exit_rc != 0:
+                    print(target_file)
                     invalid_source += 1
                 else:
                     succeeded += 1

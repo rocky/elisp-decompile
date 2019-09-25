@@ -1,4 +1,4 @@
-(defun unary-ops(e)
+(defun test-nullary-ops(e)
   "Test some nullary operators"
   (add (point)
        (point-min)

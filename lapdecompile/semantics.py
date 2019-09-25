@@ -66,16 +66,18 @@ Syntax-directed translation from (transformed) parse tree to Elisp source code.
 #
 #     %L  takes a tuple of node indices: low and high. Evaluates
 #         nodes low to high inserting a space in between each one.
+#         Values are pushed on to the eval stack in evaluating the
+#         list, but are popped off at the end.
 #
 #     %l  like %L but skips the last node in the list which is
 #         presumed to be an operator
 #
 #     %p  pushes a value of the eval stack to use as an argument.
 #         Its argument is like %c.
-#     %P  pops a value of the eval stack to use as an argument.
-#         effectively discards the value that is on the stack.
+#     %P  takes a count of how many evaluation stack entries to pop and pops that,
+#         effectively discarding those values.
 #
-#     %S  like %P but we use or write the value of the stack.
+#     %S  Wite the value of the top of the stack.
 #         The stack value can either be an AST node or a string.
 #         If a node, the we preorder the node to add the string value
 #         If a string, then we just use that. Note this brings out
@@ -108,7 +110,7 @@ Syntax-directed translation from (transformed) parse tree to Elisp source code.
 #
 #   The '%' may optionally be followed by a number (C) in square
 #   brackets, which makes the template_engine walk down to N[C] before
-#   evaluating the escape code.
+
 
 from __future__ import print_function
 
@@ -177,12 +179,16 @@ class SourceWalker(GenericASTTraversal, object):
     def pop1(self):
         return self.eval_stack.pop()
 
+    def pop(self, count=1):
+        for i in range(count):
+            self.eval_stack.pop()
+
     def push1(self, node):
         self.eval_stack.append(node)
         return node
 
     def access(self):
-        return self.eval_stack[0]
+        return self.eval_stack[-1]
 
     def stacklen(self):
         return len(self.eval_stack)
@@ -196,7 +202,7 @@ class SourceWalker(GenericASTTraversal, object):
     # def binary_op(self, node):
     #     """Pop 2 items from stack push the result.
     #     binary ops do this for example"""
-    #     self.pop1()
+    #     self.pop()
     #     self.replace1(node)
 
     def indent_more(self, indent=TAB):
@@ -206,12 +212,16 @@ class SourceWalker(GenericASTTraversal, object):
         self.indent_stack.append(self.indent)
 
     def indent_less(self, indent=None):
-        if indent is None:
-            self.indent_stack.pop()
-            self.indent = self.indent_stack[-1]
-        else:
-            self.indent_stack[-1] = self.indent
-            self.indent = self.indent[: -len(indent)]
+        try:
+            if indent is None:
+                self.indent_stack.pop()
+                self.indent = self.indent_stack[-1]
+            else:
+                self.indent_stack[-1] = self.indent
+                self.indent = self.indent[: -len(indent)]
+        except:
+            from trepan.api import debug; debug()
+            pass
         if self.debug:
             print("XXX indent less len %d" % len(self.indent))
 
@@ -245,9 +255,10 @@ class SourceWalker(GenericASTTraversal, object):
         assert node[0] == "dolist_list"
         dolist_init_var = node[1]
         assert dolist_init_var == "dolist_init_var"
-        self.push1(self.traverse(dolist_init_var[0][1]))
+        self.push1(dolist_init_var[0][1].attr)
         try:
             self.template_engine(("%(dolist%+%(%c %c)\n%|", 1, 0), node)
+            self.pop1()
         except GenericASTTraversalPruningException:
             pass
         assert node[6] in ("body", "body_stacked")
@@ -272,7 +283,7 @@ class SourceWalker(GenericASTTraversal, object):
         self.prune()
 
     def n_discard(self, node):
-        self.pop1()
+        self.pop()
 
     def n_unary_expr_stacked(self, node):
         assert 1 <= len(node) <= 2
@@ -315,7 +326,16 @@ class SourceWalker(GenericASTTraversal, object):
         ):
             # Not integer or string and not explicitly unquoted
             self.f.write(u"'")
+        self.push1(node.attr)
         self.f.write(node.attr)
+
+    def n_VARREF(self, node):
+        self.push1(node.attr)
+        self.template_engine(("%{attr}",), node)
+
+    def n_VARBIND(self, node):
+        self.template_engine(("%{attr}",), node)
+        self.pop()
 
     def n_varlist_stacked_inner(self, node):
         if len(node) == 3:
@@ -331,43 +351,54 @@ class SourceWalker(GenericASTTraversal, object):
         start_stacklen = self.stacklen()
         assert l == 2 or l == 3
         if l == 2:
-            self.template_engine(("\n%|(t %.%c", 0), node)
+            self.template_engine(("\n%|(t %.%c%)", 0), node)
         # Check for first item in a (cond ..)
         elif node[0] == "opt_label" and node[2][-1] != "COME_FROM":
-            self.template_engine(("\n%|(t %+%c", 1), node)
-            first_clause = False
+            self.template_engine(("\n%|(t %+%c%)", 1), node)
         else:
-            self.template_engine(("\n%|(%c %+%c", 0, 1), node)
-            first_clause = True
+            self.template_engine(("\n%|(%c %+%c%)", 0, 1), node)
+        end_clause = node[-1]
+        if end_clause == "end_clause":
+            if end_clause[0] == "RETURN":
+                # FIXME: this test shouldn't be needed
+                if self.stacklen() > 0:
+                    self.pop()
         if self.stacklen() > start_stacklen:
             val = self.access()
             if isinstance(val, str):
                 self.write("%s" % val[1:-1])
             elif val.kind != "VARSET":
                 self.write("%s" % val)
-            self.pop1()
-            if first_clause:
-                self.template_engine(("%-",), node)
+            self.pop()
 
-        assert start_stacklen == self.stacklen()
-        self.write(")")
-        self.indent_less()
+        try:
+            assert start_stacklen == self.stacklen()
+        except:
+            pass
         self.prune()
 
     def n_varbind(self, node):
         if len(node) == 3:
-            self.template_engine(("(%c %c)%c", 1, 0, 2), node)
+            if node[1] != "STACK-ACCESS":
+                self.template_engine(("(%p%c %c)%c%P", 0, 1, 0, 2, 1), node)
+            else:
+                self.template_engine(("(%p%c %c%P)%)", 0, 2, 0, 1), node)
         else:
-            self.template_engine(("%(%c %c)", 1, 0), node)
+            self.template_engine(("%(%p%c %c%P)%)", 0, 1, 0, 1), node)
         self.prune()
 
     def n_call_exprn(self, node):
         if node[-1] == "CALL_0":
             self.template_engine(("(%Q)", 0), node)
+            self.prune()
         else:
-            args = node[-1].attr
-            self.template_engine(("(%p%Q %l%P)", 0, 0, (1, args + 1)), node)
+            self.n_call_expr1(node)
+
+    def n_call_expr1(self, node):
+        args = node[-1].attr
+        self.template_engine(("(%p%Q %l%P)", 0, 0, (1, args + 1), 1), node)
         self.prune()
+    n_call_expr2 = n_call_expr3 = n_call_expr4 = n_call_expr5 = n_call_expr1
 
     def n_let_form_star(self, node):
         if node[0] == "varlist" and len(node[0]) == 1:
@@ -377,8 +408,13 @@ class SourceWalker(GenericASTTraversal, object):
             self.template_engine(("%(let %+(%.",), node)
             varbind = node[0][0]
             assert varbind == "varbind"
-            self.template_engine(("(%c %c)%)", -1, 0), varbind)
-            self.template_engine(("\n%|%c%)", -1), node)
+            try:
+                self.n_varbind(varbind)
+            except GenericASTTraversalPruningException:
+                pass
+            # Handle body
+            body_index = -2 if node[-1] == "UNBIND" else -1
+            self.template_engine(("\n%|%c%)", body_index), node)
         else:
             self.template_engine(("%(let* %.(%.%c)\n%|%c%)", 0, 1), node)
         self.prune()
@@ -386,11 +422,6 @@ class SourceWalker(GenericASTTraversal, object):
     # def n_binary_expr(self, node):
     #     self.binary_op(node)
     #     self.template_engine(( '(%c %c %c)', 2, 0, 1), node)
-
-    def n_unary_expr(self, node):
-        self.template_engine(("(%c %c)", 1, 0), node)
-        self.replace1(node)
-        self.prune()
 
     def n_expr_stmt(self, node):
         if len(node) == 1:
@@ -409,7 +440,7 @@ class SourceWalker(GenericASTTraversal, object):
     def n_opt_discard(self, node):
         if len(node) == 1:
             assert node[0] == "DISCARD"
-            self.pop1()
+            self.pop()
         self.prune()
 
     def n_or_form(self, node):
@@ -432,7 +463,7 @@ class SourceWalker(GenericASTTraversal, object):
         if self.stacklen() == 0:
             self.write("DUP-empty-stack")
         else:
-            val = self.eval_stack[0]
+            val = self.access()
             s = val if isinstance(val, str) else self.traverse(val)
             self.write(s)
 
@@ -451,7 +482,7 @@ class SourceWalker(GenericASTTraversal, object):
 
         # self.println("-----")
         if self.debug:
-            print("XXX", startnode.kind)
+            print("XXX", startnode.kind, len(self.eval_stack))
 
         fmt = entry[0]
         arg = 1
@@ -507,6 +538,29 @@ class SourceWalker(GenericASTTraversal, object):
                 )
                 self.preorder(node[index])
                 arg += 1
+            elif typ == "d":
+                index = entry[arg]
+                if isinstance(index, tuple):
+                    assert node[index[0]] == index[1], (
+                        "at %s[%d], expected %s node; got %s"
+                        % (node.kind, arg, index[1], node[index[0]].kind)
+                    )
+                    index = index[0]
+                assert isinstance(
+                    index, int
+                ), "at %s[%d], %s should be int or tuple" % (
+                    node.kind,
+                    arg,
+                    type(index),
+                )
+                val = self.traverse(node[index])
+                self.write(val)
+                arg += 1
+            elif typ == "o":
+                opname = node.kind.lower()
+                self.push1(opname)
+                self.write(opname)
+                arg += 1
             elif typ == "Q":
                 # Like 'c' but no quoting
                 self.noquote = True
@@ -529,7 +583,7 @@ class SourceWalker(GenericASTTraversal, object):
                 arg += 1
             elif typ == "S":
                 # Get value from eval stack
-                subnode = self.pop1()
+                subnode = self.access()
                 if isinstance(subnode, str):
                     self.write(subnode)
                 else:
@@ -540,11 +594,13 @@ class SourceWalker(GenericASTTraversal, object):
                 self.push1(node[index])
                 arg += 1
             elif typ == "P":
-                self.pop1()
+                count = entry[arg]
+                # FIXME: remove min
+                self.pop(min(count, self.stacklen()))
                 arg += 1
             elif typ == "l":
                 low, high = entry[arg]
-                remaining = len(node[low:high]) - 1
+                count = remaining = len(node[low:high]) - 1
                 for subnode in node[low:high]:
                     self.preorder(subnode)
                     remaining -= 1
@@ -552,10 +608,11 @@ class SourceWalker(GenericASTTraversal, object):
                         self.write(" ")
                         pass
                     pass
+                self.pop(count)
                 arg += 1
             elif typ == "L":
                 low, high = entry[arg]
-                remaining = len(node[low:high])
+                count = remaining = len(node[low:high])
                 for subnode in node[low:high]:
                     self.preorder(subnode)
                     remaining -= 1
@@ -563,6 +620,7 @@ class SourceWalker(GenericASTTraversal, object):
                         self.write(" ")
                         pass
                     pass
+                self.pop(count)
                 arg += 1
             elif typ == "C":
                 low, high = entry[arg]
@@ -601,6 +659,8 @@ class SourceWalker(GenericASTTraversal, object):
                 self.write("(")
             m = escape.search(fmt, i)
         self.write(fmt[i:])
+        if self.debug:
+            print("XXY", startnode.kind, len(self.eval_stack))
 
     def default(self, node):
         key = node
