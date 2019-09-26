@@ -83,7 +83,7 @@ When many people hear the word "decompile" they think reverse engineering or hac
 
 A common case is where you wrote the code, but have accidentally deleted the source code and just have the bytecode file.
 
-But, I know, you always use version control and emacs provides it's tilde backup file.
+But, I know, you always use version control and GNU Emacs provides it's tilde backup file.
 
 So that leads us to the situation where there are _several_ possible source-code versions around, e.g. a development version and a stable version, or one of the various versions that correspond to version in your version-control system, and you'd like to know which one of those corresponds to the bytecode that is stored in a bytecode file, or that you have loaded.
 
