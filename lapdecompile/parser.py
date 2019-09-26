@@ -95,6 +95,7 @@ class ElispParser(GenericASTBuilder):
         expr_stacked  ::= binary_expr_stacked
         expr_stacked  ::= ternary_expr_stacked
         expr_stacked  ::= set_expr_stacked
+        expr_stacked  ::= if_form_stacked
 
         expr  ::= DUP
         expr  ::= setq_form
@@ -169,6 +170,8 @@ class ElispParser(GenericASTBuilder):
 
         # We keep nonterminals at position 0 and 2
         if_form ::= expr GOTO-IF-NIL expr opt_come_from opt_label
+        if_form_stacked ::= GOTO-IF-NIL expr opt_come_from opt_label
+
         filler  ::=
         if_form ::= expr filler expr_stmt COME_FROM LABEL
 
@@ -520,7 +523,8 @@ class ElispParser(GenericASTBuilder):
                 return True
         elif lhs == "unary_expr_stacked":
             # Check that previous token doesn't push something on the stack
-            return first > 1 and tokens[first-1] != "VARSET"
+            # The below stack effect of the below ops is: -1, +0
+            return first > 1 and not tokens[first-1] in ("VARSET", "VARBIND")
         elif lhs == "if_form":
             # Check that GOTO goes to the right place
             if rule[1][1].startswith("GOTO"):

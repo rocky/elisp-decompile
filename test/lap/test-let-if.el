@@ -1,0 +1,5 @@
+(defun test-let-if(string &optional multiple)
+  (let ((s string))
+    (if (stringp s)
+	(substring s 0 -1)
+      s)))

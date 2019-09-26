@@ -77,7 +77,7 @@ Syntax-directed translation from (transformed) parse tree to Elisp source code.
 #     %P  takes a count of how many evaluation stack entries to pop and pops that,
 #         effectively discarding those values.
 #
-#     %S  Wite the value of the top of the stack.
+#     %S  Write the value of the top of the stack.
 #         The stack value can either be an AST node or a string.
 #         If a node, the we preorder the node to add the string value
 #         If a string, then we just use that. Note this brings out
@@ -319,7 +319,7 @@ class SourceWalker(GenericASTTraversal, object):
             self.f.write(node.attr.name)
             return
         elif not (
-            re.match(r"^-?[0-9]+$", node.attr)
+            re.match(r"^[-]?[0-9]+$", node.attr)
             or node.attr.startswith('"')
             or node.attr in ("t", "nil")
             or self.noquote
@@ -384,7 +384,11 @@ class SourceWalker(GenericASTTraversal, object):
             else:
                 self.template_engine(("(%p%c %c%P)%)", 0, 2, 0, 1), node)
         else:
-            self.template_engine(("%(%p%c %c%P)%)", 0, 1, 0, 1), node)
+            assert len(node) == 2
+            if node[0][0] == "DUP":
+                self.template_engine(("%(%p%c %c)%)", 0, 1, 0), node)
+            else:
+                self.template_engine(("%(%p%c %c%P)%)", 0, 1, 0, 1), node)
         self.prune()
 
     def n_call_exprn(self, node):

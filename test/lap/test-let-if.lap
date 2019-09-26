@@ -1,0 +1,15 @@
+byte code for test-let-if:
+  args: (string &optional multiple)
+0	varref	  string
+1	dup
+2	varbind	  s
+3	stringp
+4	goto-if-nil 1
+7	varref	  s
+8	constant  0
+9	constant  -1
+10	substring
+11	goto	  2
+14:1	varref	  s
+15:2	unbind	  1
+16	return
