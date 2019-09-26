@@ -1,0 +1,17 @@
+byte code for test-substring:
+  doc:  Test string= and substring. We should transform to two-arg substring when possible
+  args: (string s)
+0	varref	  s
+1	constant  -1
+2	constant  nil
+3	substring 
+4	constant  "\n"
+5	string=	  
+6	goto-if-nil 1
+9	varref	  s
+10	constant  0
+11	constant  -1
+12	substring 
+13	return	  
+14:1	varref	  s
+15	return	  

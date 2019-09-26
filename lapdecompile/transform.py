@@ -39,7 +39,7 @@ def emacs_key_translate(s):
 
     if result != s:
         if result.startswith('"'):
-            return '(kbd %s)' % result.lstrip(" ")
+            return "(kbd %s)" % result.lstrip(" ")
         else:
             if result.endswith("\\"):
                 result += "\\"
@@ -150,9 +150,7 @@ class TransformTree(GenericASTTraversal, object):
         arg_list.append(first_expr)
         arg_list.reverse()
         node = SyntaxTree(
-            fn_name.lower() + "_exprn",
-            arg_list,
-            transformed_by = "n_binary_expr"
+            fn_name.lower() + "_exprn", arg_list, transformed_by="n_binary_expr"
         )
         return node
 
@@ -167,7 +165,9 @@ class TransformTree(GenericASTTraversal, object):
                 if re.match("C[AD]R", unary_op1) and re.match("C[AD]R", unary_op2):
                     c12r = f"C%s%sR" % (unary_op1[1:2], unary_op2[1:2])
                     expr[0][1][0].kind = c12r
-                    node = SyntaxTree(node.kind, expr[0], transformed_by="n_" + node.kind)
+                    node = SyntaxTree(
+                        node.kind, expr[0], transformed_by="n_" + node.kind
+                    )
                 pass
         return node
 
@@ -178,24 +178,31 @@ class TransformTree(GenericASTTraversal, object):
             call_expr = self.call_exprn_4_name_expr(call_expr, expr)
         elif expr[0] == "name_expr":
             name_expr = expr[0]
-            if len(call_expr) == 3 and name_expr[0].attr.startswith("(lambda (def-tmp-var) ("):
-                match = re.match('\(lambda \(def-tmp-var\) \((defvar|defconst) (.+) def-tmp-var( (".*"))?\)\)',
-                                 name_expr[0].attr)
+            if len(call_expr) == 3 and name_expr[0].attr.startswith(
+                "(lambda (def-tmp-var) ("
+            ):
+                match = re.match(
+                    '\(lambda \(def-tmp-var\) \((defvar|defconst) (.+) def-tmp-var( (".*"))?\)\)',
+                    name_expr[0].attr,
+                )
                 if match:
                     def_type = match.group(1)
                     if match.group(4):
-                        call_expr = SyntaxTree(f"{def_type}_doc",
-                                               [Token("CONSTANT", attr=match.group(2)),
-                                                call_expr[1],
-                                                Token("CONSTANT", attr=match.group(4)),
-                                               ],
-                                               transformed_by="n_call_exprn")
+                        call_expr = SyntaxTree(
+                            f"{def_type}_doc",
+                            [
+                                Token("CONSTANT", attr=match.group(2)),
+                                call_expr[1],
+                                Token("CONSTANT", attr=match.group(4)),
+                            ],
+                            transformed_by="n_call_exprn",
+                        )
                     else:
-                        call_expr = SyntaxTree(f"{def_type}",
-                                               [Token("CONSTANT", attr=match.group(2)),
-                                                call_expr[1]
-                                               ],
-                                               transformed_by="n_call_exprn")
+                        call_expr = SyntaxTree(
+                            f"{def_type}",
+                            [Token("CONSTANT", attr=match.group(2)), call_expr[1]],
+                            transformed_by="n_call_exprn",
+                        )
             elif len(call_expr) == 5:
                 call_expr = self.call_exprn_5_name_expr(call_expr, name_expr)
                 pass
@@ -270,7 +277,9 @@ class TransformTree(GenericASTTraversal, object):
         if expr_first == "and_form" and len(expr_first) == 5:
             # An expr_stmt with an "and" form of two items is
             # nore naturally expressed as an "if".
-            if_form = SyntaxTree("if_form", expr_first.data, transformed_by="n_" + node.kind)
+            if_form = SyntaxTree(
+                "if_form", expr_first.data, transformed_by="n_" + node.kind
+            )
             expr = SyntaxTree("expr", [if_form], transformed_by="n_" + node.kind)
             node = SyntaxTree("expr_stmt", expr, transformed_by="n_" + node.kind)
             pass
@@ -281,9 +290,13 @@ class TransformTree(GenericASTTraversal, object):
         varlist, body = let_form_star[:2]
         assert varlist == "varlist"
         assert body == "body"
-        varbind =  varlist[0]
+        varbind = varlist[0]
         body_exprs = body[0]
-        if (varbind == "varbind" and body_exprs == "exprs" and varbind[1].attr == "temp-buffer"):
+        if (
+            varbind == "varbind"
+            and body_exprs == "exprs"
+            and varbind[1].attr == "temp-buffer"
+        ):
             if body_exprs[0][0][0] == "with_current_buffer_macro":
                 with_current_buffer = body_exprs[0][0][0]
                 body = body_exprs[1:]
@@ -294,10 +307,12 @@ class TransformTree(GenericASTTraversal, object):
                         assert body == "opt_exprs"
                     pass
                 # transform into "with-temp-buffer"
-                body_exprs = SyntaxTree("exprs", body,
-                                        transformed_by="n_let_form_star")
+                body_exprs = SyntaxTree("exprs", body, transformed_by="n_let_form_star")
                 with_temp_buffer_macro = SyntaxTree(
-                    "with_temp_buffer_macro", [body_exprs], transformed_by="n_let_form_star")
+                    "with_temp_buffer_macro",
+                    [body_exprs],
+                    transformed_by="n_let_form_star",
+                )
                 return with_temp_buffer_macro
             pass
         return let_form_star
@@ -317,12 +332,35 @@ class TransformTree(GenericASTTraversal, object):
             if name_expr == "name_expr" and name_expr[0] == "VARREF":
                 # Turn (save-buffer (set-buffer ...) (...)) into:
                 # (with-current-buffer ...)
-                exprs = SyntaxTree("exprs", exprs[1:],
-                                   transformed_by="n_" + node.kind)
-                node = SyntaxTree("with_current_buffer_macro",
-                                  [set_buffer[0][0], exprs],
-                                  transformed_by="n_" + node.kind)
+                exprs = SyntaxTree("exprs", exprs[1:], transformed_by="n_" + node.kind)
+                node = SyntaxTree(
+                    "with_current_buffer_macro",
+                    [set_buffer[0][0], exprs],
+                    transformed_by="n_" + node.kind,
+                )
                 pass
+        return node
+
+    def n_ternary_expr(self, node):
+        expr2 = node[2]
+        assert expr2 == "expr"
+        expr2_first = expr2[0]
+        ternary_op = node[3]
+        assert ternary_op == "ternary_op"
+
+        if (
+            ternary_op[0] == "SUBSTRING"
+            and expr2_first == "name_expr"
+            and expr2_first[0].attr == "nil"
+        ):
+            binary_op = SyntaxTree(
+                "binary_op", [ternary_op[0]], transformed_by="n_" + node.kind
+            )
+            node = SyntaxTree(
+                "binary_expr",
+                [node[0], node[1], binary_op],
+                transformed_by="n_" + node.kind,
+            )
         return node
 
     def n_when_macro(self, node):
@@ -334,7 +372,6 @@ class TransformTree(GenericASTTraversal, object):
                 "if_form", [node[0], node[1], node[2]], transformed_by="n_" + node.kind
             )
         return node
-
 
     def traverse(self, node):
         self.preorder(node)

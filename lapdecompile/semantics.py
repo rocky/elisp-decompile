@@ -319,7 +319,7 @@ class SourceWalker(GenericASTTraversal, object):
             self.f.write(node.attr.name)
             return
         elif not (
-            re.match(r"^[0-9]+$", node.attr)
+            re.match(r"^-?[0-9]+$", node.attr)
             or node.attr.startswith('"')
             or node.attr in ("t", "nil")
             or self.noquote
