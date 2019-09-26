@@ -231,8 +231,9 @@ class ElispParser(GenericASTBuilder):
         # if_else_form ::= expr GOTO-IF-NIL expr RETURN LABEL
         # if_else_form ::= expr_stacked GOTO-IF-NIL progn RETURN LABEL
 
-        # FIXME: add something like this
         if_else_form ::= expr GOTO-IF-NIL-ELSE-POP expr-stmt RETURN
+        if_else_form ::= expr GOTO-IF-NIL expr GOTO COME_FROM LABEL expr COME_FROM LABEL
+
         # if_else_form ::= expr GOTO-IF-NIL-ELSE-POP expr-stmt GOTO-IF-NIL
 
         # Keep nonterminals at positions  0 and 2
@@ -523,10 +524,11 @@ class ElispParser(GenericASTBuilder):
         elif lhs == "if_form":
             # Check that GOTO goes to the right place
             if rule[1][1].startswith("GOTO"):
-                if last == len(tokens):
+                if last >= len(tokens) - 1:
                     return True
                 if ast[1].offset != str(tokens[last+1].attr):
                     return True
+                pass
             # "name_expr" isn't a valid "expr" for the "then" part of an "if_form"
             return False  # ast[0] == "expr" and ast[0][0] == "name_expr"
         elif lhs == "while_form2":

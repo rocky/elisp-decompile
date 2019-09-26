@@ -1,0 +1,14 @@
+byte code for test-add-minor-mode:
+  args: nil
+0	constant  add-minor-mode
+1	constant  foo
+2	constant  nil
+3	constant  boundp
+4	constant  foo-map
+5	call	  1
+6	goto-if-nil-else-pop 1
+9	varref	  foo-map
+10:1	constant  nil
+11	dup	  
+12	call	  5
+13	return	  

@@ -355,7 +355,12 @@ def ingest(bblocks, instructions, show_assembly):
         if isinstance(read_write[0], int):
             # stack_size += read_write[0]
             stack_effect += read_write[0]
-            if stack_effect < 0:
+            # FIXME we need a more rigorous way to figure out if we should add STACK-ACCESS.
+            # The heuristic below is that if the stacked parameters are part of a call
+            # then parsing will pick up the parameters from instruction where the stacking occurs
+            # Testing on RETURN is kind of a hack.
+            if (stack_effect < 0 and not
+                (inst.kind.startswith("CALL_") or inst.kind == "RETURN")):
                 for j in range(stack_effect, 0):
                     new_instructions.append(Token("STACK-ACCESS", -j, offset))
                 stack_effect = 0
