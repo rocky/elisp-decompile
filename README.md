@@ -85,7 +85,7 @@ A common case is where you wrote the code, but have accidentally deleted the sou
 
 But, I know, you always use version control and GNU Emacs provides it's tilde backup file.
 
-So that leads us to the situation where there are _several_ possible source-code versions around, e.g. a development version and a stable version, or one of the various versions that correspond to version in your version-control system, and you'd like to know which one of those corresponds to the bytecode that is stored in a bytecode file, or that you have loaded.
+So that leads us to the situation where there are _several_ possible source-code versions around, e.g. a development version and a stable version, or one of the various versions that in your version-control system, and you'd like to know which one of those corresponds to the bytecode that is stored in a bytecode file, or that you have loaded.
 
 
 And then we come to situation where there _is_ no source-code file. One can create functions on the fly and change them on the fly.  Lisp is known for its culture in having programs create programs; it is possible such a program doesn't have a ``debug'' switch (that you know
