@@ -1,0 +1,28 @@
+byte code for test-if-else3:
+  doc:  Another if and if/else test
+  args: (string &optional multiple)
+0	varref	  string
+1	length
+2	constant  0
+3	gtr
+4	goto-if-nil 1
+7	varref	  string
+8	constant  "\n"
+9	string=
+10	discard
+11:1	varref	  string
+12	length
+13	constant  0
+14	gtr
+15	goto-if-nil-else-pop 4
+18	varref	  string
+19	varbind	  s
+20	varref	  string
+21	constant  "\n"
+22	string=
+23	goto-if-nil 2
+26	constant  "foo"
+27	goto	  3
+30:2	varref	  string
+31:3	unbind	  1
+32:4	return

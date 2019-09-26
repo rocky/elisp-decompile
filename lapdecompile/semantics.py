@@ -86,7 +86,7 @@ Syntax-directed translation from (transformed) parse tree to Elisp source code.
 #
 #     %|  Insert spaces to the current indentation level. Takes no arguments.
 #
-#     %. Set the indent level to be where we currently are at[d. Takes no arguments.
+#     %. Set the indent level to be where we currently are at. Takes no arguments.
 
 #     %+ increase current indentation level. Takes no arguments.
 #        pushes indent level on onto stack. Note that %)

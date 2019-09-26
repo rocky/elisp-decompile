@@ -5,7 +5,7 @@ string output.
 
 # Please don't blacken this file!
 # It has custom formatting that blacken messes up.
-TAB = ' ' *2   # is less spacy than "\t"
+TAB = ' ' *4   # is less spacy than "\t"
 INDENT_PER_LEVEL = ' ' # additional intent per pretty-print level
 
 TABLE_DIRECT = {
@@ -51,7 +51,7 @@ TABLE_DIRECT = {
 
     "cond_form":	        ( "%(cond %.%c%c%)", 0, 1 ),
     "if_form":		        ( "%(if %c\n%+%|%c%)", 0, 2 ),
-    "if_else_form":	        ( "%(if %c\n%+%|%c%_%c)%_", 0, 2, 5 ),
+    "if_else_form":	        ( "%(if %c\n%+%+%|%c\n%_%|%c)%_", 0, 2, 6 ),
     "save_excursion_form":      ( "%(save-excursion\n%+%|%c%)",
                                   (1, "body") ),
     "save_current_buffer_form": ( "%(save-current-buffer\n%+%|%c%)",
