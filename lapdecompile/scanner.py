@@ -89,8 +89,9 @@ class LapScanner:
 
         line = self.lines[self.cur_index]
         interactive = None
-        if re.match("^\s+interactive: ", line):
-            interactive = line[len(" interactive: "):].rstrip("\n")
+        m = re.match("^\s+interactive:\s+(.*)$", line)
+        if m:
+            interactive = m.group(1).rstrip("\n")
             self.cur_index += 1
 
         label = None
