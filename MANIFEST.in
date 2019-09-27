@@ -1,3 +1,4 @@
+include NEWS.md
 include README.md
 include COPYING
 include Makefile
