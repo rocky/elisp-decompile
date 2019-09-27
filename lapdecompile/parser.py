@@ -184,6 +184,10 @@ class ElispParser(GenericASTBuilder):
                         GOTO-IF-NIL-ELSE-POP body
                         GOTO come_froms LABEL
 
+        while_form1 ::= expr COME_FROM LABEL expr
+                        GOTO-IF-NIL body
+                        GOTO come_froms LABEL
+
         while_form2 ::= COME_FROM LABEL expr
                         GOTO-IF-NIL-ELSE-POP body
                         GOTO come_froms LABEL
@@ -239,7 +243,8 @@ class ElispParser(GenericASTBuilder):
         # if_else_form ::= expr_stacked GOTO-IF-NIL progn RETURN LABEL
 
         if_else_form ::= expr GOTO-IF-NIL-ELSE-POP expr-stmt RETURN
-        if_else_form ::= expr GOTO-IF-NIL expr GOTO COME_FROM LABEL expr COME_FROM LABEL
+        if_else_form ::= expr GOTO-IF-NIL expr GOTO come_froms LABEL expr
+                         opt_come_from opt_label
 
         # if_else_form ::= expr GOTO-IF-NIL-ELSE-POP expr-stmt GOTO-IF-NIL
 
@@ -305,8 +310,12 @@ class ElispParser(GenericASTBuilder):
 
         ternary_expr ::= expr expr expr ternary_op
         ternary_expr_stacked  ::= STACK-ACCESS expr expr ternary_op
+        ternary_expr_stacked  ::= expr expr ternary_op
         ternary_op   ::= ASET
         ternary_op   ::= SUBSTRING
+
+        # A Hack for testing since stacked values not working right
+        # binary_op   ::= SUBSTRING
 
         unary_expr ::= expr unary_op
         unary_expr ::= STACK-ACCESS unary_op
@@ -430,6 +439,8 @@ class ElispParser(GenericASTBuilder):
         # Sometimes the last item in "body" is "UNBIND" so we don't need
         # to add it here. We could have a reduce check to ensure this.
         let_form_star ::= varlist body
+        let_form_star ::= varlist_stacked body_stacked
+        let_form_star ::= varlist_stacked body_stacked UNBIND
 
         varlist  ::= varbind varlist
         varlist  ::= varbind

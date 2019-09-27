@@ -1,14 +1,17 @@
+[![Downloads](https://pepy.tech/badge/lapdecompile)](https://pepy.tech/project/lapdecompile)
+
 A [decompiler](https://en.wikipedia.org/wiki/Decompiler) for Emacs Lisp bytecode... or at least a proof of concept.
 
 This code uses the [Python
 spark-parser](https://pypi.python.org/pypi/spark_parser/) for its Earley algorithm parser and the code organization.  I have a project that implements the [Earley algorithm in Emacs
 Lisp](https://github.com/rocky/elisp-earley). It needs _a lot_ more work though to replace the Python code.
 
-This is in a very early stage, but amazingly the code seems sound so far.
+This is in a very early stage, but with some hand-waving, the code seems like it could cover everything.
+
 A list of the kinds of things we can decompiler are in the [test/lap](https://github.com/rocky/elisp-decompile/tree/master/test/lap) directory. Two of the longer examples are:
 
 * [test-nested-when.el](https://github.com/rocky/elisp-decompile/blob/master/test/lap/test-when-nested.el) which demonstrates detecting forms like `defvar`, and `defconst`, as well as inverting macros like `when` and
-* [my-gcd.el](https://github.com/rocky/elisp-decompile/blob/master/test/lap/gcd.el) which is a recursive gcd program that really works.
+* [my-gcd.el](https://github.com/rocky/elisp-decompile/blob/master/test/lap/fib.el) which is a recursive fib program that really works.
 
 Until docs are better organized, see
 [Writing Semantic-action Rules](https://github.com/rocky/python-spark/wiki/Writing-Semantic-action-rules)
@@ -25,9 +28,24 @@ We are currently working on documenting Elisp bytecode. See https://github.com/r
 You may find yourself consulting the source code: [`emacs/lisp/emacs-lisp/bytecomp.el`](http://git.savannah.gnu.org/cgit/emacs.git/tree/lisp/emacs-lisp/bytecomp.el),
 [`emacs/src/data.c`](http://git.savannah.gnu.org/cgit/emacs.git/tree/src/data.c) and [`emacs/src/bytecode.c`](http://git.savannah.gnu.org/cgit/emacs.git/tree/src/bytecode.c).
 
+# Bugs
+
+You should think of this like you would, say, google translate to convert between two human languages: sometimes what you get back is perfect, sometimes what you get back is a little stilted but you still get the idea. And sometimes what you get back is just wrong.
+
+Here, the wrong cases generally involve getting control flow correct. We have the underlying high-powered control-flow code to get control-flow graphs and compute dominators and reverse dominators. However we are not making use of this information right now. And doing so requires a lot of serious thought, engineering, and experimentation.
+
 # Using this code
 
 Perhaps (with help, possibly yours) this will all get converted to Emacs Lisp. But for now it's Python since the decompiler code I have is currently in that language.
+
+The simplest way to install if via Python's `pip` command:
+
+```
+pip install lapdecompile
+```
+
+This installs the last stable release, but right now what is in github is generally more complete.
+
 
 ## Set up Python project
 
