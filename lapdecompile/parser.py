@@ -182,11 +182,11 @@ class ElispParser(GenericASTBuilder):
 
         while_form1 ::= expr COME_FROM LABEL expr
                         GOTO-IF-NIL-ELSE-POP body
-                        GOTO COME_FROM LABEL
+                        GOTO come_froms LABEL
 
         while_form2 ::= COME_FROM LABEL expr
                         GOTO-IF-NIL-ELSE-POP body
-                        GOTO COME_FROM LABEL
+                        GOTO come_froms LABEL
 
         when_macro ::= expr GOTO-IF-NIL body come_froms LABEL
         when_macro ::= expr GOTO-IF-NIL-ELSE-POP body come_froms LABEL

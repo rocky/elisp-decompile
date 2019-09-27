@@ -1,0 +1,24 @@
+byte code for test-while2:
+  doc:  Remove trailing  ...
+  args: (string &optional multiple)
+0	varref	  string
+1:1	length
+2	constant  0
+3	gtr
+4	goto-if-nil-else-pop 2
+7	varref	  string
+8	dup
+9	length
+10	sub1
+11	elt
+12	constant  10
+13	eq
+14	goto-if-nil-else-pop 2
+17	varref	  string
+18	constant  0
+19	constant  -1
+20	substring
+21	dup
+22	varset	  string
+23	goto	  1
+26:2	return
