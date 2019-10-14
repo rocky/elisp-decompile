@@ -58,7 +58,7 @@ This is a pretty standard Python project so install however you'd do that from s
 $ pip install -e .
 ```
 
-## Get a LAP file
+## Get a LAP file via disassembly
 
 You need to run code in the `elisp/dedis.el` to produce disassembly
 that you'd write to a file that ends in `.lap`.  We have a number of
@@ -66,11 +66,11 @@ sample LAP files in `testdata` in case you want to try a canned example.
 
 The specific functions in `dedis.el` are `disassemble-file` and `disassemble-full`.
 
-So inside Emacs find a function you want to disassemble and run `M-x disassemble-full`. Or find a bytecode file you want and run or `M-x disassembe-file`
+So inside Emacs find a function you want to disassemble and run `M-x disassemble-full`. Or find a bytecode file you want and run or `M-x disassemble-file`
 
 The first is like `disassemble`, but we don't truncate the output of docstrings or other things that `disassemble` generally does. The second is like `disassemble-full` but we start out with a bytecode file instead of a lisp function.
 
-## Disassemble LAP file
+## Decompile LAP file
 
 After you have written the results of the last section to LAP file, the file should end in `.lap`, and have set up the Python code, you can try to disassemble:
 
@@ -81,6 +81,29 @@ $ lapdecompile <name-of-lap-file> [options]
 There is perhaps a *lot* of debug output. There is even some flow control that isn't really used at the moment. You can probably go into the Python and comment this stuff out.
 
 Also, what we can decompile right now is a bit limited. I see no technical difficulties other than lots of work. So please help out.
+
+### decompiler options
+
+Here is the help usage for `lapdecompile`:
+
+```
+$ python ./lapdecompile/main.py --help
+Usage: main.py [OPTIONS] LAP_FILENAME
+
+  Lisp Assembler Program (LAP) decompiler
+
+Options:
+  -a, --assembly / --no-assembly  Show LAP assembly
+  -G, --graphs / --no-graphs      Produce dot/png control-flow graphs
+  -g, --grammar / --no-grammar    Show grammar reductions
+  --tree [after|before|full|none]
+                                  Show parse tree
+  -t                              alias for --tree=after
+  -T                              alias for --tree=full
+  --help                          Show this message and exit.
+```
+
+One of the cool options options `-G` or `--graphs` will produce dot/png control flow and dominator tree graphs.
 
 # But is it worth it?
 
