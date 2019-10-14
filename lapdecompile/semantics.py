@@ -402,7 +402,7 @@ class SourceWalker(GenericASTTraversal, object):
         args = node[-1].attr
         self.template_engine(("(%p%Q %l%P)", 0, 0, (1, args + 1), 1), node)
         self.prune()
-    n_call_expr2 = n_call_expr3 = n_call_expr4 = n_call_expr5 = n_call_expr1
+    n_call_expr2 = n_call_expr3 = n_call_expr4 = n_call_expr5 = n_call_expr9 = n_call_expr1
 
     def n_let_form_star(self, node):
         if node[0] == "varlist" and len(node[0]) == 1:

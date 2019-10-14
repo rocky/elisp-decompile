@@ -73,7 +73,7 @@ class ElispParser(GenericASTBuilder):
         # expr_stmt is an expr where the value it produces
         # might not be needed. List-like things like
         # progn or let fall into this category.
-        # expr_stmt's are maximimal in that the instruction after
+        # expr_stmt's are maximal in that the instruction after
         # the expr_stmt doesn't consume it unless it is consumed
         # for control-flow decision.
         # For example  "constant" is an "expr', but not an
@@ -258,18 +258,18 @@ class ElispParser(GenericASTBuilder):
         not_expr   ::= expr GOTO-IF-NOT-NIL
 
         and_form   ::= expr GOTO-IF-NIL-ELSE-POP expr opt_come_from opt_label
-        and_form   ::= expr GOTO-IF-NIL          expr opt_comp_from opt_label
+        and_form   ::= expr GOTO-IF-NIL          expr opt_come_from opt_label
 
         expr_or_stacked ::= expr
         expr_or_stacked ::= STACK-ACCESS
 
-        expr       ::= call_exprn
         expr       ::= call_expr0
         expr       ::= call_expr1
         expr       ::= call_expr2
         expr       ::= call_expr3
         expr       ::= call_expr4
         expr       ::= call_expr5
+        expr       ::= call_expr9
         call_expr0 ::= name_expr CALL_0
         call_expr1 ::= name_expr expr_or_stacked CALL_1
         call_expr2 ::= name_expr expr_or_stacked expr_or_stacked CALL_2
@@ -278,6 +278,9 @@ class ElispParser(GenericASTBuilder):
                         expr_or_stacked CALL_4
         call_expr5 ::= name_expr expr_or_stacked expr_or_stacked expr_or_stacked
                        expr_or_stacked expr_or_stacked CALL_5
+        call_expr9 ::= name_expr expr_or_stacked expr_or_stacked expr_or_stacked
+                       expr_or_stacked expr_or_stacked expr_or_stacked expr_or_stacked expr_or_stacked
+                       expr_or_stacked CALL_9
 
         name_expr ::= CONSTANT
 
@@ -351,7 +354,7 @@ class ElispParser(GenericASTBuilder):
         unary_op ::= THREADP
         unary_op ::= TYPE-OF
         unary_op ::= USER-PTRP
-        unary_op ::= VECTOR_OR_CHAR-TABLEP
+        unary_op ::= VECTOR-OR-CHAR-TABLEP
         unary_op ::= VECTORP
 
         nullary_expr ::= nullary_op
@@ -371,6 +374,7 @@ class ElispParser(GenericASTBuilder):
         pop_expr ::= VARREF DUP CDR VARSET CAR-SAFE
 
         setq_form ::= expr VARSET
+        setq_form ::= expr STACK-ACCESS VARSET
         setq_form_dup ::= expr DUP VARSET
         setq_form_stacked ::= expr_stacked DUP VARSET
         setq_form_stacking ::= expr DUP VARSET
@@ -469,7 +473,7 @@ class ElispParser(GenericASTBuilder):
 
     def add_custom_rules(self, tokens, customize):
         for opname, v in customize.items():
-            if re.match(r"^LIST|CONCAT|CALL", opname):
+            if re.match(r"^LIST|CONCAT", opname):
                 opname_base = opname[:opname.index('_')]
                 if opname_base[-1] == 'N':
                     opname_base = opname_base[:-1]

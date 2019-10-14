@@ -360,7 +360,8 @@ def ingest(bblocks, instructions, show_assembly):
             # then parsing will pick up the parameters from instruction where the stacking occurs
             # Testing on RETURN is kind of a hack.
             if (stack_effect < 0 and not
-                (inst.kind.startswith("CALL_") or inst.kind == "RETURN")):
+                (inst.kind.startswith("CALL_") or inst.kind in
+                 ("DISCARD", "RETURN", "UNBIND"))):
                 for j in range(stack_effect, 0):
                     new_instructions.append(Token("STACK-ACCESS", -j, offset))
                 stack_effect = 0

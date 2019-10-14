@@ -97,6 +97,9 @@ class LapScanner:
         label = None
         while self.cur_index < self.line_count:
             line = self.lines[self.cur_index]
+            if line.startswith("#"):
+                self.cur_index += 1
+                continue
             fields = line.split()
             if len(fields) == 0:
                 break
