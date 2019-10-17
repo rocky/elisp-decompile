@@ -10,6 +10,14 @@ def compute_stack_change(instructions):
         if isinstance(stack_effect, tuple):
             stack_effect = stack_effect[0]
         stack_change += stack_effect
+
+    # For debugging:
+    # if len(instructions) > 0 and instructions[0].bb:
+    #     intsr = instructions[0]
+    #     last_instr = instructions[-1]
+    #     if last_instr.block_stack_effect is not None:
+    #         diff = last_instr.block_stack_effect - instr.block_stack_effect
+    #         print(f"instruction {instr} ({len(instructions)}):\n\t stack_change {stack_change} {diff}")
     return stack_change
 
 
@@ -139,6 +147,7 @@ class BBMgr(object):
         n = len(instructions)
         while self.offset_convert(offset) <= end_offset:
             instr = instructions[j]
+
             offset = instructions[j].offset
             stack_change = STACK_EFFECT[instr.kind.lower()]
             if isinstance(stack_change, tuple):
@@ -151,6 +160,7 @@ class BBMgr(object):
             else:
                 assert isinstance(stack_change, int)
                 stack_effect += stack_change
+            instr.block_stack_effect = stack_effect
             j += 1
             if j == n:
                 break
@@ -163,6 +173,8 @@ class BBMgr(object):
             flags=flags,
             jump_offsets=jump_offsets,
         )
+        for inst in instructions:
+            inst.bb = bb
         self.bb_list.append(bb)
         self.start_offsets[start_offset] = bb
         self.end_offsets[end_offset] = bb

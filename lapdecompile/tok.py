@@ -13,6 +13,13 @@ class Token:
         self.offset = offset
         self.label = label
 
+        # Number of eval stack entries *after* this instruction runs relative
+        # to start the basic block
+        self.block_stack_effect = None
+
+        # Pointer to basic block
+        self.bb = None
+
     def __eq__(self, o):
         """ '==', but it's okay if offset is different"""
         if isinstance(o, Token):
@@ -39,8 +46,14 @@ class Token:
         prefix = ('%s%s' % (line_prefix, sib_num))
         offset_opname = '%5s %-10s' % (self.offset, self.kind)
         if not self.attr:
-            return "%s%s" % (prefix, offset_opname)
-        return "%s%s %s" % (prefix, offset_opname,  self.attr)
+            if self.block_stack_effect is None:
+                return f"{prefix}{offset_opname}"
+            else:
+                return f"{prefix}{offset_opname}\t[{self.block_stack_effect}]"
+        if self.block_stack_effect is None:
+            return f"{prefix}{offset_opname} {self.attr}"
+        else:
+            return f"{prefix}{offset_opname} {self.attr}\t[{self.block_stack_effect}]"
 
     def __hash__(self):
         return hash(self.kind)

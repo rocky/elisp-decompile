@@ -42,14 +42,14 @@ def control_flow(name, instructions, show_assembly, write_cfg):
             os.system("dot -Tpng %s > %s" % (dot_path, png_path))
             print("=" * 30)
         instructions = ingest(bblocks, instructions, show_assembly)
-        return instructions, cfg
+        return instructions
     except:
         import traceback
 
         traceback.print_exc()
         print("Unexpected error:", sys.exc_info()[0])
         print("%s had an error" % name)
-        return instructions, cfg
+        return instructions
 
 
 def deparse(path, outstream, show_assembly, write_cfg, show_grammar, show_tree):
@@ -65,7 +65,7 @@ def deparse(path, outstream, show_assembly, write_cfg, show_grammar, show_tree):
 
         tokens, customize = fn.tokens, fn.customize
         name = f"{osp.basename(path)}:{fn_name}"
-        tokens, cfg = control_flow(name, tokens, show_assembly, write_cfg)
+        tokens = control_flow(name, tokens, show_assembly, write_cfg)
 
         # Parse...
         p = ElispParser(AST, tokens)
