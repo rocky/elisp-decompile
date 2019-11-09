@@ -43,7 +43,8 @@
 
 ;;;###autoload
 (defun disassemble-file (filename)
-  "Disassemble an Emacs bytecode file"
+  "Disassemble an Emacs bytecode file FILENAME to
+   basename(FILEANME).lap."
   ;; Thanks to wasamasa on stackoverflow.
   (interactive
    (list (car (find-file-read-args "Find file: "
@@ -51,9 +52,15 @@
 
   (let ((buffer (find-file-noselect filename nil t nil)))
     (if (string-match "\\.elc$" filename)
-	(progn
-	  (disassemble-full (read buffer))
-	  (kill-buffer buffer))
+  	(let* ((disassemble-file (format "%s%s"
+  					 (file-name-sans-extension filename)
+  					 ".lap"))
+	       (disassemble-buffer (find-file disassemble-file)))
+  	  (erase-buffer)
+  	  (ignore-errors
+  	    (while t
+  	  	(disassemble-full (read buffer) disassemble-buffer)))
+  	  (kill-buffer buffer))
       ;; else
       (error "file name should end in .elc"))))
 
