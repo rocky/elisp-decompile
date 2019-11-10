@@ -25,26 +25,31 @@ class LapScanner:
         self.fn_scanner()
 
     def fn_scanner(self):
-        line = self.lines[0]
-        fn_type = "defun"
-        m = re.match("^byte code for macro (\S+):$", line)
-        if m:
-            fn_type = "defmacro"
-            name = m.group(1)
-        else:
-            m = re.match("^byte code for (\S+):$", line)
+        anonymous_count = 0
+        while self.cur_index < self.line_count:
+            line = self.lines[self.cur_index]
+            self.cur_index += 1
+            fn_type = "defun"
+            m = re.match("^byte code for macro (\S+):$", line)
             if m:
+                fn_type = "defmacro"
                 name = m.group(1)
-            elif re.match("^byte code:$", line):
-                fn_type = "file"
-                name = None
             else:
-                name = "unknown"
+                m = re.match("^byte code for (\S+):$", line)
+                if m:
+                    name = m.group(1)
+                elif re.match("^byte code:$", line):
+                    fn_type = "file"
+                    name = f"anonymous{anonymous_count}"
+                    anonymous_count += 1
+                else:
+                    name = "unknown"
+                    pass
+                pass
 
-        self.name = name
-
-        self.cur_index = 1
-        self.fn_scanner_internal(name, fn_type)
+            self.name = name
+            self.fn_scanner_internal(name, fn_type)
+            pass
         return
 
     def fn_scanner_internal(self, name, fn_type):
@@ -97,7 +102,9 @@ class LapScanner:
         label = None
         while self.cur_index < self.line_count:
             line = self.lines[self.cur_index]
-            if line.startswith("#"):
+            if re.match("^byte code:", line):
+                break
+            elif line.startswith("#"):
                 self.cur_index += 1
                 continue
             fields = line.split()
