@@ -33,13 +33,14 @@ setup(
     install_requires=("spark_parser>=1.8.9",),
     name="lapdecompile",
     description="A decompiler for Emacs Lisp bytecode",
+    packages=['lapdecompile'],
     long_description="""
 A decompiler for Emacs Lisp bytecode.
 
 This is in a very early stage, but amazingly the code seems sound so far. Please join
 in and help.
 """,
-    entry_points={"console_scripts": ["lap-decompile   = lapdecompile.main:main"]},
+    entry_points={"console_scripts": ["lap-decompile   = lapdecompile.__main__:main"]},
     version=VERSION,
     url="https://github.com/rocky/elisp-decompile",
 )
