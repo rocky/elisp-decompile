@@ -110,6 +110,10 @@ class LapScanner:
             fields = line.split()
             if len(fields) == 0:
                 break
+            joined_field = re.match(r"(\d+:\d+)(\D.+)", fields[0])
+            if joined_field:
+                fields[0] = joined_field.group(1)
+                fields.insert(1, joined_field.group(2))
             offset = fields[0]
             colon_point = offset.find(":")
             if colon_point >= 0:
